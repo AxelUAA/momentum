@@ -1,26 +1,298 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/* ───────────────────────────────────────────────────────────
+   Dark mode variant: class-based (toggle support)
+   ─────────────────────────────────────────────────────────── */
+@custom-variant dark (&:is(.dark *));
 
+/* ───────────────────────────────────────────────────────────
+   Tailwind v4 @theme — Design Tokens
+   Registers CSS variables as Tailwind utilities so you can
+   write bg-champagne, text-midnight, font-heading, etc.
+   ─────────────────────────────────────────────────────────── */
 @theme inline {
+  /* — shadcn semantic colors (bridge to CSS vars) — */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* — Momentum brand colors (always available) — */
+  --color-midnight: #0F1B2D;
+  --color-champagne: #D4AF7A;
+  --color-dusty-rose: #C9A8A0;
+  --color-cream: #FAF7F2;
+  --color-surface: var(--surface);
+  --color-success: #5B8C7B;
+  --color-error: #9B3A4E;
+
+  /* — Typography — */
+  --font-sans: var(--font-inter);
+  --font-heading: var(--font-fraunces);
+  --font-display: var(--font-cormorant);
   --font-mono: var(--font-geist-mono);
+
+  /* — Radii — */
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+
+  /* — shadcn sidebar (keep defaults) — */
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* ───────────────────────────────────────────────────────────
+   Light Mode — Momentum Palette
+   ─────────────────────────────────────────────────────────── */
+:root {
+  /* Core */
+  --background: #FAF7F2;
+  --foreground: #0F1B2D;
+  --surface: #FFFFFF;
+
+  /* Cards & Popovers */
+  --card: #FFFFFF;
+  --card-foreground: #0F1B2D;
+  --popover: #FFFFFF;
+  --popover-foreground: #0F1B2D;
+
+  /* Primary — Midnight Blue (main CTAs) */
+  --primary: #0F1B2D;
+  --primary-foreground: #FAF7F2;
+
+  /* Secondary — Dusty Rose */
+  --secondary: #F5EFEC;
+  --secondary-foreground: #0F1B2D;
+
+  /* Muted — subtle backgrounds */
+  --muted: #F0EBE3;
+  --muted-foreground: #5A6373;
+
+  /* Accent — Champagne Gold (highlights, focus, CTAs especiales) */
+  --accent: #D4AF7A;
+  --accent-foreground: #0F1B2D;
+
+  /* Destructive — Error red */
+  --destructive: #9B3A4E;
+
+  /* Borders & Inputs */
+  --border: #E8E2D5;
+  --input: #E8E2D5;
+  --ring: #D4AF7A;
+
+  /* Radius */
+  --radius: 0.75rem;
+
+  /* Charts */
+  --chart-1: #D4AF7A;
+  --chart-2: #C9A8A0;
+  --chart-3: #5B8C7B;
+  --chart-4: #0F1B2D;
+  --chart-5: #5A6373;
+
+  /* Sidebar */
+  --sidebar: #FAF7F2;
+  --sidebar-foreground: #0F1B2D;
+  --sidebar-primary: #0F1B2D;
+  --sidebar-primary-foreground: #FAF7F2;
+  --sidebar-accent: #F0EBE3;
+  --sidebar-accent-foreground: #0F1B2D;
+  --sidebar-border: #E8E2D5;
+  --sidebar-ring: #D4AF7A;
+}
+
+/* ───────────────────────────────────────────────────────────
+   Dark Mode — Momentum Palette
+   ─────────────────────────────────────────────────────────── */
+.dark {
+  /* Core */
+  --background: #0A1220;
+  --foreground: #FAF7F2;
+  --surface: #162236;
+
+  /* Cards & Popovers */
+  --card: #162236;
+  --card-foreground: #FAF7F2;
+  --popover: #162236;
+  --popover-foreground: #FAF7F2;
+
+  /* Primary — flipped for dark: light text on dark bg */
+  --primary: #FAF7F2;
+  --primary-foreground: #0F1B2D;
+
+  /* Secondary — Dusty Rose muted */
+  --secondary: #1E2E42;
+  --secondary-foreground: #FAF7F2;
+
+  /* Muted */
+  --muted: #1E2E42;
+  --muted-foreground: #8A9AB5;
+
+  /* Accent — Champagne Gold stays vibrant */
+  --accent: #D4AF7A;
+  --accent-foreground: #0F1B2D;
+
+  /* Destructive */
+  --destructive: #C4506A;
+
+  /* Borders & Inputs */
+  --border: #243349;
+  --input: #243349;
+  --ring: #D4AF7A;
+
+  /* Charts */
+  --chart-1: #D4AF7A;
+  --chart-2: #C9A8A0;
+  --chart-3: #5B8C7B;
+  --chart-4: #FAF7F2;
+  --chart-5: #8A9AB5;
+
+  /* Sidebar */
+  --sidebar: #0F1B2D;
+  --sidebar-foreground: #FAF7F2;
+  --sidebar-primary: #D4AF7A;
+  --sidebar-primary-foreground: #0F1B2D;
+  --sidebar-accent: #1E2E42;
+  --sidebar-accent-foreground: #FAF7F2;
+  --sidebar-border: #243349;
+  --sidebar-ring: #D4AF7A;
+}
+
+/* ───────────────────────────────────────────────────────────
+   Base Styles
+   ─────────────────────────────────────────────────────────── */
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+
+  html {
+    @apply font-sans;
+    scroll-behavior: smooth;
+  }
+
+  /* Reduce motion for accessibility */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+
+  /* Selection color */
+  ::selection {
+    background-color: #D4AF7A;
+    color: #0F1B2D;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* ───────────────────────────────────────────────────────────
+   Utility Classes
+   ─────────────────────────────────────────────────────────── */
+@layer utilities {
+  /* Champagne gold shimmer effect for CTAs */
+  .shimmer {
+    background: linear-gradient(
+      110deg,
+      #D4AF7A 0%,
+      #E8D5A8 45%,
+      #D4AF7A 55%,
+      #C49A60 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 3s ease-in-out infinite;
+  }
+
+  @keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
+  /* Text gradient for "celebrado" word */
+  .text-gradient-champagne {
+    background: linear-gradient(135deg, #D4AF7A, #E8D5A8, #C49A60);
+    background-size: 200% 200%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: gradient-shift 4s ease-in-out infinite;
+  }
+
+  @keyframes gradient-shift {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+  }
+
+  /* Glow effect for premium elements */
+  .glow-champagne {
+    box-shadow: 0 0 20px rgba(212, 175, 122, 0.15),
+                0 0 40px rgba(212, 175, 122, 0.05);
+  }
+
+  .glow-champagne-strong {
+    box-shadow: 0 0 20px rgba(212, 175, 122, 0.3),
+                0 0 60px rgba(212, 175, 122, 0.1);
+  }
+
+  /* Animated border glow (for pricing cards) */
+  .border-glow {
+    position: relative;
+  }
+
+  .border-glow::before {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    background: linear-gradient(135deg, #D4AF7A, #C9A8A0, #D4AF7A);
+    background-size: 300% 300%;
+    animation: border-rotate 4s linear infinite;
+    z-index: -1;
+  }
+
+  @keyframes border-rotate {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
 }
