@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { Logo } from "@/components/ui/Logo";
 import {
   Sheet,
   SheetContent,
@@ -41,8 +42,9 @@ export function Navbar({ session }: { session?: any }) {
     >
       <div className="container mx-auto flex items-center justify-between px-4 md:px-6">
         {/* Logo */}
-        <Link href="/" className="font-heading text-2xl font-semibold tracking-tight text-[var(--color-midnight)] dark:text-[var(--color-cream)]">
-          Momentum
+        <Link href="/" className="inline-block" aria-label="Momentum Home">
+          <Logo variant="onLight" className="dark:hidden" />
+          <Logo variant="mono-light" className="hidden dark:flex" />
         </Link>
 
         {/* Desktop Links */}
@@ -104,10 +106,12 @@ export function Navbar({ session }: { session?: any }) {
               <div className="flex flex-col gap-8 pt-10">
                 <Link
                   href="/"
-                  className="font-heading text-2xl font-semibold text-[var(--color-midnight)] dark:text-[var(--color-cream)]"
+                  className="inline-block"
                   onClick={() => setOpen(false)}
+                  aria-label="Momentum Home"
                 >
-                  Momentum
+                  <Logo variant="onLight" className="dark:hidden" />
+                  <Logo variant="mono-light" className="hidden dark:flex" />
                 </Link>
                 <nav className="flex flex-col gap-6">
                   {NAV_LINKS.map((link) => (

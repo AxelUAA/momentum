@@ -20,8 +20,8 @@ export function Hero() {
       <ConfettiParticles />
 
       {/* Content Container */}
-      <div className="container relative z-10 mx-auto px-4 md:px-6">
-        <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-8">
+      <div className="relative z-10 mx-auto w-full max-w-6xl px-6 md:px-10">
+        <div className="grid items-center gap-12 lg:grid-cols-[1.1fr_0.9fr] lg:gap-12">
           {/* Text Content */}
           <div className="flex flex-col justify-center space-y-8 text-center lg:text-left">
             <div className="space-y-6">
@@ -69,7 +69,7 @@ export function Hero() {
 
           {/* Visual Content (Phone Mockup) */}
           <motion.div
-            className="flex items-center justify-center lg:justify-end"
+            className="flex items-center justify-center lg:justify-center"
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 1, delay: 0.5 }}

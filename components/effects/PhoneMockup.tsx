@@ -1,7 +1,76 @@
 "use client";
 
-import { motion } from "motion/react";
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "motion/react";
 
+/* ── Live Countdown Sub-component ── */
+function Countdown() {
+  const [time, setTime] = useState({ days: 54, hrs: 12, min: 34, seg: 21 });
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTime((prev) => {
+        let { days, hrs, min, seg } = prev;
+        seg -= 1;
+        if (seg < 0) {
+          seg = 59;
+          min -= 1;
+        }
+        if (min < 0) {
+          min = 59;
+          hrs -= 1;
+        }
+        if (hrs < 0) {
+          hrs = 23;
+          days -= 1;
+        }
+        if (days < 0) {
+          return { days: 54, hrs: 12, min: 34, seg: 21 };
+        }
+        return { days, hrs, min, seg };
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const blocks = [
+    { value: time.days, label: "DÍAS" },
+    { value: time.hrs, label: "HRS" },
+    { value: time.min, label: "MIN" },
+    { value: time.seg, label: "SEG" },
+  ];
+
+  return (
+    <div className="flex w-full items-center justify-center gap-0">
+      {blocks.map((block, i) => (
+        <div key={block.label} className="flex items-center">
+          <div className="flex flex-col items-center px-2.5">
+            <AnimatePresence mode="popLayout">
+              <motion.span
+                key={block.value}
+                className="block font-heading text-xl text-[var(--color-midnight)] dark:text-[var(--color-cream)]"
+                initial={{ y: -12, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                exit={{ y: 12, opacity: 0 }}
+                transition={{ duration: 0.25 }}
+              >
+                {String(block.value).padStart(2, "0")}
+              </motion.span>
+            </AnimatePresence>
+            <span className="text-[8px] font-medium uppercase tracking-wider text-muted-foreground">
+              {block.label}
+            </span>
+          </div>
+          {i < blocks.length - 1 && (
+            <div className="h-7 w-px bg-[var(--color-champagne)] opacity-30" />
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* ── Phone Mockup ── */
 export function PhoneMockup() {
   return (
     <div className="relative mx-auto w-[300px] sm:w-[320px] lg:ml-auto lg:mr-0">
@@ -78,20 +147,13 @@ export function PhoneMockup() {
               </p>
             </motion.div>
 
-            {/* Countdown (Frame 5-7s) */}
+            {/* Countdown (Frame 5-7s) — 4 live blocks */}
             <motion.div
-              className="mt-10 flex w-full justify-center gap-4 border-y border-[var(--color-champagne)] py-4"
+              className="mt-10 w-full border-y border-[var(--color-champagne)] py-3"
               animate={{ opacity: [0, 0, 0, 1, 1, 0], scale: [0.9, 0.9, 0.9, 1, 1, 0.9] }}
               transition={{ duration: 9, times: [0, 0.45, 0.5, 0.55, 0.95, 1], repeat: Infinity }}
             >
-              <div className="text-center">
-                <span className="block font-heading text-2xl text-[var(--color-midnight)] dark:text-[var(--color-cream)]">54</span>
-                <span className="text-[10px] uppercase text-muted-foreground">Días</span>
-              </div>
-              <div className="text-center">
-                <span className="block font-heading text-2xl text-[var(--color-midnight)] dark:text-[var(--color-cream)]">12</span>
-                <span className="text-[10px] uppercase text-muted-foreground">Hrs</span>
-              </div>
+              <Countdown />
             </motion.div>
 
             {/* RSVP Button (Frame 7-9s) */}

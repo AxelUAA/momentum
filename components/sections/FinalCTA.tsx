@@ -35,7 +35,7 @@ export function FinalCTA() {
               <ArrowRight className="ml-2 h-5 w-5" />
             </Link>
             <p className="text-sm text-[var(--color-cream)]/60">
-              Sin tarjeta de crédito · Cancela cuando quieras
+              Sin suscripción · Pago único por evento
             </p>
           </div>
         </motion.div>
