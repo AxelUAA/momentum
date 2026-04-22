@@ -7,6 +7,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Logo } from "@/components/ui/Logo";
+import { signOut } from "next-auth/react";
 import {
   Sheet,
   SheetContent,
@@ -64,15 +65,15 @@ export function Navbar({ session }: { session?: any }) {
         <div className="hidden items-center gap-4 md:flex">
           <ThemeToggle />
           {session ? (
-            <Link
-              href="/dashboard"
+            <button
+              onClick={() => signOut()}
               className={cn(
-                buttonVariants(),
-                "shimmer border-none text-[var(--color-midnight)]"
+                buttonVariants({ variant: "outline" }),
+                "text-muted-foreground"
               )}
             >
-              Ir al Panel
-            </Link>
+              Cerrar sesión
+            </button>
           ) : (
             <>
               <Link
@@ -131,13 +132,15 @@ export function Navbar({ session }: { session?: any }) {
                     <ThemeToggle />
                   </div>
                   {session ? (
-                    <Link
-                      href="/dashboard"
-                      className={cn(buttonVariants({ size: "lg" }), "w-full shimmer border-none text-[var(--color-midnight)]")}
-                      onClick={() => setOpen(false)}
+                    <button
+                      onClick={() => {
+                        setOpen(false);
+                        signOut();
+                      }}
+                      className={cn(buttonVariants({ variant: "outline", size: "lg" }), "w-full text-muted-foreground")}
                     >
-                      Ir al Panel
-                    </Link>
+                      Cerrar sesión
+                    </button>
                   ) : (
                     <>
                       <Link
