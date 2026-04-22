@@ -9,8 +9,10 @@ export function ConfettiParticles() {
   >([]);
 
   useEffect(() => {
-    // Generate 30-50 particles
-    const count = Math.floor(Math.random() * 20) + 30;
+    // Generate fewer particles on mobile to improve performance
+    const isMobile = window.innerWidth < 768;
+    const count = isMobile ? Math.floor(Math.random() * 5) + 10 : Math.floor(Math.random() * 20) + 30;
+    
     const newParticles = Array.from({ length: count }).map((_, i) => ({
       id: i,
       x: Math.random() * 100, // random x position (vw)
@@ -35,6 +37,7 @@ export function ConfettiParticles() {
             backgroundColor: p.isRose ? "var(--color-dusty-rose)" : "var(--color-champagne)",
             borderRadius: "2px",
             opacity: 0.4,
+            willChange: "transform",
           }}
           animate={{
             y: ["0vh", "110vh"],
