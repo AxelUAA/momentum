@@ -24,6 +24,9 @@ model User {
   image         String?
   phone         String?
 
+  // Rol de usuario
+  role          Role      @default(USER)
+
   // Plan del usuario
   plan          Plan      @default(FREE)
 
@@ -130,13 +133,15 @@ model Event {
   templateId String @map("template_id")
 
   // Info básica
-  type      EventType
-  title     String
-  slug      String    @unique // para URL pública, ej: /e/maria-y-juan
-  eventDate DateTime  @map("event_date")
-  timezone  String    @default("America/Mexico_City")
+  eventType   EventType     @default(WEDDING)
+  tier        Tier          @default(ESSENTIAL)
+  title       String
+  slug        String        @unique // para URL pública, ej: /e/maria-y-juan
+  eventDate   DateTime?     @map("event_date")
+  timezone    String        @default("America/Mexico_City")
 
   // Ubicación
+  location        String?
   locationName    String? @map("location_name")
   locationAddress String? @map("location_address")
   locationLat     Float?  @map("location_lat")
@@ -148,8 +153,9 @@ model Event {
   accessCode  String?     @map("access_code") // solo si privacyMode = CODE
 
   // Estado
-  status      EventStatus @default(DRAFT)
-  publishedAt DateTime?   @map("published_at")
+  status          EventStatus   @default(DRAFT)
+  publishedAt     DateTime?     @map("published_at")
+  activeSections  Json          @default("{}")
 
   // Personalización (colores, música, dress code, hashtag, hosts, secciones)
   // Guardamos como JSON para flexibilidad sin migraciones cada cambio
@@ -310,6 +316,11 @@ model Subscription {
 // ENUMS
 // ============================================================
 
+enum Role {
+  ADMIN
+  USER
+}
+
 enum Plan {
   FREE
   ESSENTIAL
@@ -320,12 +331,21 @@ enum Plan {
 
 enum EventType {
   WEDDING
-  QUINCEANERA
+  XV
   BIRTHDAY
-  BAPTISM
   CORPORATE
-  PARTY
+  BAPTISM
+  GRADUATION
+  BABY_SHOWER
+  CASUAL
   OTHER
+}
+
+enum Tier {
+  EXPRESS      // $299
+  ESSENTIAL    // $599
+  COMPLETE     // $1199
+  LUXURY       // $2199
 }
 
 enum PrivacyMode {
@@ -335,10 +355,15 @@ enum PrivacyMode {
 }
 
 enum EventStatus {
-  DRAFT // editando, aún no pagado/publicado
-  ACTIVE // publicado y visible
-  FINISHED // ya pasó el evento
-  ARCHIVED // el usuario lo archivó
+  DRAFT            // en construcción, no publicado
+  PAID             // cliente pagó, esperando intake
+  INTAKE_COMPLETE  // cliente llenó datos
+  BUILDING         // admin lo está construyendo
+  REVIEW           // enviado a cliente para revisar
+  CHANGES_REQUESTED
+  ACTIVE           // publicado, invitados accediendo
+  COMPLETED        // evento ya pasó
+  ARCHIVED
 }
 
 enum RsvpStatus {

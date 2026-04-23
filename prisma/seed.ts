@@ -3,6 +3,17 @@ import { prisma } from "../lib/prisma";
 async function main() {
   console.log("Iniciando seed de datos...");
 
+  // Asignar rol ADMIN a axelinm11@gmail.com
+  await prisma.user.upsert({
+    where: { email: "axelinm11@gmail.com" },
+    update: { role: "ADMIN" },
+    create: {
+      email: "axelinm11@gmail.com",
+      name: "Axel Murillo",
+      role: "ADMIN",
+    },
+  });
+
   // Buscar el primer User existente
   const user = await prisma.user.findFirst();
 
@@ -79,36 +90,64 @@ async function main() {
     update: {
       userId: user.id,
       templateId: template.id,
-      type: "WEDDING",
+      eventType: "WEDDING",
+      tier: "COMPLETE",
       title: "María & Juan",
       eventDate: new Date("2026-06-14T17:00:00Z"),
       timezone: "America/Mexico_City",
       locationName: "Hacienda San Juan",
       locationAddress: "Av. Reforma 123, CDMX",
+      location: "Av. Reforma 123, CDMX",
       locationLat: 19.4326,
       locationLng: -99.1332,
       locationUrl: "https://maps.google.com/?q=19.4326,-99.1332",
       privacyMode: "UNIQUE_LINK",
       status: "ACTIVE",
       publishedAt: new Date(),
+      activeSections: {
+        welcomeEnvelope: true,
+        hero: true,
+        story: true,
+        timeline: true,
+        ceremony: true,
+        reception: true,
+        dressCode: true,
+        gallery: true,
+        rsvp: true,
+        giftRegistry: true,
+      },
       settings: eventSettings
     },
     create: {
       slug: "boda-maria-juan",
       userId: user.id,
       templateId: template.id,
-      type: "WEDDING",
+      eventType: "WEDDING",
+      tier: "COMPLETE",
       title: "María & Juan",
       eventDate: new Date("2026-06-14T17:00:00Z"),
       timezone: "America/Mexico_City",
       locationName: "Hacienda San Juan",
       locationAddress: "Av. Reforma 123, CDMX",
+      location: "Av. Reforma 123, CDMX",
       locationLat: 19.4326,
       locationLng: -99.1332,
       locationUrl: "https://maps.google.com/?q=19.4326,-99.1332",
       privacyMode: "UNIQUE_LINK",
       status: "ACTIVE",
       publishedAt: new Date(),
+      activeSections: {
+        welcomeEnvelope: true,
+        hero: true,
+        story: true,
+        timeline: true,
+        ceremony: true,
+        reception: true,
+        dressCode: true,
+        gallery: true,
+        rsvp: true,
+        giftRegistry: true,
+      },
       settings: eventSettings
     }
   });

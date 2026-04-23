@@ -5,12 +5,18 @@ import { authConfig } from "@/auth.config";
 const { auth } = NextAuth(authConfig);
 
 export default auth((req) => {
-  const { pathname } = req.nextUrl;
+  const isDashboardRoute = req.nextUrl.pathname.startsWith("/dashboard");
+  if (!isDashboardRoute) return NextResponse.next();
 
-  // Si la ruta empieza con /dashboard y no hay sesión, redirigir a /login
-  if (pathname.startsWith("/dashboard") && !req.auth) {
-    const loginUrl = new URL("/login", req.url);
+  const session = req.auth;
+  if (!session) {
+    const loginUrl = new URL("/login", req.nextUrl);
+    loginUrl.searchParams.set("callbackUrl", req.nextUrl.pathname);
     return NextResponse.redirect(loginUrl);
+  }
+
+  if (session.user?.role !== "ADMIN") {
+    return NextResponse.redirect(new URL("/403", req.nextUrl));
   }
 
   return NextResponse.next();

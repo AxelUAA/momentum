@@ -65,15 +65,28 @@ export function Navbar({ session }: { session?: any }) {
         <div className="hidden items-center gap-4 md:flex">
           <ThemeToggle />
           {session ? (
-            <button
-              onClick={() => signOut()}
-              className={cn(
-                buttonVariants({ variant: "outline" }),
-                "text-muted-foreground"
+            <div className="flex items-center gap-4">
+              {session.user?.role === "ADMIN" && (
+                <Link
+                  href="/dashboard"
+                  className={cn(
+                    buttonVariants({ variant: "ghost" }),
+                    "text-[var(--color-midnight)] dark:text-[var(--color-cream)]"
+                  )}
+                >
+                  Dashboard
+                </Link>
               )}
-            >
-              Cerrar sesión
-            </button>
+              <button
+                onClick={() => signOut()}
+                className={cn(
+                  buttonVariants({ variant: "outline" }),
+                  "text-muted-foreground"
+                )}
+              >
+                Cerrar sesión
+              </button>
+            </div>
           ) : (
             <>
               <Link
@@ -149,15 +162,32 @@ export function Navbar({ session }: { session?: any }) {
                   
                   <div className="flex flex-col gap-3">
                     {session ? (
-                      <button
-                        onClick={() => {
-                          setOpen(false);
-                          signOut();
-                        }}
-                        className={cn(buttonVariants({ variant: "outline", size: "lg" }), "w-full rounded-xl border-border/50 text-muted-foreground")}
-                      >
-                        Cerrar sesión
-                      </button>
+                      <div className="flex flex-col gap-3">
+                        {session.user?.role === "ADMIN" && (
+                          <Link
+                            href="/dashboard"
+                            className={cn(
+                              buttonVariants({ variant: "default", size: "lg" }),
+                              "w-full rounded-xl text-[var(--color-midnight)]"
+                            )}
+                            onClick={() => setOpen(false)}
+                          >
+                            Dashboard
+                          </Link>
+                        )}
+                        <button
+                          onClick={() => {
+                            setOpen(false);
+                            signOut();
+                          }}
+                          className={cn(
+                            buttonVariants({ variant: "outline", size: "lg" }),
+                            "w-full rounded-xl border-border/50 text-muted-foreground"
+                          )}
+                        >
+                          Cerrar sesión
+                        </button>
+                      </div>
                     ) : (
                       <>
                         <Link

@@ -22,22 +22,33 @@ export type AuroraProps = {
 export function AuroraTemplate({ event, guest }: AuroraProps) {
   const [opened, setOpened] = useState(false);
   const settings = event.settings as unknown as EventSettings;
+  const activeSections = (event.activeSections as Record<string, boolean>) || {};
 
   return (
     <div className="bg-[#0F1B2D] min-h-screen text-white font-sans selection:bg-[var(--color-champagne)] selection:text-[#0F1B2D]">
-      {!opened ? (
+      {!opened && activeSections.welcomeEnvelope !== false ? (
         <WelcomeEnvelope event={event} guest={guest} settings={settings} onOpen={() => setOpened(true)} />
       ) : (
         <div className="animate-in fade-in duration-1000">
-          <HeroCountdown event={event} />
-          <StoryTimeline items={settings.timeline} story={settings.story} />
-          <EventDetails ceremony={settings.ceremony} reception={settings.reception} location={{ lat: event.locationLat, lng: event.locationLng, name: event.locationName, address: event.locationAddress }} />
-          <DressCodeMoodboard data={settings.dressCode} />
-          <PhotoGallery images={settings.gallery} />
-          <WeatherForecast location={{ lat: event.locationLat, lng: event.locationLng }} />
-          <GiftRegistry config={settings.giftRegistry} />
-          <RsvpForm guest={guest} eventSlug={event.slug} guestToken={guest.uniqueToken} />
-          <ShareSection title={event.title} slug={event.slug} uniqueToken={guest.uniqueToken} />
+          {(opened || activeSections.welcomeEnvelope === false) && (
+            <>
+              {activeSections.hero !== false && <HeroCountdown event={event} />}
+              {activeSections.story !== false && <StoryTimeline items={settings.timeline} story={settings.story} />}
+              {(activeSections.ceremony !== false || activeSections.reception !== false) && (
+                <EventDetails 
+                  ceremony={activeSections.ceremony !== false ? settings.ceremony : undefined} 
+                  reception={activeSections.reception !== false ? settings.reception : undefined} 
+                  location={{ lat: event.locationLat, lng: event.locationLng, name: event.locationName, address: event.locationAddress }} 
+                />
+              )}
+              {activeSections.dressCode !== false && <DressCodeMoodboard data={settings.dressCode} />}
+              {activeSections.gallery !== false && <PhotoGallery images={settings.gallery} />}
+              {activeSections.weather !== false && <WeatherForecast location={{ lat: event.locationLat, lng: event.locationLng }} />}
+              {activeSections.giftRegistry !== false && <GiftRegistry config={settings.giftRegistry} />}
+              {activeSections.rsvp !== false && <RsvpForm guest={guest} eventSlug={event.slug} guestToken={guest.uniqueToken} />}
+              <ShareSection title={event.title} slug={event.slug} uniqueToken={guest.uniqueToken} />
+            </>
+          )}
         </div>
       )}
     </div>

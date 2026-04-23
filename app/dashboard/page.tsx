@@ -1,83 +1,172 @@
-import { auth, signOut } from "@/auth";
-import { redirect } from "next/navigation";
+import { auth } from "@/auth";
+import { prisma } from "@/lib/prisma";
+import { Calendar, Clock, DollarSign, Users } from "lucide-react";
+import Link from "next/link";
 
-export default async function DashboardPage() {
+export default async function DashboardHome() {
   const session = await auth();
+  const userName = session?.user?.name?.split(" ")[0] || "Admin";
 
-  // Defensa en profundidad: además del middleware, redirigir si no hay sesión
-  if (!session?.user) {
-    redirect("/login");
-  }
+  const [activeEvents, pendingRsvps, monthRevenue, totalGuests, recentEvents] =
+    await Promise.all([
+      prisma.event.count({ where: { status: "ACTIVE" } }),
+      prisma.guest.count({ where: { rsvp: null } }),
+      // Revenue del mes — por ahora retorna 0
+      Promise.resolve(0),
+      prisma.guest.count(),
+      prisma.event.findMany({
+        take: 5,
+        orderBy: { createdAt: "desc" },
+        include: { _count: { select: { guests: true } } },
+      }),
+    ]);
 
-  const { user } = session;
+  const kpis = [
+    {
+      label: "Eventos activos",
+      value: activeEvents,
+      icon: Calendar,
+    },
+    {
+      label: "RSVPs pendientes",
+      value: pendingRsvps,
+      icon: Clock,
+    },
+    {
+      label: "Revenue del mes",
+      value: `$${monthRevenue} MXN`,
+      icon: DollarSign,
+    },
+    {
+      label: "Total invitados",
+      value: totalGuests,
+      icon: Users,
+    },
+  ];
 
   return (
-    <div className="flex min-h-screen flex-col bg-zinc-50 dark:bg-zinc-950">
+    <div className="space-y-8">
       {/* Header */}
-      <header className="border-b border-zinc-200 bg-white px-6 py-4 dark:border-zinc-800 dark:bg-zinc-900">
-        <div className="mx-auto flex max-w-5xl items-center justify-between">
-          <h1 className="text-xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
-            Momentum
-          </h1>
-          <div className="flex items-center gap-4">
-            {/* Info del usuario */}
-            <div className="flex items-center gap-3">
-              {user.image ? (
-                /* eslint-disable-next-line @next/next/no-img-element */
-                <img
-                  src={user.image}
-                  alt={user.name ?? "Avatar"}
-                  width={36}
-                  height={36}
-                  className="rounded-full"
-                  referrerPolicy="no-referrer"
-                />
-              ) : (
-                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-zinc-200 text-sm font-medium text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300">
-                  {user.name?.charAt(0)?.toUpperCase() ?? "U"}
-                </div>
-              )}
-              <div className="hidden sm:block">
-                <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
-                  {user.name}
-                </p>
-                <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                  {user.email}
-                </p>
-              </div>
-            </div>
+      <div>
+        <h1 className="text-4xl font-bold text-[var(--color-midnight)] tracking-tight font-serif" style={{ fontFamily: "var(--font-fraunces), serif" }}>
+          Bienvenido, {userName} 👋
+        </h1>
+        <p className="mt-2 text-[var(--color-midnight)]/70">
+          Aquí tienes un resumen de Momentum hoy
+        </p>
+      </div>
 
-            {/* Botón Cerrar sesión */}
-            <form
-              action={async () => {
-                "use server";
-                await signOut({ redirectTo: "/" });
-              }}
+      {/* KPI Grid */}
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-6">
+        {kpis.map((kpi) => {
+          const Icon = kpi.icon;
+          return (
+            <div
+              key={kpi.label}
+              className="rounded-xl border border-black/5 bg-white p-6 shadow-sm"
             >
-              <button
-                type="submit"
-                id="signout-button"
-                className="rounded-lg border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-100 dark:border-zinc-600 dark:text-zinc-300 dark:hover:bg-zinc-800"
-              >
-                Cerrar sesión
-              </button>
-            </form>
-          </div>
-        </div>
-      </header>
+              <div className="flex items-center gap-3 text-[var(--color-midnight)]/60">
+                <Icon className="h-5 w-5" />
+                <span className="text-sm font-medium">{kpi.label}</span>
+              </div>
+              <p className="mt-4 text-3xl font-semibold text-[var(--color-midnight)]">
+                {kpi.value}
+              </p>
+            </div>
+          );
+        })}
+      </div>
 
-      {/* Contenido principal */}
-      <main className="flex flex-1 items-center justify-center px-6 py-12">
-        <div className="text-center">
-          <h2 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-50">
-            ¡Bienvenido, {user.name?.split(" ")[0] ?? "usuario"}!
+      {/* Recent Events */}
+      <div className="rounded-xl border border-black/5 bg-white shadow-sm overflow-hidden">
+        <div className="border-b border-black/5 px-6 py-5">
+          <h2 className="text-lg font-semibold text-[var(--color-midnight)]">
+            Últimos eventos creados
           </h2>
-          <p className="mt-2 text-zinc-500 dark:text-zinc-400">
-            Tu panel de control está listo. Pronto podrás crear tus invitaciones
-            aquí.
-          </p>
         </div>
-      </main>
+        
+        {recentEvents.length === 0 ? (
+          <div className="flex flex-col items-center justify-center p-12 text-center">
+            <Calendar className="h-12 w-12 text-black/20 mb-4" />
+            <h3 className="text-lg font-medium text-[var(--color-midnight)]">
+              No hay eventos todavía
+            </h3>
+            <p className="mt-1 text-sm text-[var(--color-midnight)]/60 mb-6 max-w-sm">
+              Cuando los usuarios creen eventos en la plataforma, aparecerán aquí.
+            </p>
+            <button
+              className="rounded-lg bg-[var(--color-midnight)] px-4 py-2.5 text-sm font-medium text-[var(--color-cream)] opacity-50 cursor-not-allowed"
+              title="Disponible en Fase 2"
+              disabled
+            >
+              Crear tu primer evento
+            </button>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm text-[var(--color-midnight)]/80">
+              <thead className="bg-black/[0.02] text-xs uppercase text-[var(--color-midnight)]/60">
+                <tr>
+                  <th className="px-6 py-4 font-medium">Evento</th>
+                  <th className="px-6 py-4 font-medium">Fecha</th>
+                  <th className="px-6 py-4 font-medium">Invitados</th>
+                  <th className="px-6 py-4 font-medium">Status</th>
+                  <th className="px-6 py-4 font-medium text-right">Acciones</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-black/5">
+                {recentEvents.map((event) => (
+                  <tr key={event.id} className="hover:bg-black/[0.01]">
+                    <td className="px-6 py-4">
+                      <div className="font-medium text-[var(--color-midnight)]">
+                        {event.title}
+                      </div>
+                      <div className="text-xs text-[var(--color-midnight)]/60 mt-0.5">
+                        /e/{event.slug}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {event.eventDate 
+                        ? new Date(event.eventDate).toLocaleDateString("es-MX", {
+                            year: "numeric",
+                            month: "short",
+                            day: "numeric",
+                          })
+                        : "Pendiente"
+                      }
+                    </td>
+                    <td className="px-6 py-4">
+                      {event._count.guests}
+                    </td>
+                    <td className="px-6 py-4">
+                      <span
+                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                          event.status === "ACTIVE"
+                            ? "bg-green-100 text-green-800"
+                            : event.status === "DRAFT"
+                            ? "bg-yellow-100 text-yellow-800"
+                            : "bg-gray-100 text-gray-800"
+                        }`}
+                      >
+                        {event.status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <Link
+                        href={`/e/${event.slug}`}
+                        target="_blank"
+                        className="text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors"
+                      >
+                        Ver público
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

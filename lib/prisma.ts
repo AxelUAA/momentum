@@ -7,10 +7,14 @@ const globalForPrisma = globalThis as unknown as {
 };
 
 function createPrismaClient(): PrismaClient {
+  if (!process.env.DATABASE_URL) {
+    process.env.DATABASE_URL = "postgresql://dummy:dummy@localhost:5432/dummy";
+  }
+  const rawUrl = process.env.DATABASE_URL;
+
   // Construimos la URL del pooler sin el parámetro pgbouncer=true
   // ya que el driver adapter pg no es compatible con ese parámetro.
   // Supabase requiere SSL.
-  const rawUrl = process.env.DATABASE_URL!;
   const url = new URL(rawUrl);
   url.searchParams.delete("pgbouncer");
   const connectionString = url.toString();
@@ -26,3 +30,4 @@ function createPrismaClient(): PrismaClient {
 export const prisma = globalForPrisma.prisma ?? createPrismaClient();
 
 if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
+
