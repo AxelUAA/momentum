@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
-import { Menu, X } from "lucide-react";
+import { Menu, X, ArrowRight } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Logo } from "@/components/ui/Logo";
 import { signOut } from "next-auth/react";
@@ -98,67 +98,85 @@ export function Navbar({ session }: { session?: any }) {
         {/* Mobile Menu Toggle */}
         <div className="md:hidden">
           <Sheet open={open} onOpenChange={setOpen}>
-            <SheetTrigger className="p-2 text-foreground">
-              <Menu className="h-6 w-6" />
+            <SheetTrigger className="p-2 text-foreground transition-transform hover:scale-105 active:scale-95">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-background/50 backdrop-blur-sm shadow-sm">
+                <Menu className="h-5 w-5" strokeWidth={2} />
+              </div>
               <span className="sr-only">Toggle menu</span>
             </SheetTrigger>
-            <SheetContent side="right" className="w-[300px] sm:w-[400px]">
+            <SheetContent side="right" className="w-full border-l border-border/50 bg-background/80 backdrop-blur-3xl px-6 py-8 sm:w-[400px]">
               <SheetTitle className="sr-only">Menú de navegación</SheetTitle>
-              <div className="flex flex-col gap-8 pt-10">
-                <Link
-                  href="/"
-                  className="inline-block"
-                  onClick={() => setOpen(false)}
-                  aria-label="Momentum Home"
-                >
-                  <Logo variant="onLight" className="dark:hidden" />
-                  <Logo variant="mono-light" className="hidden dark:flex" />
-                </Link>
-                <nav className="flex flex-col gap-6">
-                  {NAV_LINKS.map((link) => (
-                    <Link
-                      key={link.name}
-                      href={link.href}
-                      className="text-lg font-medium text-muted-foreground transition-colors hover:text-foreground"
-                      onClick={() => setOpen(false)}
-                    >
-                      {link.name}
-                    </Link>
-                  ))}
-                </nav>
-                <div className="flex flex-col gap-4 mt-8 border-t border-border pt-8">
-                  <div className="flex justify-between items-center mb-4">
-                    <span className="text-sm font-medium text-muted-foreground">Tema</span>
+              
+              {/* Background Glow Effect */}
+              <div className="pointer-events-none absolute -right-20 top-0 -z-10 h-[300px] w-[300px] rounded-full bg-[var(--color-brand)] opacity-20 blur-[100px]" />
+              
+              <div className="flex h-full flex-col">
+                <div className="flex items-center justify-between border-b border-border/30 pb-6">
+                  <Link
+                    href="/"
+                    className="inline-block"
+                    onClick={() => setOpen(false)}
+                    aria-label="Momentum Home"
+                  >
+                    <Logo variant="onLight" className="dark:hidden" />
+                    <Logo variant="mono-light" className="hidden dark:flex" />
+                  </Link>
+                </div>
+                
+                <div className="flex-1 overflow-y-auto py-8">
+                  <nav className="flex flex-col gap-2">
+                    {NAV_LINKS.map((link) => (
+                      <Link
+                        key={link.name}
+                        href={link.href}
+                        className="group flex items-center justify-between rounded-2xl p-4 text-xl font-medium text-muted-foreground transition-all duration-300 hover:bg-foreground/5 hover:text-foreground"
+                        onClick={() => setOpen(false)}
+                      >
+                        <span>{link.name}</span>
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-background shadow-sm ring-1 ring-border/50 transition-all duration-300 group-hover:bg-foreground group-hover:text-background">
+                          <ArrowRight className="h-4 w-4 -translate-x-1 opacity-0 transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100" />
+                        </div>
+                      </Link>
+                    ))}
+                  </nav>
+                </div>
+                
+                <div className="mt-auto flex flex-col gap-6 border-t border-border/30 pt-8">
+                  <div className="flex items-center justify-between rounded-2xl bg-foreground/5 p-4">
+                    <span className="text-sm font-medium text-foreground">Apariencia</span>
                     <ThemeToggle />
                   </div>
-                  {session ? (
-                    <button
-                      onClick={() => {
-                        setOpen(false);
-                        signOut();
-                      }}
-                      className={cn(buttonVariants({ variant: "outline", size: "lg" }), "w-full text-muted-foreground")}
-                    >
-                      Cerrar sesión
-                    </button>
-                  ) : (
-                    <>
-                      <Link
-                        href="/login"
-                        className={cn(buttonVariants({ variant: "outline", size: "lg" }), "w-full")}
-                        onClick={() => setOpen(false)}
+                  
+                  <div className="flex flex-col gap-3">
+                    {session ? (
+                      <button
+                        onClick={() => {
+                          setOpen(false);
+                          signOut();
+                        }}
+                        className={cn(buttonVariants({ variant: "outline", size: "lg" }), "w-full rounded-xl border-border/50 text-muted-foreground")}
                       >
-                        Iniciar sesión
-                      </Link>
-                      <Link
-                        href="/login"
-                        className={cn(buttonVariants({ size: "lg" }), "w-full shimmer border-none text-[var(--color-midnight)]")}
-                        onClick={() => setOpen(false)}
-                      >
-                        Empezar gratis
-                      </Link>
-                    </>
-                  )}
+                        Cerrar sesión
+                      </button>
+                    ) : (
+                      <>
+                        <Link
+                          href="/login"
+                          className={cn(buttonVariants({ variant: "outline", size: "lg" }), "w-full rounded-xl border-border/50 shadow-sm")}
+                          onClick={() => setOpen(false)}
+                        >
+                          Iniciar sesión
+                        </Link>
+                        <Link
+                          href="/login"
+                          className={cn(buttonVariants({ size: "lg" }), "w-full rounded-xl shimmer border-none text-[var(--color-midnight)] shadow-xl shadow-[var(--color-brand)]/20")}
+                          onClick={() => setOpen(false)}
+                        >
+                          Empezar gratis
+                        </Link>
+                      </>
+                    )}
+                  </div>
                 </div>
               </div>
             </SheetContent>
