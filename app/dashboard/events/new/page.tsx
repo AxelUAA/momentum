@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { ChevronLeft, ChevronRight, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-import { eventFormSchema, type EventFormData } from "@/types/event-form";
+import { eventFormSchema, type EventFormData, type EventFormInput } from "@/types/event-form";
 import { createEvent } from "@/app/actions/events";
 import { Step1BasicInfo } from "@/components/dashboard/wizard/Step1BasicInfo";
 import { Step2Story } from "@/components/dashboard/wizard/Step2Story";
@@ -30,7 +30,7 @@ export default function NewEventWizard() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const methods = useForm<EventFormData>({
+  const methods = useForm<EventFormInput, unknown, EventFormData>({
     resolver: zodResolver(eventFormSchema),
     defaultValues: {
       type: "WEDDING",

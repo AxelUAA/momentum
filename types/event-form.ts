@@ -1,6 +1,9 @@
 import { z } from "zod";
 
 export const eventFormSchema = z.object({
+  // Identificador (solo presente al editar un evento existente)
+  id: z.string().optional(),
+
   // Paso 1: Info básica
   type: z.enum(["WEDDING","XV","BIRTHDAY","CORPORATE","BAPTISM","GRADUATION","BABY_SHOWER","CASUAL","OTHER"]),
   tier: z.enum(["EXPRESS","ESSENTIAL","COMPLETE","LUXURY"]),
@@ -8,8 +11,9 @@ export const eventFormSchema = z.object({
   slug: z.string().min(3).regex(/^[a-z0-9-]+$/, "Solo minúsculas, números y guiones"),
   eventDate: z.string().min(1, "Fecha requerida"),
   eventTime: z.string().optional(),
-  clientName: z.string().min(1),
-  clientEmail: z.string().email(),
+  coverImage: z.string().url().nullable().optional(),
+  clientName: z.string().min(1, "Nombre del cliente requerido"),
+  clientEmail: z.string().email("Email inválido"),
   clientPhone: z.string().optional(),
 
   // Paso 2: Historia y timeline
@@ -18,6 +22,7 @@ export const eventFormSchema = z.object({
     year: z.string(),
     title: z.string(),
     description: z.string(),
+    image: z.string().url().optional(),
   })).optional(),
 
   // Paso 3: Lugares
@@ -38,12 +43,11 @@ export const eventFormSchema = z.object({
   dressCode: z.object({
     title: z.string().optional().or(z.literal("")),
     description: z.string().optional().or(z.literal("")),
-    inspirationImages: z.array(
-      z.string().url().or(z.literal(""))
-    ).optional(),
+    images: z.array(z.string().url()).optional().default([]),
   }).optional(),
 
   // Paso 5: Config avanzada
+  gallery: z.array(z.string().url()).optional().default([]),
   colors: z.object({
     primary: z.string(),
     secondary: z.string(),
@@ -57,4 +61,5 @@ export const eventFormSchema = z.object({
   activeSections: z.record(z.string(), z.boolean()),
 });
 
+export type EventFormInput = z.input<typeof eventFormSchema>;
 export type EventFormData = z.infer<typeof eventFormSchema>;

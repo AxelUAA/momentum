@@ -2,7 +2,7 @@ export type TimelineItem = {
   year: string;
   title: string;
   desc: string;
-  image: string;
+  image?: string;
 };
 
 export type DressCode = {
@@ -15,20 +15,22 @@ export type EventLocationDetails = {
   time: string;
   name: string;
   address: string;
+  mapsUrl?: string;
 };
 
 export type GiftRegistryConfig = {
-  digitalEnvelope: {
+  digitalEnvelope?: {
     enabled: boolean;
     suggestedAmount: number;
   };
-  liverpool: {
+  liverpool?: {
     enabled: boolean;
     eventCode: string;
   };
 };
 
 export type EventSettings = {
+  coverImage: string | null;
   story: string;
   timeline: TimelineItem[];
   dressCode: DressCode;

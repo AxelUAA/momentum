@@ -2,6 +2,7 @@
 
 import { motion, AnimatePresence } from "motion/react";
 import { useEffect, useState } from "react";
+import Image from "next/image";
 
 function Countdown({ targetDate }: { targetDate: string }) {
   const [timeLeft, setTimeLeft] = useState({ days: 0, hrs: 0, min: 0, seg: 0 });
@@ -95,6 +96,22 @@ export function HeroCountdown({ event }: { event: any }) {
 
   return (
     <section className="relative flex min-h-[90vh] md:min-h-screen w-full flex-col items-center justify-center overflow-hidden px-4 py-20 text-center">
+      {/* Imagen de portada como fondo (si existe) */}
+      {event.coverImage && (
+        <div className="absolute inset-0 z-0">
+          <Image
+            src={event.coverImage}
+            alt={event.title || "Portada"}
+            fill
+            priority
+            sizes="100vw"
+            className="object-cover"
+          />
+          {/* Overlay oscuro para mantener legibilidad del texto champagne */}
+          <div className="absolute inset-0 bg-gradient-to-b from-[#0F1B2D]/70 via-[#0F1B2D]/60 to-[#0F1B2D]/80" />
+        </div>
+      )}
+
       {/* Esquinas Florales */}
       <FloralSVG className="top-0 left-0" />
       <FloralSVG className="top-0 right-0 rotate-90" />

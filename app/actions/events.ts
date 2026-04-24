@@ -1,8 +1,10 @@
 "use server";
-import { prisma } from "@/lib/prisma";
+
 import { auth } from "@/auth";
+import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { createAdminClient } from "@/lib/supabase/server";
 import { eventFormSchema, type EventFormData } from "@/types/event-form";
 
 async function requireAdmin() {
@@ -57,16 +59,34 @@ export async function createEvent(data: EventFormData) {
         tier: parsed.data.tier,
         status: "DRAFT",
         eventDate: parsed.data.eventDate ? new Date(parsed.data.eventDate) : null,
+        coverImage: parsed.data.coverImage ?? null,
         activeSections: parsed.data.activeSections,
         location: parsed.data.reception?.address || parsed.data.ceremony?.address || "",
         settings: {
           story: parsed.data.story,
-          timeline: parsed.data.timeline,
-          ceremony: parsed.data.ceremony,
-          reception: parsed.data.reception,
+          timeline: parsed.data.timeline?.map(item => ({
+            year: item.year,
+            title: item.title,
+            desc: item.description,
+            image: item.image
+          })),
+          gallery: parsed.data.gallery || [],
+          ceremony: {
+            time: parsed.data.ceremony?.time || "",
+            name: parsed.data.ceremony?.venueName || "",
+            address: parsed.data.ceremony?.address || "",
+            mapsUrl: parsed.data.ceremony?.mapsUrl || ""
+          },
+          reception: {
+            time: parsed.data.reception?.time || "",
+            name: parsed.data.reception?.venueName || "",
+            address: parsed.data.reception?.address || "",
+            mapsUrl: parsed.data.reception?.mapsUrl || ""
+          },
           dressCode: parsed.data.dressCode ? {
-            ...parsed.data.dressCode,
-            inspirationImages: parsed.data.dressCode.inspirationImages?.filter(url => url && url.length > 0) || []
+            name: parsed.data.dressCode.title || "",
+            description: parsed.data.dressCode.description || "",
+            images: parsed.data.dressCode.images || []
           } : undefined,
           colors: parsed.data.colors,
           giftRegistry: parsed.data.giftRegistry?.filter(item => item.url && item.url.length > 0) || [],
@@ -102,7 +122,43 @@ export async function updateEvent(id: string, data: Partial<EventFormData>) {
     if (data.type) updateData.type = data.type;
     if (data.tier) updateData.tier = data.tier;
     if (data.eventDate) updateData.eventDate = new Date(data.eventDate);
+    if (data.coverImage !== undefined) updateData.coverImage = data.coverImage;
     if (data.activeSections) updateData.activeSections = data.activeSections;
+
+    // Build settings object for deep update
+    const settings: any = {};
+    if (data.story !== undefined) settings.story = data.story;
+    if (data.timeline !== undefined) settings.timeline = data.timeline.map((item: any) => ({
+      year: item.year,
+      title: item.title,
+      desc: item.description,
+      image: item.image
+    }));
+    if (data.gallery !== undefined) settings.gallery = data.gallery;
+    if (data.ceremony !== undefined) settings.ceremony = {
+      time: data.ceremony.time,
+      name: data.ceremony.venueName,
+      address: data.ceremony.address,
+      mapsUrl: data.ceremony.mapsUrl
+    };
+    if (data.reception !== undefined) settings.reception = {
+      time: data.reception.time,
+      name: data.reception.venueName,
+      address: data.reception.address,
+      mapsUrl: data.reception.mapsUrl
+    };
+    if (data.dressCode !== undefined) settings.dressCode = {
+      name: data.dressCode.title,
+      description: data.dressCode.description,
+      images: data.dressCode.images
+    };
+    if (data.colors !== undefined) settings.colors = data.colors;
+    if (data.giftRegistry !== undefined) settings.giftRegistry = data.giftRegistry;
+    if (data.rsvpDeadline !== undefined) settings.rsvpDeadline = data.rsvpDeadline;
+
+    if (Object.keys(settings).length > 0) {
+      updateData.settings = settings;
+    }
 
     // Para settings, necesitaríamos hacer un deep merge o actualizar campos específicos
     // Por ahora simplificamos la actualización de campos básicos
@@ -186,8 +242,26 @@ export async function deleteEvent(id: string) {
   await requireAdmin();
   
   try {
-    // El schema ya tiene onDelete: Cascade en Guest y Rsvp
-    // así que borrar el evento limpia todo lo relacionado automáticamente.
+    // Borrar imágenes de Supabase
+    const supabase = createAdminClient();
+    const { data: files } = await supabase.storage
+      .from('event-images')
+      .list(id);
+
+    if (files && files.length > 0) {
+      const categories = ['cover', 'gallery', 'dress-code', 'timeline'];
+      for (const cat of categories) {
+        const { data: catFiles } = await supabase.storage
+          .from('event-images')
+          .list(`${id}/${cat}`);
+        
+        if (catFiles && catFiles.length > 0) {
+          const paths = catFiles.map(f => `${id}/${cat}/${f.name}`);
+          await supabase.storage.from('event-images').remove(paths);
+        }
+      }
+    }
+
     await prisma.event.delete({ where: { id } });
     
     revalidatePath("/dashboard/events");

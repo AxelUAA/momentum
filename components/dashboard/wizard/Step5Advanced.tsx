@@ -1,10 +1,11 @@
 "use client";
-import { useFormContext, useFieldArray } from "react-hook-form";
+import { useFormContext, useFieldArray, Controller } from "react-hook-form";
 import { EventFormData } from "@/types/event-form";
-import { Palette, Gift, ToggleRight, Trash2, Plus } from "lucide-react";
+import { Palette, Gift, ToggleRight, Trash2, Plus, Image as ImageIcon } from "lucide-react";
 import { useEffect } from "react";
 import { SECTIONS_BY_EVENT_TYPE } from "@/lib/event-sections-map";
 import { cn } from "@/lib/utils";
+import { ImageUploader } from "@/components/shared/ImageUploader";
 
 export function Step5Advanced() {
   const { register, watch, setValue, control, formState: { errors } } = useFormContext<EventFormData>();
@@ -120,6 +121,41 @@ export function Step5Advanced() {
             </div>
           ))}
         </div>
+      </div>
+
+      {/* Gallery */}
+      <div className="space-y-8">
+        <div className="flex items-center gap-4 border-b border-black/5 pb-6">
+          <div className="rounded-2xl bg-[var(--color-brand)] text-white p-3 shadow-lg shadow-[var(--color-brand)]/20">
+            <ImageIcon className="h-6 w-6" />
+          </div>
+          <div className="space-y-1">
+            <h3 className="text-xl font-black text-[var(--color-midnight)] tracking-tight">Galería de Fotos</h3>
+            <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-midnight)]/30">Momentos especiales</p>
+          </div>
+        </div>
+        
+        {watch("id") ? (
+          <Controller
+            control={control}
+            name="gallery"
+            render={({ field }) => (
+              <ImageUploader
+                eventId={watch("id")!}
+                category="gallery"
+                existing={field.value}
+                onUpload={field.onChange}
+                maxFiles={10}
+              />
+            )}
+          />
+        ) : (
+          <div className="rounded-[2rem] border border-dashed border-black/10 bg-black/5 p-12 text-center">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-midnight)]/30">
+              Guarda el evento para habilitar la galería de fotos
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Sections Toggle */}

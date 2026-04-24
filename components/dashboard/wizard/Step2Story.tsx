@@ -1,11 +1,12 @@
 "use client";
-import { useFormContext, useFieldArray } from "react-hook-form";
+import { useFormContext, useFieldArray, Controller } from "react-hook-form";
 import { EventFormData } from "@/types/event-form";
-import { Plus, Trash2, History } from "lucide-react";
+import { Plus, Trash2, History, Image as ImageIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ImageUploader } from "@/components/shared/ImageUploader";
 
 export function Step2Story() {
-  const { register, control, formState: { errors } } = useFormContext<EventFormData>();
+  const { register, control, watch, formState: { errors } } = useFormContext<EventFormData>();
   const { fields, append, remove } = useFieldArray({
     control,
     name: "timeline"
@@ -75,7 +76,28 @@ export function Step2Story() {
                   className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm"
                 />
               </div>
-              <div className="flex items-end justify-center md:col-span-1">
+              <div className="md:col-span-12 mt-4">
+                <label className="text-[10px] font-bold uppercase text-muted-foreground mb-2 block">Imagen del Momento</label>
+                {watch("id") ? (
+                  <Controller
+                    control={control}
+                    name={`timeline.${index}.image` as const}
+                    render={({ field }) => (
+                      <ImageUploader
+                        eventId={watch("id")!}
+                        category="timeline"
+                        existing={field.value}
+                        onUpload={field.onChange}
+                        maxFiles={1}
+                        className="!grid-cols-4 sm:!grid-cols-6 md:!grid-cols-8"
+                      />
+                    )}
+                  />
+                ) : (
+                  <p className="text-[10px] text-muted-foreground italic">Guarda el evento para habilitar subida de imágenes.</p>
+                )}
+              </div>
+              <div className="absolute top-4 right-4">
                 <button
                   type="button"
                   onClick={() => remove(index)}

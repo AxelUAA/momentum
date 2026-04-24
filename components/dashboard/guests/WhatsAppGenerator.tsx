@@ -36,18 +36,23 @@ Por favor confirma antes del {deadline}.
     });
   }, [guests, onlyNoRsvp]);
 
+  // Resolver baseUrl de forma SSR-safe: los client components pre-renderizan en el
+  // servidor, donde `window` no existe. Usamos la env pública si está disponible.
+  const baseUrl =
+    process.env.NEXT_PUBLIC_BASE_URL ||
+    (typeof window !== "undefined" ? window.location.origin : "");
+
   const variables = [
     { tag: "{nombre}", label: "Nombre", value: filteredGuests[0]?.name || "Juan" },
     { tag: "{evento}", label: "Evento", value: event.title },
     { tag: "{fecha}", label: "Fecha", value: event.eventDate ? format(new Date(event.eventDate), "dd/MM/yyyy") : "—" },
-    { tag: "{url}", label: "URL", value: `${window.location.origin}/e/${event.slug}/x7f9k2` },
+    { tag: "{url}", label: "URL", value: `${baseUrl}/e/${event.slug}/x7f9k2` },
     { tag: "{deadline}", label: "Límite RSVP", value: event.settings?.rsvpDeadline || "—" },
     { tag: "{lugar}", label: "Lugar", value: event.locationName || "—" },
   ];
 
   const getPreview = (guest: any) => {
     if (!guest) return template;
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || window.location.origin;
     const url = `${baseUrl}/e/${event.slug}/${guest.uniqueToken}`;
     
     return template

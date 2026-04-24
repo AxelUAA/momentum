@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-import { eventFormSchema, type EventFormData } from "@/types/event-form";
+import { eventFormSchema, type EventFormData, type EventFormInput } from "@/types/event-form";
 import { updateEvent } from "@/app/actions/events";
 import { Step1BasicInfo } from "@/components/dashboard/wizard/Step1BasicInfo";
 import { Step2Story } from "@/components/dashboard/wizard/Step2Story";
@@ -25,6 +25,29 @@ const SECTIONS = [
   { id: "advanced", title: "Avanzado", icon: Palette, component: Step5Advanced },
 ];
 
+// Normaliza giftRegistry entre formatos viejos (objeto con digitalEnvelope/liverpool)
+// y el nuevo (array de {store, url}). Permite que eventos legacy coexistan.
+function normalizeGiftRegistry(raw: unknown): Array<{ store: string; url: string }> {
+  if (Array.isArray(raw)) {
+    return raw.filter(
+      (item): item is { store: string; url: string } =>
+        !!item && typeof item === "object" && "store" in item && "url" in item
+    );
+  }
+  if (raw && typeof raw === "object") {
+    const obj = raw as Record<string, { enabled?: boolean; eventCode?: string }>;
+    const arr: Array<{ store: string; url: string }> = [];
+    if (obj.liverpool?.enabled && obj.liverpool.eventCode) {
+      arr.push({
+        store: "Liverpool",
+        url: `https://www.liverpool.com.mx/tienda/mesa-regalos/${obj.liverpool.eventCode}`,
+      });
+    }
+    return arr;
+  }
+  return [];
+}
+
 export default function EditEventClient({ event }: { event: any }) {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("basic");
@@ -33,7 +56,7 @@ export default function EditEventClient({ event }: { event: any }) {
   const [success, setSuccess] = useState(false);
 
   // Parse initial data
-  const methods = useForm<EventFormData>({
+  const methods = useForm<EventFormInput, unknown, EventFormData>({
     resolver: zodResolver(eventFormSchema),
     defaultValues: {
       title: event.title || "",
@@ -42,32 +65,40 @@ export default function EditEventClient({ event }: { event: any }) {
       tier: event.tier || "EXPRESS",
       eventDate: event.eventDate ? new Date(event.eventDate).toISOString().split('T')[0] : "",
       eventTime: event.settings?.eventTime || "",
+      coverImage: event.coverImage || null,
       activeSections: event.activeSections || {},
       story: event.settings?.story || "",
-      timeline: event.settings?.timeline || [],
+      timeline: (event.settings?.timeline || []).map((t: any) => ({
+        year: t.year || "",
+        title: t.title || "",
+        description: t.description || t.desc || "",
+        image: t.image || ""
+      })),
       ceremony: {
-        venueName: event.settings?.ceremony?.venueName || "",
+        venueName: event.settings?.ceremony?.venueName || event.settings?.ceremony?.name || "",
         address: event.settings?.ceremony?.address || "",
         time: event.settings?.ceremony?.time || "",
         mapsUrl: event.settings?.ceremony?.mapsUrl || "",
       },
       reception: {
-        venueName: event.settings?.reception?.venueName || "",
+        venueName: event.settings?.reception?.venueName || event.settings?.reception?.name || "",
         address: event.settings?.reception?.address || "",
         time: event.settings?.reception?.time || "",
         mapsUrl: event.settings?.reception?.mapsUrl || "",
       },
       dressCode: {
-        title: event.settings?.dressCode?.title || "",
+        title: event.settings?.dressCode?.title || event.settings?.dressCode?.name || "",
         description: event.settings?.dressCode?.description || "",
-        inspirationImages: event.settings?.dressCode?.inspirationImages || ["", "", "", ""],
+        images: event.settings?.dressCode?.images || [],
       },
+      gallery: event.settings?.gallery || [],
       colors: event.settings?.colors || { primary: "#0F1B2D", secondary: "#C9A8A0", accent: "#D4AF7A" },
-      giftRegistry: event.settings?.giftRegistry || [],
+      giftRegistry: normalizeGiftRegistry(event.settings?.giftRegistry),
       rsvpDeadline: event.settings?.rsvpDeadline || "",
       clientName: event.settings?.client?.name || event.settings?.clientName || "",
       clientEmail: event.settings?.client?.email || event.settings?.clientEmail || "",
       clientPhone: event.settings?.client?.phone || event.settings?.clientPhone || "",
+      id: event.id,
     }
   });
 

@@ -1,10 +1,11 @@
 "use client";
-import { useFormContext } from "react-hook-form";
+import { useFormContext, Controller } from "react-hook-form";
 import { EventFormData } from "@/types/event-form";
 import { Shirt, Image as ImageIcon, Plus } from "lucide-react";
+import { ImageUploader } from "@/components/shared/ImageUploader";
 
 export function Step4DressCode() {
-  const { register } = useFormContext<EventFormData>();
+  const { register, control, watch } = useFormContext<EventFormData>();
 
   return (
     <div className="space-y-12 animate-in fade-in slide-in-from-bottom-6 duration-700">
@@ -42,25 +43,31 @@ export function Step4DressCode() {
           <div className="space-y-1">
             <label className="text-xs font-bold text-[var(--color-midnight)]/60 uppercase tracking-wider ml-1">Moodboard de inspiración</label>
             <p className="text-[10px] font-medium text-[var(--color-midnight)]/30 ml-1">
-              URLs de imágenes (Pinterest, Unsplash, etc.)
+              Sube hasta 6 imágenes para inspirar a tus invitados.
             </p>
           </div>
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-            {[0, 1, 2, 3].map((i) => (
-              <div key={i} className="group relative aspect-[3/4] overflow-hidden rounded-[2rem] border border-black/5 bg-white/50 transition-all duration-500 hover:bg-white hover:shadow-2xl hover:shadow-black/5">
-                <div className="flex h-full flex-col items-center justify-center gap-4 p-6 text-center">
-                  <div className="rounded-2xl bg-black/5 p-3 text-[var(--color-midnight)]/20 group-hover:bg-[var(--color-brand)]/10 group-hover:text-[var(--color-brand)] transition-colors duration-500">
-                    <ImageIcon className="h-6 w-6" />
-                  </div>
-                  <input
-                    {...register(`dressCode.inspirationImages.${i}` as const)}
-                    placeholder="URL de imagen"
-                    className="w-full bg-transparent text-[10px] font-bold text-center focus:outline-none placeholder:text-[var(--color-midnight)]/20"
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
+          
+          {watch("id") ? (
+            <Controller
+              control={control}
+              name="dressCode.images"
+              render={({ field }) => (
+                <ImageUploader
+                  eventId={watch("id")!}
+                  category="dress-code"
+                  existing={field.value}
+                  onUpload={field.onChange}
+                  maxFiles={6}
+                />
+              )}
+            />
+          ) : (
+            <div className="rounded-3xl border border-dashed border-black/10 bg-black/5 p-12 text-center">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-midnight)]/30">
+                Guarda el evento para habilitar la subida de imágenes
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </div>

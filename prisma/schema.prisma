@@ -113,6 +113,7 @@ model Event {
   createdAt       DateTime    @default(now()) @map("created_at")
   updatedAt       DateTime    @updatedAt @map("updated_at")
   location        String?
+  coverImage      String?     @map("cover_image")
   tier            Tier        @default(ESSENTIAL)
   activeSections  Json        @default("{}") @map("active_sections")
   template        Template    @relation(fields: [templateId], references: [id])

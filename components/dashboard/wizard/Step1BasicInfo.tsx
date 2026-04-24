@@ -1,12 +1,13 @@
 "use client";
-import { useFormContext } from "react-hook-form";
+import { useFormContext, Controller } from "react-hook-form";
 import { EventFormData } from "@/types/event-form";
 import { 
   Heart, Users, PartyPopper, Briefcase, Baby, GraduationCap, 
-  CalendarDays, Music, Sparkles 
+  CalendarDays, Music, Sparkles, Image as ImageIcon
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { TIER_INFO } from "@/lib/event-sections-map";
+import { ImageUploader } from "@/components/shared/ImageUploader";
 
 const EVENT_TYPES = [
   { id: "WEDDING", label: "Boda", icon: Heart },
@@ -21,7 +22,7 @@ const EVENT_TYPES = [
 ];
 
 export function Step1BasicInfo() {
-  const { register, watch, setValue, formState: { errors } } = useFormContext<EventFormData>();
+  const { register, watch, setValue, control, formState: { errors } } = useFormContext<EventFormData>();
   const selectedType = watch("type");
   const selectedTier = watch("tier");
 
@@ -157,6 +158,36 @@ export function Step1BasicInfo() {
             className="h-14 w-full rounded-2xl border border-black/5 bg-white/50 px-6 text-sm font-medium focus:bg-white transition-all outline-none"
           />
         </div>
+      </div>
+
+      {/* Cover Image */}
+      <div className="space-y-6">
+        <div className="flex items-center gap-3 ml-1">
+          <ImageIcon className="h-4 w-4 text-[var(--color-brand)]" />
+          <label className="text-xs font-bold text-[var(--color-midnight)]/60 uppercase tracking-wider">Imagen de Portada</label>
+        </div>
+        
+        {watch("id") ? (
+          <Controller
+            control={control}
+            name="coverImage"
+            render={({ field }) => (
+              <ImageUploader
+                eventId={watch("id")!}
+                category="cover"
+                existing={field.value}
+                onUpload={field.onChange}
+                maxFiles={1}
+              />
+            )}
+          />
+        ) : (
+          <div className="rounded-2xl border border-dashed border-black/10 bg-black/5 p-8 text-center">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-midnight)]/30">
+              Guarda el evento para habilitar la subida de portada
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Client Info */}

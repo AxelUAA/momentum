@@ -80,10 +80,19 @@ export function StoryTimeline({ items, story }: { items: TimelineItem[]; story: 
                 <div className="w-full md:w-5/12 flex justify-center">
                   <div className="relative w-64 h-64 md:w-80 md:h-80 rounded-full overflow-hidden border border-[var(--color-champagne)]/30 p-2">
                     <div className="relative w-full h-full rounded-full overflow-hidden">
-                      {/* Placeholder de imagen usando un div con gradient o imagen */}
-                      <div className="w-full h-full bg-gradient-to-tr from-[#1B3A5C] to-[#0F1B2D] flex items-center justify-center">
-                        <span className="text-[var(--color-champagne)]/20 text-4xl font-serif italic">Foto</span>
-                      </div>
+                      {item.image ? (
+                        <Image
+                          src={item.image}
+                          alt={item.title || `Momento ${item.year}`}
+                          fill
+                          sizes="(min-width: 768px) 20rem, 16rem"
+                          className="object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-gradient-to-tr from-[#1B3A5C] to-[#0F1B2D] flex items-center justify-center">
+                          <span className="text-[var(--color-champagne)]/20 text-4xl font-serif italic">Foto</span>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
