@@ -10,6 +10,9 @@ import { format, differenceInDays } from "date-fns";
 import { es } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
+import { TIER_INFO } from "@/lib/event-sections-map";
+import { sectionLabel } from "@/lib/section-labels";
+import { DeleteEventDialog } from "@/components/dashboard/DeleteEventDialog";
 
 export const dynamic = "force-dynamic";
 
@@ -21,6 +24,18 @@ export default async function EventDetailPage({ params }: { params: { id: string
     where: { id },
     include: {
       template: true,
+      guests: {
+        include: {
+          rsvp: true,
+          _count: {
+            select: { invitationViews: true }
+          }
+        },
+        orderBy: {
+          createdAt: "desc"
+        },
+        take: 5
+      },
       _count: {
         select: { guests: true }
       }
@@ -32,6 +47,12 @@ export default async function EventDetailPage({ params }: { params: { id: string
   const daysToEvent = event.eventDate 
     ? differenceInDays(new Date(event.eventDate), new Date()) 
     : null;
+
+  const stats = {
+    total: event._count.guests,
+    confirmed: event.guests.filter(g => g.rsvp?.status === "CONFIRMED").length,
+    pending: event.guests.filter(g => !g.rsvp || g.rsvp.status === "PENDING").length,
+  };
 
   return (
     <div className="space-y-8 p-6 md:p-8 animate-in fade-in duration-700">
@@ -83,6 +104,12 @@ export default async function EventDetailPage({ params }: { params: { id: string
             <Eye className="h-4 w-4" />
             Ver Invitación
           </Link>
+          <div className="h-8 w-px bg-border mx-1" />
+          <DeleteEventDialog 
+            eventId={event.id}
+            eventTitle={event.title}
+            eventSlug={event.slug}
+          />
         </div>
       </div>
 
@@ -92,8 +119,8 @@ export default async function EventDetailPage({ params }: { params: { id: string
           <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
             <Users className="h-4 w-4" /> Invitados
           </div>
-          <div className="mt-2 text-3xl font-black">{event._count.guests}</div>
-          <div className="mt-1 text-xs text-muted-foreground">Confirmados: 0</div>
+          <div className="mt-2 text-3xl font-black">{stats.total}</div>
+          <div className="mt-1 text-xs text-muted-foreground">Confirmados: {stats.confirmed}</div>
         </div>
 
         <div className="rounded-2xl border border-border bg-background p-6 shadow-sm">
@@ -110,7 +137,9 @@ export default async function EventDetailPage({ params }: { params: { id: string
           <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
             <Sparkles className="h-4 w-4" /> Tier
           </div>
-          <div className="mt-2 text-2xl font-black uppercase text-[var(--color-brand)]">{event.tier}</div>
+          <div className="mt-2 text-2xl font-black uppercase text-[var(--color-brand)]">
+            {TIER_INFO[event.tier as keyof typeof TIER_INFO]?.label || event.tier}
+          </div>
           <div className="mt-1 text-xs text-muted-foreground">Plan seleccionado</div>
         </div>
 
@@ -123,7 +152,7 @@ export default async function EventDetailPage({ params }: { params: { id: string
         </div>
       </div>
 
-      {/* Main Content Tabs (Placeholder simplified) */}
+      {/* Main Content Tabs */}
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
         {/* Detail Left Column */}
         <div className="lg:col-span-2 space-y-8">
@@ -157,7 +186,7 @@ export default async function EventDetailPage({ params }: { params: { id: string
                     {Object.entries(event.activeSections as Record<string, boolean>).map(([key, active]) => (
                       active && (
                         <span key={key} className="rounded-full bg-muted px-2.5 py-1 text-[9px] font-bold uppercase tracking-tighter">
-                          {key}
+                          {sectionLabel(key)}
                         </span>
                       )
                     ))}
@@ -171,13 +200,45 @@ export default async function EventDetailPage({ params }: { params: { id: string
           <div className="rounded-3xl border border-border bg-background p-8 shadow-sm">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-lg font-bold">Invitados Recientes</h3>
-              <Link href="/dashboard/guests" className="text-sm font-bold text-[var(--color-brand)] hover:underline">
-                Ver todos
+              <Link href={`/dashboard/events/${event.id}/guests`} className="text-sm font-bold text-[var(--color-brand)] hover:underline">
+                Gestionar todos
               </Link>
             </div>
-            <div className="text-center py-10 border-2 border-dashed border-border rounded-2xl">
-              <p className="text-sm text-muted-foreground">La gestión de invitados estará disponible en la Fase 3.</p>
-            </div>
+            {event.guests.length > 0 ? (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left">
+                  <thead>
+                    <tr className="border-b border-border">
+                      <th className="pb-3 text-[10px] font-bold uppercase text-muted-foreground">Nombre</th>
+                      <th className="pb-3 text-[10px] font-bold uppercase text-muted-foreground">Status</th>
+                      <th className="pb-3 text-[10px] font-bold uppercase text-muted-foreground text-right">Vistas</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border">
+                    {event.guests.map((guest: any) => (
+                      <tr key={guest.id}>
+                        <td className="py-3 text-sm font-medium">{guest.name}</td>
+                        <td className="py-3">
+                          <span className={cn(
+                            "rounded-full px-2 py-0.5 text-[8px] font-bold uppercase",
+                            guest.rsvp?.status === "CONFIRMED" ? "bg-green-50 text-green-700" : "bg-gray-50 text-gray-600"
+                          )}>
+                            {guest.rsvp?.status || "Pendiente"}
+                          </span>
+                        </td>
+                        <td className="py-3 text-sm text-right text-muted-foreground">
+                          {guest._count.invitationViews}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="text-center py-10 border-2 border-dashed border-border rounded-2xl">
+                <p className="text-sm text-muted-foreground">Aún no hay invitados registrados.</p>
+              </div>
+            )}
           </div>
         </div>
 

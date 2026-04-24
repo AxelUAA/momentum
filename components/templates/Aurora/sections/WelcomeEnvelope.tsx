@@ -151,7 +151,7 @@ export function WelcomeEnvelope({
               Para
             </p>
             <h3 className="font-heading text-2xl md:text-3xl text-[#0F1B2D]">
-              {guest.fullName}
+              {guest.name}
             </h3>
             {isOpen && (
               <motion.p 

@@ -10,10 +10,13 @@ import {
   Users,
   CreditCard,
   Settings,
+  X,
+  ExternalLink
 } from "lucide-react";
 import { UserMenu } from "./UserMenu";
 
 const navItems = [
+  { name: "Ver Landing", href: "/", icon: ExternalLink },
   { name: "Inicio", href: "/dashboard", icon: LayoutDashboard },
   { name: "Eventos", href: "/dashboard/events", icon: Calendar },
   { name: "Invitados", href: "/dashboard/guests", icon: Users },
@@ -21,15 +24,23 @@ const navItems = [
   { name: "Configuración", href: "/dashboard/settings", icon: Settings },
 ];
 
-export function Sidebar({ user }: { user: any }) {
+export function Sidebar({ user, onClose }: { user: any; onClose?: () => void }) {
   const pathname = usePathname();
 
   return (
     <div className="flex h-full w-[260px] flex-col bg-[var(--color-midnight)] text-[var(--color-cream)]">
-      <div className="flex h-16 items-center px-6 border-b border-white/10">
+      <div className="flex h-16 items-center justify-between px-6 border-b border-white/10">
         <Link href="/dashboard" className="transition-opacity hover:opacity-80">
           <Logo variant="onDark" />
         </Link>
+        {onClose && (
+          <button 
+            onClick={onClose}
+            className="md:hidden p-1 rounded-lg hover:bg-white/10 transition-colors"
+          >
+            <X className="h-5 w-5 text-white/70" />
+          </button>
+        )}
       </div>
 
       <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-6">

@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const eventFormSchema = z.object({
   // Paso 1: Info básica
-  eventType: z.enum(["WEDDING","XV","BIRTHDAY","CORPORATE","BAPTISM","GRADUATION","BABY_SHOWER","CASUAL","OTHER"]),
+  type: z.enum(["WEDDING","XV","BIRTHDAY","CORPORATE","BAPTISM","GRADUATION","BABY_SHOWER","CASUAL","OTHER"]),
   tier: z.enum(["EXPRESS","ESSENTIAL","COMPLETE","LUXURY"]),
   title: z.string().min(3, "Mínimo 3 caracteres").max(100),
   slug: z.string().min(3).regex(/^[a-z0-9-]+$/, "Solo minúsculas, números y guiones"),
@@ -22,23 +22,25 @@ export const eventFormSchema = z.object({
 
   // Paso 3: Lugares
   ceremony: z.object({
-    venueName: z.string(),
-    address: z.string(),
-    time: z.string(),
-    mapsUrl: z.string().url().optional().or(z.literal("")),
+    venueName: z.string().optional().or(z.literal("")),
+    address: z.string().optional().or(z.literal("")),
+    time: z.string().optional().or(z.literal("")),
+    mapsUrl: z.string().url().or(z.literal("")).optional(),
   }).optional(),
   reception: z.object({
-    venueName: z.string(),
-    address: z.string(),
-    time: z.string(),
-    mapsUrl: z.string().url().optional().or(z.literal("")),
+    venueName: z.string().optional().or(z.literal("")),
+    address: z.string().optional().or(z.literal("")),
+    time: z.string().optional().or(z.literal("")),
+    mapsUrl: z.string().url().or(z.literal("")).optional(),
   }).optional(),
 
   // Paso 4: Dress code
   dressCode: z.object({
-    title: z.string(),
-    description: z.string(),
-    inspirationImages: z.array(z.string().url()).optional(),
+    title: z.string().optional().or(z.literal("")),
+    description: z.string().optional().or(z.literal("")),
+    inspirationImages: z.array(
+      z.string().url().or(z.literal(""))
+    ).optional(),
   }).optional(),
 
   // Paso 5: Config avanzada
@@ -49,7 +51,7 @@ export const eventFormSchema = z.object({
   }).optional(),
   giftRegistry: z.array(z.object({
     store: z.string(),
-    url: z.string().url(),
+    url: z.string().url().or(z.literal("")),
   })).optional(),
   rsvpDeadline: z.string().optional(),
   activeSections: z.record(z.string(), z.boolean()),

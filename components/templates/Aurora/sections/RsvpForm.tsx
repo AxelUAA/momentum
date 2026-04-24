@@ -27,7 +27,7 @@ export function RsvpForm({
       if (guest.rsvp.status === "CONFIRMED") {
         setStatus("attending");
         setIsSubmitted(true);
-        setCompanions(guest.rsvp.companionsConfirmed);
+        setCompanions(guest.rsvp.confirmedGuests);
       } else if (guest.rsvp.status === "DECLINED") {
         setStatus("declined");
         setIsSubmitted(true);
@@ -64,7 +64,7 @@ export function RsvpForm({
     const res = await submitRsvp({
       guestId: guest.id,
       status: status === "attending" ? "CONFIRMED" : "DECLINED",
-      companionsConfirmed: status === "attending" ? companions : 0,
+      confirmedGuests: status === "attending" ? companions : 0,
       menuPreference: status === "attending" ? menu : undefined,
       message: message,
       eventSlug,
@@ -163,20 +163,20 @@ export function RsvpForm({
               animate={{ opacity: 1, y: 0 }}
             >
               <h3 className="font-heading text-2xl text-[var(--color-champagne)] mb-6 text-center">
-                ¡Te esperamos, {guest.fullName.split(' ')[0]}!
+                ¡Te esperamos, {guest.name.split(' ')[0]}!
               </h3>
               
               <div className="space-y-6">
                 <div>
                   <label className="block text-sm text-[#F4E3C5]/70 mb-2 uppercase tracking-wider">
-                    Pases adicionales ({guest.maxCompanions} max)
+                    Pases adicionales ({guest.allowedGuests} max)
                   </label>
                   <select 
                     className="w-full bg-[#0F1B2D] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[var(--color-champagne)]"
                     value={companions}
                     onChange={(e) => setCompanions(Number(e.target.value))}
                   >
-                    {[...Array(guest.maxCompanions + 1)].map((_, i) => (
+                    {[...Array(guest.allowedGuests + 1)].map((_, i) => (
                       <option key={i} value={i}>{i} acompañante{i !== 1 ? 's' : ''}</option>
                     ))}
                   </select>
@@ -237,7 +237,7 @@ export function RsvpForm({
               animate={{ opacity: 1, y: 0 }}
             >
               <h3 className="font-heading text-2xl text-[#F4E3C5] mb-4">
-                Te vamos a extrañar, {guest.fullName.split(' ')[0]}
+                Te vamos a extrañar, {guest.name.split(' ')[0]}
               </h3>
               <p className="text-[#F4E3C5]/60 mb-6">
                 Si deseas dejar un mensaje a los novios:

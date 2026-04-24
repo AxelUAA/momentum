@@ -81,7 +81,12 @@ async function main() {
     giftRegistry: {
       digitalEnvelope: { enabled: true, suggestedAmount: 1000 },
       liverpool: { enabled: true, eventCode: "12345678" }
-    }
+    },
+    client: {
+      name: "María González",
+      email: "maria.gonzalez@example.com",
+      phone: "+52 555 123 4567",
+    },
   };
 
   // Crear o actualizar el Evento
@@ -90,7 +95,7 @@ async function main() {
     update: {
       userId: user.id,
       templateId: template.id,
-      eventType: "WEDDING",
+      type: "WEDDING",
       tier: "COMPLETE",
       title: "María & Juan",
       eventDate: new Date("2026-06-14T17:00:00Z"),
@@ -122,7 +127,7 @@ async function main() {
       slug: "boda-maria-juan",
       userId: user.id,
       templateId: template.id,
-      eventType: "WEDDING",
+      type: "WEDDING",
       tier: "COMPLETE",
       title: "María & Juan",
       eventDate: new Date("2026-06-14T17:00:00Z"),
@@ -156,28 +161,71 @@ async function main() {
 
   // Crear invitados
   const guestsData = [
-    { fullName: "Juanito Pérez", uniqueToken: "abc123", maxCompanions: 1, groupTag: "amigos novio" },
-    { fullName: "Ana López", uniqueToken: "def456", maxCompanions: 2, groupTag: "familia novia" },
-    { fullName: "Carlos Ramírez", uniqueToken: "ghi789", maxCompanions: 0, groupTag: "amigos novia" }
+    { 
+      name: "Juanito Pérez", 
+      uniqueToken: "abc123", 
+      allowedGuests: 1, 
+      phone: "+52 555 111 2222", 
+      relationship: "FRIEND" as const, 
+      invitedBy: "GROOM" as const 
+    },
+    { 
+      name: "Ana López", 
+      uniqueToken: "def456", 
+      allowedGuests: 2, 
+      phone: "+52 555 333 4444", 
+      relationship: "FAMILY_BRIDE" as const, 
+      invitedBy: "BRIDE" as const 
+    },
+    { 
+      name: "Carlos Ramírez", 
+      uniqueToken: "ghi789", 
+      allowedGuests: 0, 
+      phone: "+52 555 555 6666", 
+      relationship: "FRIEND" as const, 
+      invitedBy: "BRIDE" as const 
+    }
   ];
 
   for (const g of guestsData) {
-    await prisma.guest.upsert({
+    const guest = await prisma.guest.upsert({
       where: { uniqueToken: g.uniqueToken },
       update: {
         eventId: event.id,
-        fullName: g.fullName,
-        maxCompanions: g.maxCompanions,
-        groupTag: g.groupTag
+        name: g.name,
+        allowedGuests: g.allowedGuests,
+        phone: g.phone,
+        relationship: g.relationship,
+        invitedBy: g.invitedBy
       },
       create: {
         uniqueToken: g.uniqueToken,
         eventId: event.id,
-        fullName: g.fullName,
-        maxCompanions: g.maxCompanions,
-        groupTag: g.groupTag
+        name: g.name,
+        allowedGuests: g.allowedGuests,
+        phone: g.phone,
+        relationship: g.relationship,
+        invitedBy: g.invitedBy
       }
     });
+
+    // Crear RSVP para Juanito
+    if (g.name === "Juanito Pérez") {
+      await prisma.rsvp.upsert({
+        where: { guestId: guest.id },
+        update: {
+          status: "CONFIRMED",
+          confirmedGuests: 1,
+          respondedAt: new Date()
+        },
+        create: {
+          guestId: guest.id,
+          status: "CONFIRMED",
+          confirmedGuests: 1,
+          respondedAt: new Date()
+        }
+      });
+    }
   }
 
   console.log(`Se crearon/actualizaron ${guestsData.length} invitados.`);

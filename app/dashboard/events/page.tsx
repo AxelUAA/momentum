@@ -7,6 +7,7 @@ import { es } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
 import { TIER_INFO } from "@/lib/event-sections-map";
+import { EventActions } from "@/components/dashboard/events/EventActions";
 
 export const dynamic = "force-dynamic";
 
@@ -61,114 +62,138 @@ export default async function EventsPage() {
         </div>
       </div>
 
-      {/* Table */}
+      {/* Events List */}
       <div className="overflow-hidden rounded-2xl border border-border bg-background/50 backdrop-blur-xl shadow-sm">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
-            <thead className="border-b border-border bg-muted/30 text-xs font-semibold uppercase text-muted-foreground">
-              <tr>
-                <th className="px-6 py-4">Evento</th>
-                <th className="px-6 py-4 text-center">Tipo</th>
-                <th className="px-6 py-4">Fecha</th>
-                <th className="px-6 py-4 text-center">Tier</th>
-                <th className="px-6 py-4 text-center">Status</th>
-                <th className="px-6 py-4 text-center">Invitados</th>
-                <th className="px-6 py-4 text-right">Acciones</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border/50">
-              {events.length === 0 ? (
-                <tr>
-                  <td colSpan={7} className="px-6 py-20 text-center">
-                    <div className="flex flex-col items-center gap-3">
-                      <div className="rounded-full bg-muted p-4">
-                        <Plus className="h-8 w-8 text-muted-foreground" />
-                      </div>
-                      <h3 className="text-lg font-medium">No hay eventos aún</h3>
-                      <p className="text-sm text-muted-foreground">Crea tu primer evento para empezar.</p>
-                      <Link href="/dashboard/events/new" className={cn(buttonVariants({ variant: "outline" }), "mt-2")}>
-                        Empezar ahora
-                      </Link>
-                    </div>
-                  </td>
-                </tr>
-              ) : (
-                events.map((event) => (
-                  <tr key={event.id} className="group hover:bg-muted/30 transition-colors">
-                    <td className="px-6 py-4">
-                      <div className="font-medium text-foreground">{event.title}</div>
-                      <div className="text-xs text-muted-foreground font-mono">/e/{event.slug}</div>
-                    </td>
-                    <td className="px-6 py-4 text-center">
-                      <span className="inline-flex items-center rounded-full bg-[var(--color-brand)]/10 px-2.5 py-0.5 text-xs font-medium text-[var(--color-brand)]">
-                        {event.eventType}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-muted-foreground whitespace-nowrap">
-                      {event.eventDate 
-                        ? format(new Date(event.eventDate), "d 'de' MMM, yyyy", { locale: es })
-                        : "Sin fecha"
-                      }
-                    </td>
-                    <td className="px-6 py-4 text-center">
-                      <span className={cn(
-                        "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium",
-                        event.tier === "LUXURY" ? "bg-amber-100 text-amber-700" :
-                        event.tier === "COMPLETE" ? "bg-[var(--color-brand)]/20 text-[var(--color-brand)]" :
-                        "bg-slate-100 text-slate-700"
-                      )}>
-                        {TIER_INFO[event.tier as keyof typeof TIER_INFO]?.label || event.tier}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-center">
-                      <span className={cn(
-                        "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium",
-                        event.status === "ACTIVE" ? "bg-green-100 text-green-700" :
-                        event.status === "DRAFT" ? "bg-yellow-100 text-yellow-700" :
-                        "bg-slate-100 text-slate-700"
-                      )}>
-                        {event.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-center text-muted-foreground font-medium">
-                      {event._count.guests}
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Link
-                          href={`/dashboard/events/${event.id}`}
-                          className="rounded-lg p-2 text-muted-foreground hover:bg-background hover:text-[var(--color-brand)] transition-colors shadow-sm ring-1 ring-border/50"
-                          title="Ver detalle"
-                        >
-                          <Eye className="h-4 w-4" />
-                        </Link>
-                        <Link
-                          href={`/dashboard/events/${event.id}/edit`}
-                          className="rounded-lg p-2 text-muted-foreground hover:bg-background hover:text-[var(--color-brand)] transition-colors shadow-sm ring-1 ring-border/50"
-                          title="Editar"
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </Link>
-                        <button
-                          className="rounded-lg p-2 text-muted-foreground hover:bg-background hover:text-[var(--color-brand)] transition-colors shadow-sm ring-1 ring-border/50"
-                          title="Duplicar"
-                        >
-                          <Copy className="h-4 w-4" />
-                        </button>
-                        <button
-                          className="rounded-lg p-2 text-muted-foreground hover:bg-background hover:text-destructive transition-colors shadow-sm ring-1 ring-border/50"
-                          title="Archivar"
-                        >
-                          <Archive className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </td>
+        {events.length === 0 ? (
+          <div className="px-6 py-20 text-center">
+            <div className="flex flex-col items-center gap-3">
+              <div className="rounded-full bg-muted p-4">
+                <Plus className="h-8 w-8 text-muted-foreground" />
+              </div>
+              <h3 className="text-lg font-medium">No hay eventos aún</h3>
+              <p className="text-sm text-muted-foreground">Crea tu primer evento para empezar.</p>
+              <Link href="/dashboard/events/new" className={cn(buttonVariants({ variant: "outline" }), "mt-2")}>
+                Empezar ahora
+              </Link>
+            </div>
+          </div>
+        ) : (
+          <>
+            {/* Desktop Table View */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-left text-sm">
+                <thead className="border-b border-border bg-muted/30 text-xs font-semibold uppercase text-muted-foreground">
+                  <tr>
+                    <th className="px-6 py-4">Evento</th>
+                    <th className="px-6 py-4 text-center">Tipo</th>
+                    <th className="px-6 py-4">Fecha</th>
+                    <th className="px-6 py-4 text-center">Tier</th>
+                    <th className="px-6 py-4 text-center">Status</th>
+                    <th className="px-6 py-4 text-center">Invitados</th>
+                    <th className="px-6 py-4 text-right">Acciones</th>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+                </thead>
+                <tbody className="divide-y divide-border/50">
+                  {events.map((event) => (
+                    <tr key={event.id} className="group hover:bg-muted/30 transition-colors">
+                      <td className="px-6 py-4">
+                        <div className="font-bold text-foreground">{event.title}</div>
+                        <div className="text-xs text-muted-foreground font-mono">/e/{event.slug}</div>
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        <span className="inline-flex items-center rounded-full bg-[var(--color-brand)]/10 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[var(--color-brand)]">
+                          {event.type}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-muted-foreground whitespace-nowrap">
+                        {event.eventDate 
+                          ? format(new Date(event.eventDate), "d 'de' MMM, yyyy", { locale: es })
+                          : "Sin fecha"
+                        }
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        <span className={cn(
+                          "inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider",
+                          event.tier === "LUXURY" ? "bg-amber-100 text-amber-700" :
+                          event.tier === "COMPLETE" ? "bg-[var(--color-brand)]/20 text-[var(--color-brand)]" :
+                          "bg-slate-100 text-slate-700"
+                        )}>
+                          {TIER_INFO[event.tier as keyof typeof TIER_INFO]?.label || event.tier}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        <span className={cn(
+                          "inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider",
+                          event.status === "ACTIVE" ? "bg-green-100 text-green-700" :
+                          event.status === "DRAFT" ? "bg-yellow-100 text-yellow-700" :
+                          "bg-slate-100 text-slate-700"
+                        )}>
+                          {event.status}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-center text-muted-foreground font-bold">
+                        {event._count.guests}
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <EventActions 
+                          eventId={event.id} 
+                          eventTitle={event.title}
+                          eventSlug={event.slug}
+                        />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile Cards View */}
+            <div className="md:hidden divide-y divide-border/50">
+              {events.map((event) => (
+                <div key={event.id} className="p-4 space-y-4 bg-background/30">
+                  <div className="flex items-start justify-between">
+                    <div>
+                       <Link href={`/dashboard/events/${event.id}`} className="font-bold text-lg hover:text-[var(--color-brand)] transition-colors">
+                          {event.title}
+                       </Link>
+                       <div className="text-xs text-muted-foreground font-mono mt-0.5">/e/{event.slug}</div>
+                    </div>
+                    <span className={cn(
+                      "inline-flex items-center rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider",
+                      event.status === "ACTIVE" ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"
+                    )}>
+                      {event.status}
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3 text-xs">
+                    <div className="rounded-xl border border-border bg-background/50 p-3">
+                       <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">Fecha</p>
+                       <p className="font-medium">
+                          {event.eventDate ? format(new Date(event.eventDate), "d 'de' MMM") : "—"}
+                       </p>
+                    </div>
+                    <div className="rounded-xl border border-border bg-background/50 p-3 text-center">
+                       <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">Invitados</p>
+                       <p className="font-black text-[var(--color-midnight)]">{event._count.guests}</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between pt-2">
+                     <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-brand)] bg-[var(--color-brand)]/10 px-2 py-1 rounded-md">
+                        {event.type}
+                     </span>
+                     <EventActions 
+                        eventId={event.id} 
+                        eventTitle={event.title}
+                        eventSlug={event.slug}
+                      />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

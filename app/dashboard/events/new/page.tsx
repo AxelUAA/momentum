@@ -33,7 +33,7 @@ export default function NewEventWizard() {
   const methods = useForm<EventFormData>({
     resolver: zodResolver(eventFormSchema),
     defaultValues: {
-      eventType: "WEDDING",
+      type: "WEDDING",
       tier: "ESSENTIAL",
       timeline: [],
       giftRegistry: [],
@@ -65,7 +65,7 @@ export default function NewEventWizard() {
   const next = async () => {
     // Validar solo los campos del paso actual (simplificado por ahora)
     let fieldsToValidate: any[] = [];
-    if (currentStep === 1) fieldsToValidate = ["title", "slug", "eventType", "tier", "eventDate", "clientEmail", "clientName"];
+    if (currentStep === 1) fieldsToValidate = ["title", "slug", "type", "tier", "eventDate", "clientEmail", "clientName"];
     
     const isValid = await trigger(fieldsToValidate);
     if (isValid) {
@@ -84,9 +84,9 @@ export default function NewEventWizard() {
     setError(null);
     try {
       const result = await createEvent(data);
-      if (result.success) {
+      if (result.success && result.event) {
         localStorage.removeItem("event-draft");
-        router.push(`/dashboard/events/${result.eventId}`);
+        router.push(`/dashboard/events/${result.event.id}`);
       } else {
         setError(result.error || "Ocurrió un error inesperado");
       }
@@ -109,29 +109,37 @@ export default function NewEventWizard() {
             <div key={idx} className="relative flex flex-col items-center gap-2">
               <div
                 className={cn(
-                  "flex h-10 w-10 items-center justify-center rounded-full border-2 transition-all duration-300 z-10",
+                  "flex h-8 w-8 md:h-10 md:w-10 items-center justify-center rounded-full border-2 transition-all duration-300 z-10 text-xs md:text-sm font-bold",
                   currentStep > idx + 1 ? "bg-green-500 border-green-500 text-white" :
                   currentStep === idx + 1 ? "bg-[var(--color-brand)] border-[var(--color-brand)] text-[var(--color-midnight)] shadow-[0_0_15px_rgba(212,175,122,0.4)]" :
                   "bg-background border-border text-muted-foreground"
                 )}
               >
-                {currentStep > idx + 1 ? <Check className="h-5 w-5" /> : idx + 1}
+                {currentStep > idx + 1 ? <Check className="h-4 w-4 md:h-5 md:w-5" /> : idx + 1}
               </div>
               <span className={cn(
-                "absolute top-12 whitespace-nowrap text-[10px] font-bold uppercase tracking-wider transition-colors",
+                "absolute top-10 md:top-12 whitespace-nowrap text-[9px] md:text-[10px] font-bold uppercase tracking-wider transition-colors hidden sm:block",
                 currentStep === idx + 1 ? "text-[var(--color-midnight)]" : "text-muted-foreground"
               )}>
                 {step.title}
               </span>
+              {/* Mobile current step indicator */}
+              {currentStep === idx + 1 && (
+                <span className="absolute top-10 whitespace-nowrap text-[9px] font-bold uppercase text-[var(--color-midnight)] sm:hidden">
+                  {step.title}
+                </span>
+              )}
             </div>
           ))}
         </div>
 
         {/* Form Container */}
-        <div className="rounded-3xl border border-border bg-background p-8 md:p-12 shadow-xl shadow-slate-200/50 dark:shadow-none">
+        <div className="rounded-3xl border border-border bg-background p-5 md:p-12 shadow-xl shadow-slate-200/50 dark:shadow-none">
           <FormProvider {...methods}>
             <form onSubmit={handleSubmit(onSubmit)}>
-              <ActiveStepComponent />
+              <div className="min-h-[400px]">
+                <ActiveStepComponent />
+              </div>
 
               {error && (
                 <div className="mt-8 rounded-xl bg-destructive/10 p-4 text-center text-sm font-medium text-destructive">
@@ -140,12 +148,12 @@ export default function NewEventWizard() {
               )}
 
               {/* Navigation Buttons */}
-              <div className="mt-12 flex items-center justify-between border-t border-border pt-8">
+              <div className="mt-12 flex flex-col-reverse gap-4 sm:flex-row sm:items-center sm:justify-between border-t border-border pt-8">
                 <button
                   type="button"
                   onClick={prev}
                   disabled={currentStep === 1 || isSubmitting}
-                  className="flex items-center gap-2 rounded-xl border border-border px-6 py-3 text-sm font-bold transition-all hover:bg-muted disabled:opacity-30"
+                  className="flex items-center justify-center gap-2 rounded-xl border border-border px-8 py-4 text-sm font-bold transition-all hover:bg-muted disabled:opacity-30 w-full sm:w-auto"
                 >
                   <ChevronLeft className="h-4 w-4" />
                   Anterior
@@ -155,7 +163,7 @@ export default function NewEventWizard() {
                   <button
                     type="button"
                     onClick={next}
-                    className="flex items-center gap-2 rounded-xl bg-[var(--color-midnight)] px-8 py-3 text-sm font-bold text-[var(--color-cream)] transition-all hover:scale-105 active:scale-95"
+                    className="flex items-center justify-center gap-2 rounded-xl bg-[var(--color-midnight)] px-10 py-4 text-sm font-bold text-[var(--color-cream)] transition-all hover:scale-[1.02] active:scale-[0.98] w-full sm:w-auto shadow-lg shadow-black/10"
                   >
                     Siguiente
                     <ChevronRight className="h-4 w-4" />
@@ -164,9 +172,9 @@ export default function NewEventWizard() {
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="shimmer flex items-center gap-2 rounded-xl border-none px-10 py-3 text-sm font-bold text-[var(--color-midnight)] transition-all hover:scale-105 active:scale-95 disabled:opacity-50"
+                    className="flex items-center justify-center gap-2 rounded-xl bg-[var(--color-brand)] px-10 py-4 text-sm font-bold text-[var(--color-midnight)] transition-all hover:scale-[1.02] active:scale-[0.98] w-full sm:w-auto shadow-lg shadow-[var(--color-brand)]/20 disabled:opacity-50"
                   >
-                    {isSubmitting ? "Creando..." : "Crear Evento"}
+                    {isSubmitting ? "Creando..." : "Crear evento"}
                     <Check className="h-4 w-4" />
                   </button>
                 )}

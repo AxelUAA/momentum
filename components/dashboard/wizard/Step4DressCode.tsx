@@ -7,47 +7,55 @@ export function Step4DressCode() {
   const { register } = useFormContext<EventFormData>();
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="space-y-6">
-        <div className="flex items-center gap-2">
-          <Shirt className="h-5 w-5 text-[var(--color-brand)]" />
-          <h3 className="text-lg font-semibold">Código de Vestimenta</h3>
+    <div className="space-y-12 animate-in fade-in slide-in-from-bottom-6 duration-700">
+      <div className="space-y-8">
+        <div className="flex items-center gap-4 border-b border-black/5 pb-6">
+          <div className="rounded-2xl bg-[var(--color-brand)] text-white p-3 shadow-lg shadow-[var(--color-brand)]/20">
+            <Shirt className="h-6 w-6" />
+          </div>
+          <div className="space-y-1">
+            <h3 className="text-xl font-black text-[var(--color-midnight)] tracking-tight">Código de Vestimenta</h3>
+            <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-midnight)]/30">Instrucciones de estilo</p>
+          </div>
         </div>
         
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Estilo</label>
+        <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
+          <div className="space-y-3">
+            <label className="text-xs font-bold text-[var(--color-midnight)]/60 uppercase tracking-wider ml-1">Estilo</label>
             <input
               {...register("dressCode.title")}
               placeholder="Ej: Elegante Playero, Formal, Black Tie"
-              className="h-11 w-full rounded-xl border border-border bg-background px-4 text-sm"
+              className="h-14 w-full rounded-2xl border border-black/5 bg-white/50 px-6 text-sm font-medium focus:bg-white focus:ring-4 focus:ring-[var(--color-brand)]/10 transition-all outline-none"
             />
           </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Descripción / Notas</label>
+          <div className="space-y-3">
+            <label className="text-xs font-bold text-[var(--color-midnight)]/60 uppercase tracking-wider ml-1">Descripción / Notas</label>
             <input
               {...register("dressCode.description")}
-              placeholder="Ej: Recomendamos evitar tacones finos por el césped."
-              className="h-11 w-full rounded-xl border border-border bg-background px-4 text-sm"
+              placeholder="Ej: Recomendamos evitar tacones finos."
+              className="h-14 w-full rounded-2xl border border-black/5 bg-white/50 px-6 text-sm font-medium focus:bg-white focus:ring-4 focus:ring-[var(--color-brand)]/10 transition-all outline-none"
             />
           </div>
         </div>
 
-        <div className="space-y-4">
-          <label className="text-sm font-medium">Moodboard de inspiración (URLs de imágenes)</label>
-          <p className="text-xs text-muted-foreground">
-            En esta fase, añade URLs directas de imágenes (ej. de Unsplash o Pinterest). 
-            La carga de archivos estará disponible en la Fase 4.
-          </p>
+        <div className="space-y-6">
+          <div className="space-y-1">
+            <label className="text-xs font-bold text-[var(--color-midnight)]/60 uppercase tracking-wider ml-1">Moodboard de inspiración</label>
+            <p className="text-[10px] font-medium text-[var(--color-midnight)]/30 ml-1">
+              URLs de imágenes (Pinterest, Unsplash, etc.)
+            </p>
+          </div>
           <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
             {[0, 1, 2, 3].map((i) => (
-              <div key={i} className="group relative aspect-[3/4] overflow-hidden rounded-2xl border-2 border-dashed border-border bg-muted/30 transition-colors hover:border-[var(--color-brand)]/50">
-                <div className="flex h-full flex-col items-center justify-center gap-2 p-4 text-center">
-                  <ImageIcon className="h-6 w-6 text-muted-foreground group-hover:text-[var(--color-brand)]" />
+              <div key={i} className="group relative aspect-[3/4] overflow-hidden rounded-[2rem] border border-black/5 bg-white/50 transition-all duration-500 hover:bg-white hover:shadow-2xl hover:shadow-black/5">
+                <div className="flex h-full flex-col items-center justify-center gap-4 p-6 text-center">
+                  <div className="rounded-2xl bg-black/5 p-3 text-[var(--color-midnight)]/20 group-hover:bg-[var(--color-brand)]/10 group-hover:text-[var(--color-brand)] transition-colors duration-500">
+                    <ImageIcon className="h-6 w-6" />
+                  </div>
                   <input
                     {...register(`dressCode.inspirationImages.${i}` as const)}
                     placeholder="URL de imagen"
-                    className="mt-2 w-full bg-transparent text-[10px] text-center focus:outline-none"
+                    className="w-full bg-transparent text-[10px] font-bold text-center focus:outline-none placeholder:text-[var(--color-midnight)]/20"
                   />
                 </div>
               </div>
@@ -56,5 +64,6 @@ export function Step4DressCode() {
         </div>
       </div>
     </div>
+
   );
 }

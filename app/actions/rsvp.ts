@@ -7,7 +7,7 @@ import type { RsvpStatus } from "@prisma/client"
 type SubmitRsvpInput = {
   guestId: string
   status: RsvpStatus
-  companionsConfirmed: number
+  confirmedGuests: number
   menuPreference?: string
   dietaryRestrictions?: string
   message?: string
@@ -28,14 +28,14 @@ export async function submitRsvp(input: SubmitRsvpInput) {
       create: {
         guestId: input.guestId,
         status: input.status,
-        companionsConfirmed: input.companionsConfirmed,
+        confirmedGuests: input.confirmedGuests,
         dietaryRestrictions: input.dietaryRestrictions,
         message: notes || null,
         respondedAt: new Date()
       },
       update: {
         status: input.status,
-        companionsConfirmed: input.companionsConfirmed,
+        confirmedGuests: input.confirmedGuests,
         dietaryRestrictions: input.dietaryRestrictions,
         message: notes || null,
         respondedAt: new Date()

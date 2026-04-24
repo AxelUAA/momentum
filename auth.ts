@@ -8,16 +8,27 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   adapter: PrismaAdapter(prisma),
   session: { strategy: "jwt" },
   callbacks: {
-    ...authConfig.callbacks,
+    async session({ session, token }) {
+      if (session.user) {
+        session.user.id = token.id as string;
+        session.user.role = token.role as "ADMIN" | "USER";
+      }
+      return session;
+    },
     async jwt({ token, user }) {
-      if (user?.id) token.sub = user.id;
-      // Refresh role from DB on every token creation/refresh
-      if (token.sub) {
+      if (user) {
+        token.id = user.id;
+        token.role = (user as any).role;
+      } else if (token.sub) {
+        // Refresh role from DB if needed
         const dbUser = await prisma.user.findUnique({
           where: { id: token.sub },
           select: { role: true },
         });
-        if (dbUser) token.role = dbUser.role;
+        if (dbUser) {
+          token.id = token.sub;
+          token.role = dbUser.role;
+        }
       }
       return token;
     },

@@ -49,7 +49,7 @@ export default async function DashboardHome() {
       {/* Header */}
       <div>
         <h1 className="text-4xl font-bold text-[var(--color-midnight)] tracking-tight font-serif" style={{ fontFamily: "var(--font-fraunces), serif" }}>
-          Bienvenido, {userName} 👋
+          Bienvenido, {userName}
         </h1>
         <p className="mt-2 text-[var(--color-midnight)]/70">
           Aquí tienes un resumen de Momentum hoy
@@ -57,7 +57,7 @@ export default async function DashboardHome() {
       </div>
 
       {/* KPI Grid */}
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-6">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 md:gap-6">
         {kpis.map((kpi) => {
           const Icon = kpi.icon;
           return (
@@ -79,10 +79,13 @@ export default async function DashboardHome() {
 
       {/* Recent Events */}
       <div className="rounded-xl border border-black/5 bg-white shadow-sm overflow-hidden">
-        <div className="border-b border-black/5 px-6 py-5">
+        <div className="border-b border-black/5 px-6 py-5 flex items-center justify-between">
           <h2 className="text-lg font-semibold text-[var(--color-midnight)]">
             Últimos eventos creados
           </h2>
+          <Link href="/dashboard/events" className="text-xs font-bold uppercase tracking-wider text-[var(--color-brand)] hover:underline">
+            Ver todos
+          </Link>
         </div>
         
         {recentEvents.length === 0 ? (
@@ -94,77 +97,112 @@ export default async function DashboardHome() {
             <p className="mt-1 text-sm text-[var(--color-midnight)]/60 mb-6 max-w-sm">
               Cuando los usuarios creen eventos en la plataforma, aparecerán aquí.
             </p>
-            <button
-              className="rounded-lg bg-[var(--color-midnight)] px-4 py-2.5 text-sm font-medium text-[var(--color-cream)] opacity-50 cursor-not-allowed"
-              title="Disponible en Fase 2"
-              disabled
-            >
-              Crear tu primer evento
-            </button>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm text-[var(--color-midnight)]/80">
-              <thead className="bg-black/[0.02] text-xs uppercase text-[var(--color-midnight)]/60">
-                <tr>
-                  <th className="px-6 py-4 font-medium">Evento</th>
-                  <th className="px-6 py-4 font-medium">Fecha</th>
-                  <th className="px-6 py-4 font-medium">Invitados</th>
-                  <th className="px-6 py-4 font-medium">Status</th>
-                  <th className="px-6 py-4 font-medium text-right">Acciones</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-black/5">
-                {recentEvents.map((event) => (
-                  <tr key={event.id} className="hover:bg-black/[0.01]">
-                    <td className="px-6 py-4">
-                      <div className="font-medium text-[var(--color-midnight)]">
-                        {event.title}
-                      </div>
-                      <div className="text-xs text-[var(--color-midnight)]/60 mt-0.5">
-                        /e/{event.slug}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      {event.eventDate 
-                        ? new Date(event.eventDate).toLocaleDateString("es-MX", {
-                            year: "numeric",
-                            month: "short",
-                            day: "numeric",
-                          })
-                        : "Pendiente"
-                      }
-                    </td>
-                    <td className="px-6 py-4">
-                      {event._count.guests}
-                    </td>
-                    <td className="px-6 py-4">
-                      <span
-                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                          event.status === "ACTIVE"
-                            ? "bg-green-100 text-green-800"
-                            : event.status === "DRAFT"
-                            ? "bg-yellow-100 text-yellow-800"
-                            : "bg-gray-100 text-gray-800"
-                        }`}
-                      >
-                        {event.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <Link
-                        href={`/e/${event.slug}`}
-                        target="_blank"
-                        className="text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors"
-                      >
-                        Ver público
-                      </Link>
-                    </td>
+          <>
+            {/* Desktop Table View */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-left text-sm text-[var(--color-midnight)]/80">
+                <thead className="bg-black/[0.02] text-xs uppercase text-[var(--color-midnight)]/60">
+                  <tr>
+                    <th className="px-6 py-4 font-medium">Evento</th>
+                    <th className="px-6 py-4 font-medium">Fecha</th>
+                    <th className="px-6 py-4 font-medium text-center">Invitados</th>
+                    <th className="px-6 py-4 font-medium text-center">Status</th>
+                    <th className="px-6 py-4 font-medium text-right">Acciones</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="divide-y divide-black/5">
+                  {recentEvents.map((event) => (
+                    <tr key={event.id} className="hover:bg-black/[0.01]">
+                      <td className="px-6 py-4">
+                        <div className="font-medium text-[var(--color-midnight)]">
+                          {event.title}
+                        </div>
+                        <div className="text-xs text-[var(--color-midnight)]/60 mt-0.5">
+                          /e/{event.slug}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {event.eventDate 
+                          ? new Date(event.eventDate).toLocaleDateString("es-MX", {
+                              year: "numeric",
+                              month: "short",
+                              day: "numeric",
+                            })
+                          : "Pendiente"
+                        }
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        {event._count.guests}
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        <span
+                          className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
+                            event.status === "ACTIVE"
+                              ? "bg-green-100 text-green-800"
+                              : event.status === "DRAFT"
+                              ? "bg-yellow-100 text-yellow-800"
+                              : "bg-gray-100 text-gray-800"
+                          }`}
+                        >
+                          {event.status}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <Link
+                          href={`/dashboard/events/${event.id}`}
+                          className="text-xs font-bold uppercase tracking-widest text-[var(--color-brand)] hover:underline"
+                        >
+                          Gestionar
+                        </Link>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile Card View */}
+            <div className="md:hidden divide-y divide-black/5">
+              {recentEvents.map((event) => (
+                <Link 
+                  href={`/dashboard/events/${event.id}`}
+                  key={event.id} 
+                  className="flex flex-col p-4 hover:bg-black/[0.02] active:bg-black/[0.05] transition-colors"
+                >
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <h3 className="font-bold text-[var(--color-midnight)]">{event.title}</h3>
+                      <p className="text-xs text-[var(--color-midnight)]/50">/e/{event.slug}</p>
+                    </div>
+                    <span
+                      className={`inline-flex items-center rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-tighter ${
+                        event.status === "ACTIVE"
+                          ? "bg-green-100 text-green-800"
+                          : "bg-yellow-100 text-yellow-800"
+                      }`}
+                    >
+                      {event.status}
+                    </span>
+                  </div>
+                  <div className="mt-4 flex items-center justify-between text-xs text-[var(--color-midnight)]/60">
+                    <div className="flex items-center gap-3">
+                       <span className="flex items-center gap-1">
+                          <Calendar className="h-3 w-3" />
+                          {event.eventDate ? new Date(event.eventDate).toLocaleDateString("es-MX", { day: "numeric", month: "short" }) : "—"}
+                       </span>
+                       <span className="flex items-center gap-1">
+                          <Users className="h-3 w-3" />
+                          {event._count.guests}
+                       </span>
+                    </div>
+                    <span className="font-bold text-[var(--color-brand)]">Editar →</span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </>
         )}
       </div>
     </div>
