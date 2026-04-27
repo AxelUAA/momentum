@@ -11,6 +11,17 @@ import { EventActions } from "@/components/dashboard/events/EventActions";
 
 export const dynamic = "force-dynamic";
 
+const PAYMENT_BADGE: Record<
+  string,
+  { label: string; className: string }
+> = {
+  PAID: { label: "Pagado", className: "bg-emerald-100 text-emerald-700" },
+  PENDING_VOUCHER: { label: "Procesando", className: "bg-amber-100 text-amber-700" },
+  UNPAID: { label: "Sin pagar", className: "bg-red-50 text-red-700" },
+  EXPIRED: { label: "Expirado", className: "bg-red-100 text-red-700" },
+  REFUNDED: { label: "Reembolsado", className: "bg-slate-100 text-slate-700" },
+};
+
 export default async function EventsPage() {
   const session = await auth();
   
@@ -88,6 +99,7 @@ export default async function EventsPage() {
                     <th className="px-6 py-4 text-center">Tipo</th>
                     <th className="px-6 py-4">Fecha</th>
                     <th className="px-6 py-4 text-center">Tier</th>
+                    <th className="px-6 py-4 text-center">Pago</th>
                     <th className="px-6 py-4 text-center">Status</th>
                     <th className="px-6 py-4 text-center">Invitados</th>
                     <th className="px-6 py-4 text-right">Acciones</th>
@@ -122,6 +134,21 @@ export default async function EventsPage() {
                         </span>
                       </td>
                       <td className="px-6 py-4 text-center">
+                        {(() => {
+                          const badge = PAYMENT_BADGE[event.paymentStatus] ?? PAYMENT_BADGE.UNPAID;
+                          return (
+                            <span
+                              className={cn(
+                                "inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider",
+                                badge.className,
+                              )}
+                            >
+                              {badge.label}
+                            </span>
+                          );
+                        })()}
+                      </td>
+                      <td className="px-6 py-4 text-center">
                         <span className={cn(
                           "inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider",
                           event.status === "ACTIVE" ? "bg-green-100 text-green-700" :
@@ -135,10 +162,11 @@ export default async function EventsPage() {
                         {event._count.guests}
                       </td>
                       <td className="px-6 py-4 text-right">
-                        <EventActions 
-                          eventId={event.id} 
+                        <EventActions
+                          eventId={event.id}
                           eventTitle={event.title}
                           eventSlug={event.slug}
+                          paymentStatus={event.paymentStatus}
                         />
                       </td>
                     </tr>
@@ -180,13 +208,29 @@ export default async function EventsPage() {
                   </div>
 
                   <div className="flex items-center justify-between pt-2">
-                     <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-brand)] bg-[var(--color-brand)]/10 px-2 py-1 rounded-md">
-                        {event.type}
-                     </span>
-                     <EventActions 
-                        eventId={event.id} 
+                     <div className="flex items-center gap-2">
+                       <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-brand)] bg-[var(--color-brand)]/10 px-2 py-1 rounded-md">
+                          {event.type}
+                       </span>
+                       {(() => {
+                         const badge = PAYMENT_BADGE[event.paymentStatus] ?? PAYMENT_BADGE.UNPAID;
+                         return (
+                           <span
+                             className={cn(
+                               "inline-flex items-center rounded-md px-2 py-1 text-[10px] font-bold uppercase tracking-wider",
+                               badge.className,
+                             )}
+                           >
+                             {badge.label}
+                           </span>
+                         );
+                       })()}
+                     </div>
+                     <EventActions
+                        eventId={event.id}
                         eventTitle={event.title}
                         eventSlug={event.slug}
+                        paymentStatus={event.paymentStatus}
                       />
                   </div>
                 </div>

@@ -9,6 +9,7 @@ import {
   Calendar,
   Users,
   CreditCard,
+  Receipt,
   Settings,
   X,
   ExternalLink
@@ -21,6 +22,7 @@ const navItems = [
   { name: "Eventos", href: "/dashboard/events", icon: Calendar },
   { name: "Invitados", href: "/dashboard/guests", icon: Users },
   { name: "Ventas", href: "/dashboard/sales", icon: CreditCard },
+  { name: "Facturación", href: "/dashboard/billing", icon: Receipt },
   { name: "Configuración", href: "/dashboard/settings", icon: Settings },
 ];
 

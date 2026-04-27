@@ -20,7 +20,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         token.id = user.id;
         token.role = (user as any).role;
       } else if (token.sub) {
-        // Refresh role from DB if needed
+        // Refresh role from DB. Si el user ya no existe (db push / reset),
+        // limpiamos los campos para que requireUser/Admin falle limpio en el próximo
+        // request en lugar de apuntar a un id fantasma.
         const dbUser = await prisma.user.findUnique({
           where: { id: token.sub },
           select: { role: true },
@@ -28,6 +30,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         if (dbUser) {
           token.id = token.sub;
           token.role = dbUser.role;
+        } else {
+          delete token.id;
+          delete token.role;
         }
       }
       return token;

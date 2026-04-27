@@ -29,6 +29,31 @@ export default async function InvitationPage({ params }: PageProps) {
     notFound();
   }
 
+  if (event.paymentStatus !== "PAID") {
+    const messageByStatus: Record<string, string> = {
+      UNPAID: "Esta invitación está pendiente de pago. Contacta a quien te la envió.",
+      PENDING_VOUCHER: "Esta invitación se está procesando. Disponible en pocas horas.",
+      EXPIRED: "Esta invitación expiró por falta de pago.",
+    };
+
+    return (
+      <main className="min-h-[70vh] flex items-center justify-center px-4 py-12">
+        <div className="w-full max-w-2xl rounded-2xl border border-black/5 bg-white p-8 shadow-sm">
+          <h1
+            className="text-3xl font-bold text-[var(--color-midnight)] tracking-tight font-serif"
+            style={{ fontFamily: "var(--font-fraunces), serif" }}
+          >
+            Invitación no disponible
+          </h1>
+          <p className="mt-3 text-[var(--color-midnight)]/70">
+            {messageByStatus[event.paymentStatus] ??
+              "Esta invitación no está disponible por el momento."}
+          </p>
+        </div>
+      </main>
+    );
+  }
+
   // 2. Buscar invitado
   const guest = await prisma.guest.findUnique({
     where: { 

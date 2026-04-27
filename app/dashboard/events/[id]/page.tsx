@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { auth } from "@/auth";
 import Link from "next/link";
 import { 
@@ -13,6 +13,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { TIER_INFO } from "@/lib/event-sections-map";
 import { sectionLabel } from "@/lib/section-labels";
 import { DeleteEventDialog } from "@/components/dashboard/DeleteEventDialog";
+import { createOneTimeCheckout } from "@/app/actions/billing";
 
 export const dynamic = "force-dynamic";
 
@@ -53,6 +54,24 @@ export default async function EventDetailPage({ params }: { params: { id: string
     confirmed: event.guests.filter(g => g.rsvp?.status === "CONFIRMED").length,
     pending: event.guests.filter(g => !g.rsvp || g.rsvp.status === "PENDING").length,
   };
+
+  async function startOneTimePayment() {
+    "use server";
+    const result = await createOneTimeCheckout(id);
+    if (!result.success || !result.url) {
+      redirect(`/dashboard/events/${id}`);
+    }
+    redirect(result.url);
+  }
+
+  const paymentBadgeClass =
+    event.paymentStatus === "PAID"
+      ? "bg-green-100 text-green-700"
+      : event.paymentStatus === "PENDING_VOUCHER"
+        ? "bg-yellow-100 text-yellow-700"
+        : event.paymentStatus === "UNPAID"
+          ? "bg-red-100 text-red-700"
+          : "bg-gray-100 text-gray-700";
 
   return (
     <div className="space-y-8 p-6 md:p-8 animate-in fade-in duration-700">
@@ -111,6 +130,58 @@ export default async function EventDetailPage({ params }: { params: { id: string
             eventSlug={event.slug}
           />
         </div>
+      </div>
+
+      <div className="rounded-2xl border border-black/5 bg-white p-6 shadow-sm space-y-4">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-xs font-bold uppercase tracking-wider text-[var(--color-midnight)]/60">
+            Estado de pago
+          </span>
+          <span className={cn("rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider", paymentBadgeClass)}>
+            {event.paymentStatus}
+          </span>
+          {event.subscriptionId ? (
+            <span className="rounded-full bg-[var(--color-brand)]/20 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[var(--color-brand)]">
+              Cubierto por suscripción
+            </span>
+          ) : null}
+        </div>
+
+        {event.paymentStatus === "PAID" ? (
+          <div className="grid grid-cols-1 gap-2 text-sm text-[var(--color-midnight)]/70 sm:grid-cols-2">
+            <p>
+              Pagado el:{" "}
+              <span className="font-semibold text-[var(--color-midnight)]">
+                {event.paidAt ? format(new Date(event.paidAt), "d 'de' MMM yyyy", { locale: es }) : "—"}
+              </span>
+            </p>
+            <p>
+              Activo hasta:{" "}
+              <span className="font-semibold text-[var(--color-midnight)]">
+                {event.activeUntil
+                  ? format(new Date(event.activeUntil), "d 'de' MMM yyyy", { locale: es })
+                  : "—"}
+              </span>
+            </p>
+          </div>
+        ) : null}
+
+        {event.paymentStatus === "UNPAID" ? (
+          <form action={startOneTimePayment}>
+            <button
+              type="submit"
+              className="inline-flex rounded-lg bg-[var(--color-brand)] px-5 py-3 text-sm font-bold uppercase tracking-wider text-white hover:opacity-90"
+            >
+              Pagar ahora
+            </button>
+          </form>
+        ) : null}
+
+        {event.paymentStatus === "PENDING_VOUCHER" ? (
+          <p className="text-sm text-[var(--color-midnight)]/70">
+            Esperando confirmación del pago en OXXO/SPEI.
+          </p>
+        ) : null}
       </div>
 
       {/* KPI Cards */}
