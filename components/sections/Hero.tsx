@@ -9,9 +9,9 @@ import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { motion } from "motion/react";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, LayoutDashboard } from "lucide-react";
 
-export function Hero() {
+export function Hero({ isLoggedIn = false }: { isLoggedIn?: boolean }) {
   return (
     <section className="relative flex min-h-[90vh] w-full flex-col items-center justify-center overflow-hidden bg-background pt-20">
       {/* Effects Layers */}
@@ -29,7 +29,7 @@ export function Hero() {
                 <span className="flex h-2 w-2 rounded-full bg-[var(--color-champagne)] mr-2" />
                 La nueva era de invitaciones digitales
               </div>
-              
+
               <TextReveal
                 text="Donde cada momento merece ser celebrado"
                 className="font-heading text-5xl tracking-tight sm:text-6xl md:text-7xl lg:justify-start"
@@ -51,18 +51,29 @@ export function Hero() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 1 }}
             >
+              {isLoggedIn ? (
+                <Link
+                  href="/dashboard"
+                  className={cn(buttonVariants({ size: "lg" }), "shimmer h-12 rounded-full border-none px-8 text-base text-[var(--color-midnight)]")}
+                >
+                  <LayoutDashboard className="mr-2 h-4 w-4" />
+                  Ir a mi dashboard
+                </Link>
+              ) : (
+                <Link
+                  href="/dashboard/nueva-gratis"
+                  className={cn(buttonVariants({ size: "lg" }), "shimmer h-12 rounded-full border-none px-8 text-base text-[var(--color-midnight)]")}
+                >
+                  Crear mi invitación gratis
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              )}
               <Link
-                href="/login"
-                className={cn(buttonVariants({ size: "lg" }), "shimmer h-12 rounded-full border-none px-8 text-base text-[var(--color-midnight)]")}
+                href="/demo"
+                className={cn(buttonVariants({ variant: "outline", size: "lg" }), "group h-12 rounded-full border-[var(--color-champagne)]/40 px-8 text-base text-[var(--color-champagne)] backdrop-blur-sm transition-all hover:border-[var(--color-champagne)] hover:bg-[var(--color-champagne)]/10")}
               >
-                Crear mi invitación gratis
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
-              <Link
-                href="#templates"
-                className={cn(buttonVariants({ variant: "outline", size: "lg" }), "h-12 rounded-full px-8 text-base backdrop-blur-sm")}
-              >
-                Ver plantillas
+                ✨ Ver demo en vivo
+                <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
               </Link>
             </motion.div>
           </div>

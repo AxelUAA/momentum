@@ -5,38 +5,11 @@ import { CheckCircle2, Calendar, MapPin, User, Mail, Sparkles } from "lucide-rea
 import { TIER_INFO } from "@/lib/event-sections-map";
 import { sectionLabel } from "@/lib/section-labels";
 
-import { toast } from "sonner";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { createEvent } from "@/app/actions/events";
-
 export function Step6Review() {
-  const router = useRouter();
   const { watch } = useFormContext<EventFormData>();
   const values = watch();
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const tier = TIER_INFO[values.tier as keyof typeof TIER_INFO];
-
-  const handleCreate = async () => {
-    setIsSubmitting(true);
-    try {
-      const result = await createEvent(values);
-      if (result.success && result.event) {
-        toast.success("¡Evento creado exitosamente!");
-        localStorage.removeItem("event-draft");
-        router.push(`/dashboard/events/${result.event.id}`);
-      } else {
-        toast.error(result.error || "No se pudo crear el evento");
-        console.error("[Step6Review] Create failed:", result);
-      }
-    } catch (e) {
-      toast.error("Error inesperado. Revisa la consola.");
-      console.error("[Step6Review] Exception:", e);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -120,17 +93,6 @@ export function Step6Review() {
         </div>
       </div>
 
-      {/* Submit Button */}
-      <div className="flex justify-center pt-4">
-        <button
-          type="button"
-          onClick={handleCreate}
-          disabled={isSubmitting}
-          className="shimmer bg-[var(--color-midnight)] text-[var(--color-cream)] px-12 py-4 rounded-xl font-bold text-lg transition-all hover:scale-105 active:scale-95 disabled:opacity-50"
-        >
-          {isSubmitting ? "Creando..." : "Confirmar y Crear Evento"}
-        </button>
-      </div>
     </div>
   );
 }

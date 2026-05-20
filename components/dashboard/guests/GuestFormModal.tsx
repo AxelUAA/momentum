@@ -71,21 +71,21 @@ export default function GuestFormModal({ isOpen, onClose, guest, eventId }: Prop
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            className="relative w-full max-w-2xl rounded-[2.5rem] bg-white p-8 shadow-2xl md:p-12 overflow-y-auto max-h-[90vh] no-scrollbar"
+            className="relative max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-[2.5rem] border border-border bg-card p-8 text-card-foreground shadow-2xl no-scrollbar md:p-12"
           >
-            <button onClick={onClose} className="absolute right-8 top-8 rounded-full p-2 hover:bg-black/5 transition-all">
-              <X className="h-5 w-5 text-[var(--color-midnight)]/40" />
+            <button onClick={onClose} className="absolute right-8 top-8 rounded-full p-2 transition-all hover:bg-muted/60">
+              <X className="h-5 w-5 text-muted-foreground" />
             </button>
 
             <div className="mb-8 flex items-center gap-4">
-              <div className="rounded-2xl bg-[var(--color-brand)] p-3 text-white shadow-lg shadow-[var(--color-brand)]/20">
+              <div className="rounded-2xl bg-accent p-3 text-accent-foreground shadow-lg shadow-[var(--color-brand)]/20">
                 <User className="h-6 w-6" />
               </div>
               <div>
-                <h2 className="text-2xl font-black text-[var(--color-midnight)] tracking-tight">
+                <h2 className="text-2xl font-black tracking-tight">
                   {isEditing ? "Editar Invitado" : "Nuevo Invitado"}
                 </h2>
-                <p className="text-xs font-bold uppercase tracking-widest text-[var(--color-midnight)]/30">
+                <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
                   {isEditing ? "Modifica los datos del invitado" : "Completa los datos para el envío"}
                 </p>
               </div>
@@ -94,48 +94,48 @@ export default function GuestFormModal({ isOpen, onClose, guest, eventId }: Prop
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
               <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-[var(--color-midnight)]/30 ml-1">Nombre Completo</label>
+                  <label className="ml-1 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Nombre Completo</label>
                   <input 
                     {...register("name")}
                     placeholder="Ej: Juan Pérez"
-                    className="h-14 w-full rounded-2xl border border-black/5 bg-black/5 px-6 text-sm font-medium outline-none focus:bg-white focus:ring-4 focus:ring-[var(--color-brand)]/10 transition-all"
+                    className="h-14 w-full rounded-2xl border border-border bg-background px-6 text-sm font-medium text-foreground outline-none transition-all focus:bg-background focus:ring-4 focus:ring-[var(--color-brand)]/10"
                   />
                   {errors.name && <p className="text-[10px] font-bold text-rose-500 ml-1">{errors.name.message}</p>}
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-[var(--color-midnight)]/30 ml-1">Teléfono</label>
+                  <label className="ml-1 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Teléfono</label>
                   <input 
                     {...register("phone")}
                     placeholder="+52 555 123 4567"
-                    className="h-14 w-full rounded-2xl border border-black/5 bg-black/5 px-6 text-sm font-medium outline-none focus:bg-white focus:ring-4 focus:ring-[var(--color-brand)]/10 transition-all"
+                    className="h-14 w-full rounded-2xl border border-border bg-background px-6 text-sm font-medium text-foreground outline-none transition-all focus:bg-background focus:ring-4 focus:ring-[var(--color-brand)]/10"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-[var(--color-midnight)]/30 ml-1">Email</label>
+                  <label className="ml-1 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Email</label>
                   <input 
                     {...register("email")}
                     placeholder="correo@ejemplo.com"
-                    className="h-14 w-full rounded-2xl border border-black/5 bg-black/5 px-6 text-sm font-medium outline-none focus:bg-white focus:ring-4 focus:ring-[var(--color-brand)]/10 transition-all"
+                    className="h-14 w-full rounded-2xl border border-border bg-background px-6 text-sm font-medium text-foreground outline-none transition-all focus:bg-background focus:ring-4 focus:ring-[var(--color-brand)]/10"
                   />
                   {errors.email && <p className="text-[10px] font-bold text-rose-500 ml-1">{errors.email.message}</p>}
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-[var(--color-midnight)]/30 ml-1">Acompañantes Permitidos</label>
+                  <label className="ml-1 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Acompañantes Permitidos</label>
                   <input 
                     type="number"
                     {...register("allowedGuests")}
-                    className="h-14 w-full rounded-2xl border border-black/5 bg-black/5 px-6 text-sm font-medium outline-none focus:bg-white focus:ring-4 focus:ring-[var(--color-brand)]/10 transition-all"
+                    className="h-14 w-full rounded-2xl border border-border bg-background px-6 text-sm font-medium text-foreground outline-none transition-all focus:bg-background focus:ring-4 focus:ring-[var(--color-brand)]/10"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-[var(--color-midnight)]/30 ml-1">Relación</label>
+                  <label className="ml-1 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Relación</label>
                   <select 
                     {...register("relationship")}
-                    className="h-14 w-full rounded-2xl border border-black/5 bg-black/5 px-6 text-sm font-medium outline-none focus:bg-white focus:ring-4 focus:ring-[var(--color-brand)]/10 transition-all"
+                    className="h-14 w-full rounded-2xl border border-border bg-background px-6 text-sm font-medium text-foreground outline-none transition-all focus:bg-background focus:ring-4 focus:ring-[var(--color-brand)]/10"
                   >
                     <option value="">Seleccionar...</option>
                     <option value="FAMILY_BRIDE">Familia Novia</option>
@@ -148,10 +148,10 @@ export default function GuestFormModal({ isOpen, onClose, guest, eventId }: Prop
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-[var(--color-midnight)]/30 ml-1">Invitado Por</label>
+                  <label className="ml-1 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Invitado Por</label>
                   <select 
                     {...register("invitedBy")}
-                    className="h-14 w-full rounded-2xl border border-black/5 bg-black/5 px-6 text-sm font-medium outline-none focus:bg-white focus:ring-4 focus:ring-[var(--color-brand)]/10 transition-all"
+                    className="h-14 w-full rounded-2xl border border-border bg-background px-6 text-sm font-medium text-foreground outline-none transition-all focus:bg-background focus:ring-4 focus:ring-[var(--color-brand)]/10"
                   >
                     <option value="">Seleccionar...</option>
                     <option value="BRIDE">Novia</option>
@@ -162,21 +162,21 @@ export default function GuestFormModal({ isOpen, onClose, guest, eventId }: Prop
                 </div>
 
                 <div className="space-y-2 md:col-span-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-[var(--color-midnight)]/30 ml-1">Número de Mesa / Zona</label>
+                  <label className="ml-1 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Número de Mesa / Zona</label>
                   <input 
                     {...register("tableNumber")}
                     placeholder="Ej: Mesa 12, VIP, etc."
-                    className="h-14 w-full rounded-2xl border border-black/5 bg-black/5 px-6 text-sm font-medium outline-none focus:bg-white focus:ring-4 focus:ring-[var(--color-brand)]/10 transition-all"
+                    className="h-14 w-full rounded-2xl border border-border bg-background px-6 text-sm font-medium text-foreground outline-none transition-all focus:bg-background focus:ring-4 focus:ring-[var(--color-brand)]/10"
                   />
                 </div>
 
                 <div className="space-y-2 md:col-span-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-[var(--color-midnight)]/30 ml-1">Notas Internas (Admin)</label>
+                  <label className="ml-1 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Notas Internas (Admin)</label>
                   <textarea 
                     {...register("adminNotes")}
                     rows={3}
                     placeholder="Notas que solo verás tú..."
-                    className="w-full rounded-2xl border border-black/5 bg-black/5 p-6 text-sm font-medium outline-none focus:bg-white focus:ring-4 focus:ring-[var(--color-brand)]/10 transition-all resize-none"
+                    className="w-full resize-none rounded-2xl border border-border bg-background p-6 text-sm font-medium text-foreground outline-none transition-all focus:bg-background focus:ring-4 focus:ring-[var(--color-brand)]/10"
                   />
                 </div>
               </div>
@@ -185,13 +185,13 @@ export default function GuestFormModal({ isOpen, onClose, guest, eventId }: Prop
                 <button 
                   type="button" 
                   onClick={onClose}
-                  className="flex-1 rounded-full border border-black/5 bg-white py-4 text-sm font-bold text-[var(--color-midnight)] hover:bg-black/5 transition-all"
+                  className="flex-1 rounded-full border border-border bg-background py-4 text-sm font-bold text-foreground transition-all hover:bg-muted/60"
                 >
                   Cancelar
                 </button>
                 <button 
                   disabled={isSubmitting}
-                  className="flex-[2] flex items-center justify-center gap-2 rounded-full bg-[var(--color-midnight)] py-4 text-sm font-bold text-white shadow-xl shadow-[var(--color-midnight)]/10 hover:shadow-[var(--color-midnight)]/20 active:scale-95 transition-all disabled:opacity-50"
+                  className="flex-[2] flex items-center justify-center gap-2 rounded-full bg-primary py-4 text-sm font-bold text-primary-foreground shadow-xl shadow-black/10 transition-all hover:shadow-black/20 active:scale-95 disabled:opacity-50"
                 >
                   <Save className="h-4 w-4" />
                   {isSubmitting ? "Guardando..." : isEditing ? "Actualizar Invitado" : "Crear Invitado"}

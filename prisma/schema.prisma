@@ -23,6 +23,7 @@ model User {
   createdAt     DateTime      @default(now()) @map("created_at")
   updatedAt     DateTime      @updatedAt @map("updated_at")
   role          Role          @default(USER)
+  onboardingCompleted Boolean @default(false) @map("onboarding_completed")
   stripeCustomerId String?    @unique @map("stripe_customer_id")
   accounts      Account[]
   events        Event[]
@@ -117,11 +118,15 @@ model Event {
   coverImage      String?     @map("cover_image")
   tier            Tier        @default(ESSENTIAL)
   paymentStatus         PaymentStatus @default(UNPAID) @map("payment_status")
-  stripeCheckoutId      String?       @unique @map("stripe_checkout_id")
+  stripeCheckoutId      String?       @map("stripe_checkout_id")
   stripePaymentIntentId String?       @unique @map("stripe_payment_intent_id")
   paidAt                DateTime?     @map("paid_at")
   activeUntil           DateTime?     @map("active_until")
   subscriptionId        String?       @map("subscription_id")
+  clientToken           String?       @unique @map("client_token")
+  clientName            String?       @map("client_name")
+  clientEmail           String?       @map("client_email")
+  intakeNotes           String?       @map("intake_notes")
   activeSections  Json        @default("{}") @map("active_sections")
   template        Template    @relation(fields: [templateId], references: [id])
   user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -296,6 +301,7 @@ enum EventType {
 }
 
 enum Tier {
+  FREE
   EXPRESS
   ESSENTIAL
   COMPLETE
@@ -326,11 +332,11 @@ enum PaymentProvider {
 }
 
 enum PaymentStatus {
-  UNPAID          @map("PENDING")
-  PENDING_VOUCHER @map("PROCESSING")
-  PAID            @map("SUCCEEDED")
-  EXPIRED         @map("FAILED")
-  REFUNDED
+  UNPAID          @map("UNPAID")
+  PENDING_VOUCHER @map("PENDING_VOUCHER")
+  PAID            @map("PAID")
+  EXPIRED         @map("EXPIRED")
+  REFUNDED        @map("REFUNDED")
 }
 
 enum SubscriptionStatus {

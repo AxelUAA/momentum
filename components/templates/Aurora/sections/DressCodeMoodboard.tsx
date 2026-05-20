@@ -7,11 +7,15 @@ import Lightbox from "yet-another-react-lightbox";
 import "yet-another-react-lightbox/styles.css";
 import type { DressCode } from "@/types/event-settings";
 
-export function DressCodeMoodboard({ data }: { data: DressCode }) {
+export function DressCodeMoodboard({ data }: { data?: DressCode & { title?: string } }) {
   const [openIndex, setOpenIndex] = useState(-1);
 
+  // El form guarda como "title"; el tipo legacy usa "name" — aceptamos ambos
+  const label = data?.name || (data as any)?.title;
+  if (!data || !label) return null;
+
   // Imágenes placeholder por si el evento no tiene
-  const images = data.images?.length > 0 
+  const images = data.images?.length > 0
     ? data.images.map(src => ({ src, alt: "Dress Code" })) 
     : [
         { src: "https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=600&q=80", alt: "Dress Code 1" },
@@ -38,7 +42,7 @@ export function DressCodeMoodboard({ data }: { data: DressCode }) {
             Código de Vestimenta
           </p>
           <h2 className="font-heading text-5xl md:text-7xl text-[#F4E3C5] mb-6">
-            {data.name}
+            {label}
           </h2>
           <p className="text-[#F4E3C5]/60 max-w-md mx-auto md:mx-0 leading-relaxed">
             {data.description || "Hemos preparado un pequeño moodboard de inspiración para ayudarte a elegir tu atuendo. Nos encantaría que nos acompañes siguiendo este estilo."}

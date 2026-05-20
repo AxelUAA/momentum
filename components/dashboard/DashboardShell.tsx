@@ -7,12 +7,14 @@ import { Logo } from "@/components/ui/Logo";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-export function DashboardShell({ 
-  children, 
-  user 
-}: { 
-  children: React.ReactNode; 
-  user: any 
+export function DashboardShell({
+  children,
+  user,
+  subscription,
+}: {
+  children: React.ReactNode;
+  user: any;
+  subscription?: any;
 }) {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const pathname = usePathname();
@@ -23,10 +25,10 @@ export function DashboardShell({
   }, [pathname]);
 
   return (
-    <div className="flex min-h-screen bg-[#F2EDE4]">
+    <div className="flex min-h-screen bg-background">
       {/* Desktop sidebar */}
       <aside className="hidden md:block w-[260px] bg-[var(--color-midnight)] text-[var(--color-cream)] fixed h-screen z-20">
-        <Sidebar user={user} />
+        <Sidebar user={user} subscription={subscription} />
       </aside>
 
       {/* Mobile drawer */}
@@ -47,7 +49,7 @@ export function DashboardShell({
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
               className="md:hidden fixed left-0 top-0 w-[260px] h-screen bg-[var(--color-midnight)] text-[var(--color-cream)] z-[101] shadow-2xl overflow-y-auto"
             >
-              <Sidebar user={user} onClose={() => setIsMobileOpen(false)} />
+              <Sidebar user={user} subscription={subscription} onClose={() => setIsMobileOpen(false)} />
             </motion.aside>
           </>
         )}
@@ -56,13 +58,13 @@ export function DashboardShell({
       {/* Main content area */}
       <div className="flex-1 flex flex-col md:ml-[260px] min-h-screen">
         {/* Mobile header bar */}
-        <header className="md:hidden sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-black/5 px-4 h-16 flex items-center justify-between">
+        <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b border-border bg-background/90 px-4 backdrop-blur-md md:hidden">
           <div className="flex items-center gap-3">
             <button 
               onClick={() => setIsMobileOpen(true)} 
-              className="p-2 -ml-2 rounded-xl hover:bg-black/5 active:scale-95 transition-all"
+              className="-ml-2 rounded-xl p-2 transition-all hover:bg-muted/60 active:scale-95"
             >
-              <Menu className="w-6 h-6 text-[var(--color-midnight)]" />
+              <Menu className="h-6 w-6 text-foreground" />
             </button>
             <Link href="/dashboard">
               <Logo variant="onLight" className="h-6" />
@@ -71,14 +73,14 @@ export function DashboardShell({
           <div className="flex items-center gap-2">
             <Link 
               href="/" 
-              className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl border border-black/5 text-xs font-bold text-[var(--color-midnight)]/60 hover:bg-black/5 transition-all"
+              className="hidden items-center gap-2 rounded-xl border border-border px-3 py-1.5 text-xs font-bold text-muted-foreground transition-all hover:bg-muted/60 sm:flex"
             >
               <ExternalLink className="w-3.5 h-3.5" />
               Ver Landing
             </Link>
-            <button className="p-2 rounded-xl hover:bg-black/5 relative">
-               <Bell className="w-5 h-5 text-[var(--color-midnight)]" />
-               <span className="absolute top-2 right-2 w-2 h-2 bg-[var(--color-brand)] rounded-full border-2 border-white" />
+            <button className="relative rounded-xl p-2 hover:bg-muted/60">
+               <Bell className="h-5 w-5 text-foreground" />
+               <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-[var(--color-brand)] border-2 border-background" />
             </button>
           </div>
         </header>

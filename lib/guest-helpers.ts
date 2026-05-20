@@ -28,8 +28,8 @@ export const RSVP_STATUS_LABELS: Record<string, string> = {
 };
 
 export const RSVP_STATUS_COLORS: Record<string, string> = {
-  PENDING: "bg-gray-100 text-gray-700",
-  CONFIRMED: "bg-green-100 text-green-700",
-  DECLINED: "bg-red-100 text-red-700",
-  MAYBE: "bg-yellow-100 text-yellow-700",
+  PENDING: "badge-status-neutral",
+  CONFIRMED: "badge-status-success",
+  DECLINED: "badge-status-danger",
+  MAYBE: "badge-status-warning",
 };

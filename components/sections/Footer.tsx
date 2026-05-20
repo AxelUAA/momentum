@@ -29,23 +29,28 @@ export function Footer() {
             </nav>
           </div>
 
-          {/* Empresa */}
+          {/* Contacto */}
           <div className="flex flex-col gap-4">
-            <h4 className="font-semibold text-foreground">Empresa</h4>
-            <nav className="flex flex-col gap-3 text-sm text-muted-foreground">
-              <Link href="#" className="hover:text-[var(--color-champagne)] transition-colors">Nosotros</Link>
-              <Link href="#" className="hover:text-[var(--color-champagne)] transition-colors">Blog</Link>
-              <Link href="#" className="hover:text-[var(--color-champagne)] transition-colors">Contacto</Link>
-              <Link href="#" className="hover:text-[var(--color-champagne)] transition-colors">Partners</Link>
-            </nav>
+            <h4 className="font-semibold text-foreground">Contacto</h4>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              ¿Dudas? Escríbenos a{" "}
+              <a
+                href="mailto:axelinm11@gmail.com"
+                className="hover:text-[var(--color-champagne)] transition-colors"
+              >
+                hola@momentum.mx
+              </a>
+            </p>
           </div>
 
           {/* Legal & Redes */}
           <div className="flex flex-col gap-4">
             <h4 className="font-semibold text-foreground">Legal & Redes</h4>
             <nav className="flex flex-col gap-3 text-sm text-muted-foreground">
-              <Link href="#" className="hover:text-[var(--color-champagne)] transition-colors">Términos de servicio</Link>
-              <Link href="#" className="hover:text-[var(--color-champagne)] transition-colors">Privacidad</Link>
+              <Link href="/terminos" className="hover:text-[var(--color-champagne)] transition-colors">Términos y condiciones</Link>
+              <Link href="/privacidad" className="hover:text-[var(--color-champagne)] transition-colors">Aviso de privacidad</Link>
+              <Link href="/reembolso" className="hover:text-[var(--color-champagne)] transition-colors">Política de reembolso</Link>
+              <Link href="/cookies" className="hover:text-[var(--color-champagne)] transition-colors">Política de cookies</Link>
               <div className="mt-4 flex gap-4">
                 <a href="#" aria-label="Instagram" className="text-muted-foreground hover:text-[var(--color-champagne)] transition-colors">
                   <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="5" ry="5" /><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" /><line x1="17.5" y1="6.5" x2="17.51" y2="6.5" /></svg>

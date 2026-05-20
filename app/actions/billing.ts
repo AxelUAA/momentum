@@ -13,7 +13,9 @@ type BillingActionResult = {
 async function requireUser() {
   const session = await auth();
   if (!session?.user?.id) {
-    throw new Error("Unauthorized");
+    const error = new Error("User authentication failed");
+    console.error("[billing] Unauthorized access attempt:", { hasSession: !!session, userId: session?.user?.id });
+    throw error;
   }
   return session.user;
 }
@@ -68,7 +70,7 @@ export async function createOneTimeCheckout(eventId: string): Promise<BillingAct
     }
 
     const priceId =
-      event.tier === "LUXURY"
+      event.tier === "LUXURY" || event.tier === "COMPLETE"
         ? STRIPE_PRICES.invitacionPremium
         : STRIPE_PRICES.invitacionPro;
 
@@ -82,6 +84,13 @@ export async function createOneTimeCheckout(eventId: string): Promise<BillingAct
 
     // SPEI exige `customer:` (no acepta customer_email ni customer_creation).
     const stripeCustomerId = await ensureStripeCustomer(user.id);
+
+    // Fix: limpiar stripeCheckoutId anterior para permitir reintentos de checkout.
+    // El @unique en el campo causaba error si el cliente abandonaba y volvía a intentar.
+    await prisma.event.update({
+      where: { id: eventId },
+      data: { stripeCheckoutId: null },
+    });
 
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
@@ -182,6 +191,68 @@ export async function createSubscriptionCheckout(
     return {
       success: false,
       error: error instanceof Error ? error.message : "No se pudo crear el checkout",
+    };
+  }
+}
+
+export async function cancelSubscription(): Promise<BillingActionResult> {
+  try {
+    const user = await requireUser();
+
+    const subscription = await prisma.subscription.findUnique({
+      where: { userId: user.id },
+      select: { stripeSubscriptionId: true, status: true },
+    });
+
+    if (!subscription || !["ACTIVE", "TRIALING"].includes(subscription.status)) {
+      return { success: false, error: "No hay una suscripción activa para cancelar" };
+    }
+
+    await stripe.subscriptions.update(subscription.stripeSubscriptionId, {
+      cancel_at_period_end: true,
+    });
+
+    await prisma.subscription.update({
+      where: { userId: user.id },
+      data: { cancelAtPeriodEnd: true },
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("[cancelSubscription]", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "No se pudo cancelar la suscripción",
+    };
+  }
+}
+
+export async function forceCancelSubscription(): Promise<BillingActionResult> {
+  try {
+    const user = await requireUser();
+
+    const subscription = await prisma.subscription.findUnique({
+      where: { userId: user.id },
+      select: { stripeSubscriptionId: true, status: true },
+    });
+
+    if (!subscription || subscription.status === "CANCELED") {
+      return { success: false, error: "No hay una suscripción activa para cancelar" };
+    }
+
+    await stripe.subscriptions.cancel(subscription.stripeSubscriptionId);
+
+    await prisma.subscription.update({
+      where: { userId: user.id },
+      data: { status: "CANCELED", cancelAtPeriodEnd: false },
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("[forceCancelSubscription]", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "No se pudo cancelar la suscripción",
     };
   }
 }

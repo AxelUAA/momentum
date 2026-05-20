@@ -115,43 +115,43 @@ export default async function SalesPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-[var(--color-midnight)] tracking-tight">Ventas</h1>
-        <p className="mt-1 text-[var(--color-midnight)]/70">
+        <h1 className="text-3xl font-bold tracking-tight">Ventas</h1>
+        <p className="mt-1 text-muted-foreground">
           Resumen de cobros y actividad de Stripe
         </p>
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="rounded-xl border border-black/5 bg-white p-6 shadow-sm">
-          <div className="flex items-center gap-3 text-[var(--color-midnight)]/60">
+        <div className="rounded-xl border border-border bg-card p-6 text-card-foreground shadow-sm">
+          <div className="flex items-center gap-3 text-muted-foreground">
             <CreditCard className="h-5 w-5" />
             <span className="text-sm font-medium">Total recaudado</span>
           </div>
-          <p className="mt-4 text-3xl font-semibold text-[var(--color-midnight)]">
+          <p className="mt-4 text-3xl font-semibold">
             {mxnFromCents(totalCollected)}
           </p>
         </div>
 
-        <div className="rounded-xl border border-black/5 bg-white p-6 shadow-sm">
-          <div className="flex items-center gap-3 text-[var(--color-midnight)]/60">
+        <div className="rounded-xl border border-border bg-card p-6 text-card-foreground shadow-sm">
+          <div className="flex items-center gap-3 text-muted-foreground">
             <Calendar className="h-5 w-5" />
             <span className="text-sm font-medium">Eventos vendidos</span>
           </div>
-          <p className="mt-4 text-3xl font-semibold text-[var(--color-midnight)]">{soldEvents}</p>
-          <p className="mt-1 text-xs text-[var(--color-midnight)]/60">
+          <p className="mt-4 text-3xl font-semibold">{soldEvents}</p>
+          <p className="mt-1 text-xs text-muted-foreground">
             Mes actual: {paidEventsThisMonth} · Mes anterior: {paidEventsPrevMonth}
           </p>
         </div>
 
-        <div className="rounded-xl border border-black/5 bg-white p-6 shadow-sm sm:col-span-2">
-          <div className="flex items-center gap-3 text-[var(--color-midnight)]/60">
+        <div className="rounded-xl border border-border bg-card p-6 text-card-foreground shadow-sm sm:col-span-2">
+          <div className="flex items-center gap-3 text-muted-foreground">
             <TrendingUp className="h-5 w-5" />
             <span className="text-sm font-medium">Subscription MRR</span>
           </div>
-          <p className="mt-4 text-3xl font-semibold text-[var(--color-midnight)]">
+          <p className="mt-4 text-3xl font-semibold">
             {mxnFromCents(subscriptionMrr)}
           </p>
-          <p className="mt-1 text-xs text-[var(--color-midnight)]/60">
+          <p className="mt-1 text-xs text-muted-foreground">
             {subscription
               ? `Plan ${subscription.plan} · Estado ${subscription.status}`
               : "Sin suscripción activa"}
@@ -159,21 +159,21 @@ export default async function SalesPage() {
         </div>
       </div>
 
-      <div className="rounded-xl border border-black/5 bg-white shadow-sm overflow-hidden">
-        <div className="border-b border-black/5 px-6 py-5">
-          <h2 className="text-lg font-semibold text-[var(--color-midnight)]">Últimas transacciones</h2>
+      <div className="overflow-hidden rounded-xl border border-border bg-card text-card-foreground shadow-sm">
+        <div className="border-b border-border px-6 py-5">
+          <h2 className="text-lg font-semibold">Últimas transacciones</h2>
         </div>
         {logs.length === 0 ? (
           <div className="flex min-h-[260px] flex-col items-center justify-center p-8 text-center">
-            <p className="text-lg font-medium text-[var(--color-midnight)]">Aún no hay ventas</p>
-            <p className="mt-1 text-sm text-[var(--color-midnight)]/60">
+            <p className="text-lg font-medium">Aún no hay ventas</p>
+            <p className="mt-1 text-sm text-muted-foreground">
               Cuando recibas pagos por Stripe, aparecerán aquí.
             </p>
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm text-[var(--color-midnight)]/80">
-              <thead className="bg-black/[0.02] text-xs uppercase text-[var(--color-midnight)]/60">
+            <table className="w-full text-left text-sm">
+              <thead className="bg-muted/40 text-xs uppercase text-muted-foreground">
                 <tr>
                   <th className="px-6 py-4 font-medium">Fecha</th>
                   <th className="px-6 py-4 font-medium">Tipo</th>
@@ -182,7 +182,7 @@ export default async function SalesPage() {
                   <th className="px-6 py-4 font-medium">Evento</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-black/5">
+              <tbody className="divide-y divide-border">
                 {logs.map((log) => {
                   const linkedEvent = log.eventId ? eventsMap.get(log.eventId) : null;
                   return (
@@ -206,7 +206,7 @@ export default async function SalesPage() {
                             {linkedEvent.title}
                           </Link>
                         ) : (
-                          <span className="text-[var(--color-midnight)]/50">—</span>
+                          <span className="text-muted-foreground">—</span>
                         )}
                       </td>
                     </tr>

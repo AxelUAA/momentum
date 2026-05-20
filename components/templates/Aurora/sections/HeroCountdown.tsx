@@ -83,16 +83,18 @@ const FloralSVG = ({ className }: { className?: string }) => (
   </svg>
 );
 
+function formatEventDate(raw: Date | string | null | undefined): string {
+  if (!raw) return "FECHA POR CONFIRMAR";
+  const d = typeof raw === "string" ? new Date(raw) : raw;
+  if (isNaN(d.getTime())) return "FECHA POR CONFIRMAR";
+  // timeZone: "UTC" evita que fechas date-only pierdan un día por zona horaria
+  return new Intl.DateTimeFormat("es-MX", {
+    day: "numeric", month: "long", year: "numeric", timeZone: "UTC",
+  }).format(d).toUpperCase();
+}
+
 export function HeroCountdown({ event }: { event: any }) {
-  // Formatear la fecha ej: "14 JUNIO 2026"
-  const dateObj = new Date(event.eventDate);
-  const formattedDate = dateObj
-    .toLocaleDateString("es-MX", {
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-    })
-    .toUpperCase();
+  const formattedDate = formatEventDate(event.eventDate);
 
   return (
     <section className="relative flex min-h-[90vh] md:min-h-screen w-full flex-col items-center justify-center overflow-hidden px-4 py-20 text-center">
@@ -178,7 +180,7 @@ export function HeroCountdown({ event }: { event: any }) {
           transition={{ duration: 1, delay: 0.8 }}
           className="w-full"
         >
-          <Countdown targetDate={event.eventDate} />
+          {event.eventDate && <Countdown targetDate={event.eventDate} />}
         </motion.div>
       </div>
     </section>

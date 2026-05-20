@@ -1,27 +1,104 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { auth } from "@/auth";
 import { AuroraTemplate } from "@/components/templates/Aurora";
+import { ConfettiTemplate } from "@/components/templates/Confetti";
+import { BloomTemplate } from "@/components/templates/Bloom";
+import { NubeTemplate } from "@/components/templates/Nube";
+
+import type { Metadata } from "next";
 
 interface PageProps {
-  params: Promise<{
-    slug: string;
-  }>;
+  params: Promise<{ slug: string }>;
+  searchParams: Promise<{ preview?: string }>;
 }
 
-export default async function PublicInvitationPage({ params }: PageProps) {
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
+  
+  const event = await prisma.event.findUnique({
+    where: { slug: slug },
+    select: { title: true, coverImage: true, type: true }
+  });
+
+  if (!event) return { title: "Invitación no encontrada | Momentum" };
+
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_BASE_URL || "https://momentuminvites.com";
+  
+  const TYPE_LABELS: Record<string, string> = {
+    WEDDING: "Nuestra Boda",
+    XV: "Mis XV Años",
+    BIRTHDAY: "Mi Cumpleaños",
+    CORPORATE: "Evento",
+    BAPTISM: "Bautizo",
+    GRADUATION: "Graduación",
+    BABY_SHOWER: "Baby Shower",
+  };
+  
+  const eventType = TYPE_LABELS[event.type] || "Evento Especial";
+  const title = event.title;
+  const description = `Estás invitado a este gran ${eventType.toLowerCase()}. Haz clic para ver todos los detalles de la invitación.`;
+  const image = event.coverImage || `${baseUrl}/og-default.png`;
+
+  return {
+    title: `${title} | Invitación`,
+    description,
+    openGraph: {
+      title,
+      description,
+      url: `${baseUrl}/e/${slug}`,
+      siteName: "Momentum Invites",
+      images: [
+        {
+          url: image,
+          width: 1200,
+          height: 630,
+          alt: title,
+        },
+      ],
+      locale: "es_MX",
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [image],
+    },
+  };
+}
+
+export default async function PublicInvitationPage({ params, searchParams }: PageProps) {
+  const { slug } = await params;
+  const { preview } = await searchParams;
 
   // 1. Buscar evento (puede ser ACTIVE o DRAFT para preview del admin)
   const event = await prisma.event.findUnique({
     where: { slug: slug },
-    include: { 
-      template: true, 
-      user: true 
+    include: {
+      template: true,
+      user: true
     }
   });
 
   if (!event) {
     notFound();
+  }
+
+  // Si el evento no está activo, solo el ADMIN, el creador autenticado,
+  // o el titular del portal (clientToken en ?preview=) pueden verlo
+  if (event.status !== "ACTIVE") {
+    const isPortalPreview = preview && event.clientToken && preview === event.clientToken;
+
+    if (!isPortalPreview) {
+      const session = await auth();
+      const isAdmin = session?.user?.role === "ADMIN";
+      const isOwner = session?.user?.id === event.userId;
+
+      if (!isAdmin && !isOwner) {
+        notFound();
+      }
+    }
   }
 
   // Gating: paymentStatus + activeUntil
@@ -67,6 +144,18 @@ export default async function PublicInvitationPage({ params }: PageProps) {
     rsvp: null
   };
 
-  // 3. Renderizar template
-  return <AuroraTemplate event={event as any} guest={mockGuest as any} />;
+  // 3. Renderizar template según el slug del template del evento
+  const templateSlug = event.template.slug;
+
+  switch (templateSlug) {
+    case "nube":
+      return <NubeTemplate event={event as any} guest={mockGuest as any} />;
+    case "bloom":
+      return <BloomTemplate event={event as any} guest={mockGuest as any} />;
+    case "confetti":
+      return <ConfettiTemplate event={event as any} guest={mockGuest as any} />;
+    case "aurora":
+    default:
+      return <AuroraTemplate event={event as any} guest={mockGuest as any} />;
+  }
 }

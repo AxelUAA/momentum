@@ -117,22 +117,22 @@ export default function GuestsPageClient({ event }: { event: any }) {
     <div className="space-y-8 animate-in fade-in duration-500">
       {/* Header & Breadcrumbs */}
       <div className="space-y-2">
-        <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-[var(--color-midnight)]/40">
-          <Link href="/dashboard/events" className="hover:text-[var(--color-midnight)] transition-colors">Eventos</Link>
+        <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">
+          <Link href="/dashboard/events" className="transition-colors hover:text-foreground">Eventos</Link>
           <ChevronRight className="h-3 w-3" />
-          <Link href={`/dashboard/events/${event.id}`} className="hover:text-[var(--color-midnight)] transition-colors">{event.title}</Link>
+          <Link href={`/dashboard/events/${event.id}`} className="transition-colors hover:text-foreground">{event.title}</Link>
           <ChevronRight className="h-3 w-3" />
-          <span className="text-[var(--color-midnight)]">Invitados</span>
+          <span className="text-foreground">Invitados</span>
         </div>
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div>
-            <h1 className="text-3xl font-black text-[var(--color-midnight)] tracking-tighter">Invitados</h1>
-            <p className="text-sm font-medium text-[var(--color-midnight)]/60">Gestiona la lista y RSVPs de {event.title}</p>
+            <h1 className="text-3xl font-black tracking-tighter text-foreground">Invitados</h1>
+            <p className="text-sm font-medium text-muted-foreground">Gestiona la lista y RSVPs de {event.title}</p>
           </div>
           <div className="flex items-center gap-3">
             <button 
               onClick={() => { setSelectedGuest(null); setIsFormOpen(true); }}
-              className="flex items-center justify-center gap-2 rounded-full bg-[var(--color-midnight)] px-6 py-3 text-sm font-bold text-white shadow-xl shadow-[var(--color-midnight)]/10 hover:shadow-[var(--color-midnight)]/20 active:scale-95 transition-all"
+              className="flex items-center justify-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-bold text-primary-foreground shadow-xl shadow-black/10 transition-all hover:shadow-black/20 active:scale-95"
             >
               <UserPlus className="h-4 w-4" />
               Nuevo Invitado
@@ -144,25 +144,25 @@ export default function GuestsPageClient({ event }: { event: any }) {
       {/* Stats Row */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         {[
-          { label: "Total invitados", value: stats.total, icon: Users, color: "bg-blue-50 text-blue-600" },
-          { label: "Confirmados", value: stats.confirmed, icon: CheckCircle2, color: "bg-emerald-50 text-emerald-600", badge: `${stats.percentage}%` },
-          { label: "Pendientes", value: stats.pending, icon: Clock, color: "bg-amber-50 text-amber-600" },
-          { label: "Rechazados", value: stats.declined, icon: XCircle, color: "bg-rose-50 text-rose-600" },
+          { label: "Total invitados", value: stats.total, icon: Users, color: "badge-status-info" },
+          { label: "Confirmados", value: stats.confirmed, icon: CheckCircle2, color: "badge-status-success", badge: `${stats.percentage}%` },
+          { label: "Pendientes", value: stats.pending, icon: Clock, color: "badge-status-warning" },
+          { label: "Rechazados", value: stats.declined, icon: XCircle, color: "badge-status-danger" },
         ].map((stat, i) => (
-          <div key={i} className="group rounded-[2rem] border border-black/5 bg-white p-6 transition-all duration-500 hover:shadow-2xl hover:shadow-black/5">
+          <div key={i} className="group rounded-[2rem] border border-border bg-card p-6 text-card-foreground transition-all duration-500 hover:shadow-2xl hover:shadow-black/5">
             <div className="flex items-center justify-between">
               <div className={cn("rounded-2xl p-3", stat.color)}>
                 <stat.icon className="h-5 w-5" />
               </div>
               {stat.badge && (
-                <span className="rounded-full bg-emerald-500 px-2.5 py-0.5 text-[10px] font-black text-white">
+                <span className="badge-status-success rounded-full px-2.5 py-0.5 text-[10px] font-black">
                   {stat.badge}
                 </span>
               )}
             </div>
             <div className="mt-4">
-              <div className="text-2xl font-black text-[var(--color-midnight)]">{stat.value}</div>
-              <div className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-midnight)]/40">{stat.label}</div>
+              <div className="text-2xl font-black text-foreground">{stat.value}</div>
+              <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{stat.label}</div>
             </div>
           </div>
         ))}
@@ -172,24 +172,24 @@ export default function GuestsPageClient({ event }: { event: any }) {
       <div className="flex flex-col gap-6 lg:flex-row lg:items-end justify-between">
         <div className="flex flex-1 flex-wrap items-end gap-4">
           <div className="w-full max-w-sm space-y-2">
-            <label className="text-[10px] font-black uppercase tracking-widest text-[var(--color-midnight)]/30 ml-1">Buscar</label>
+            <label className="ml-1 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Buscar</label>
             <div className="relative">
-              <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--color-midnight)]/20" />
+              <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <input 
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Nombre o teléfono..."
-                className="h-12 w-full rounded-2xl border border-black/5 bg-white pl-11 pr-4 text-sm font-medium outline-none focus:ring-4 focus:ring-[var(--color-brand)]/10 transition-all"
+                className="h-12 w-full rounded-2xl border border-border bg-background pl-11 pr-4 text-sm font-medium text-foreground outline-none transition-all focus:ring-4 focus:ring-[var(--color-brand)]/10"
               />
             </div>
           </div>
           
           <div className="space-y-2">
-            <label className="text-[10px] font-black uppercase tracking-widest text-[var(--color-midnight)]/30 ml-1">RSVP</label>
+            <label className="ml-1 text-[10px] font-black uppercase tracking-widest text-muted-foreground">RSVP</label>
             <select 
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="h-12 rounded-2xl border border-black/5 bg-white px-4 text-sm font-medium outline-none focus:ring-4 focus:ring-[var(--color-brand)]/10 transition-all"
+              className="h-12 rounded-2xl border border-border bg-background px-4 text-sm font-medium text-foreground outline-none transition-all focus:ring-4 focus:ring-[var(--color-brand)]/10"
             >
               <option value="ALL">Todos</option>
               <option value="PENDING">Pendientes</option>
@@ -199,11 +199,11 @@ export default function GuestsPageClient({ event }: { event: any }) {
           </div>
 
           <div className="space-y-2">
-            <label className="text-[10px] font-black uppercase tracking-widest text-[var(--color-midnight)]/30 ml-1">Relación</label>
+            <label className="ml-1 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Relación</label>
             <select 
               value={relationFilter}
               onChange={(e) => setRelationFilter(e.target.value)}
-              className="h-12 rounded-2xl border border-black/5 bg-white px-4 text-sm font-medium outline-none focus:ring-4 focus:ring-[var(--color-brand)]/10 transition-all"
+              className="h-12 rounded-2xl border border-border bg-background px-4 text-sm font-medium text-foreground outline-none transition-all focus:ring-4 focus:ring-[var(--color-brand)]/10"
             >
               <option value="ALL">Todas</option>
               {Object.entries(RELATIONSHIP_LABELS).map(([val, label]) => (
@@ -218,7 +218,7 @@ export default function GuestsPageClient({ event }: { event: any }) {
               "h-12 rounded-2xl border px-4 text-xs font-bold transition-all",
               onlyNoPhone 
                 ? "border-[var(--color-brand)] bg-[var(--color-brand)]/5 text-[var(--color-brand)]" 
-                : "border-black/5 bg-white text-[var(--color-midnight)]/40 hover:bg-black/5"
+                : "border-border bg-background text-muted-foreground hover:bg-muted/40"
             )}
           >
             Sin teléfono
@@ -228,21 +228,21 @@ export default function GuestsPageClient({ event }: { event: any }) {
         <div className="flex items-center gap-2">
           <button 
             onClick={() => setIsImportOpen(true)}
-            className="flex h-12 items-center gap-2 rounded-2xl border border-black/5 bg-white px-5 text-xs font-bold text-[var(--color-midnight)] hover:bg-black/5 transition-all"
+            className="flex h-12 items-center gap-2 rounded-2xl border border-border bg-background px-5 text-xs font-bold text-foreground transition-all hover:bg-muted/40"
           >
             <FileUp className="h-4 w-4" />
             Importar CSV
           </button>
           <button 
             onClick={() => setIsWhatsAppOpen(true)}
-            className="flex h-12 items-center gap-2 rounded-2xl border border-black/5 bg-white px-5 text-xs font-bold text-[var(--color-midnight)] hover:bg-black/5 transition-all"
+            className="flex h-12 items-center gap-2 rounded-2xl border border-border bg-background px-5 text-xs font-bold text-foreground transition-all hover:bg-muted/40"
           >
             <MessageSquare className="h-4 w-4" />
             WhatsApp
           </button>
           <button 
             onClick={handleExport}
-            className="flex h-12 items-center gap-2 rounded-2xl border border-black/5 bg-white px-5 text-xs font-bold text-[var(--color-midnight)] hover:bg-black/5 transition-all"
+            className="flex h-12 items-center gap-2 rounded-2xl border border-border bg-background px-5 text-xs font-bold text-foreground transition-all hover:bg-muted/40"
           >
             <FileDown className="h-4 w-4" />
             Exportar
@@ -251,21 +251,21 @@ export default function GuestsPageClient({ event }: { event: any }) {
       </div>
 
       {/* Table / Cards */}
-      <div className="rounded-[2.5rem] border border-black/5 bg-white/50 backdrop-blur-sm overflow-hidden">
+      <div className="overflow-hidden rounded-[2.5rem] border border-border bg-card/80 backdrop-blur-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-left">
             <thead>
-              <tr className="border-b border-black/5 bg-white/50">
-                <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-[var(--color-midnight)]/40">Invitado</th>
-                <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-[var(--color-midnight)]/40">Contacto</th>
-                <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-[var(--color-midnight)]/40">Relación</th>
-                <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-[var(--color-midnight)]/40 text-center">Lugares</th>
-                <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-[var(--color-midnight)]/40">Status</th>
-                <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-[var(--color-midnight)]/40 text-center">Vistas</th>
-                <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-[var(--color-midnight)]/40 text-right">Acciones</th>
+              <tr className="border-b border-border bg-muted/30">
+                <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Invitado</th>
+                <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Contacto</th>
+                <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Relación</th>
+                <th className="px-8 py-5 text-center text-[10px] font-black uppercase tracking-widest text-muted-foreground">Lugares</th>
+                <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Status</th>
+                <th className="px-8 py-5 text-center text-[10px] font-black uppercase tracking-widest text-muted-foreground">Vistas</th>
+                <th className="px-8 py-5 text-right text-[10px] font-black uppercase tracking-widest text-muted-foreground">Acciones</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-black/5">
+            <tbody className="divide-y divide-border">
               <AnimatePresence mode="popLayout">
                 {filteredGuests.map((guest: any) => (
                   <motion.tr 
@@ -275,15 +275,15 @@ export default function GuestsPageClient({ event }: { event: any }) {
                     exit={{ opacity: 0 }}
                     key={guest.id} 
                     onClick={() => { setSelectedGuest(guest); setIsDetailOpen(true); }}
-                    className="group cursor-pointer hover:bg-white transition-colors duration-300"
+                    className="group cursor-pointer transition-colors duration-300 hover:bg-muted/20"
                   >
                     <td className="px-8 py-5">
                       <div className="flex items-center gap-4">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--color-midnight)]/5 text-xs font-black text-[var(--color-midnight)]">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted text-xs font-black text-foreground">
                           {guest.name.charAt(0).toUpperCase()}
                         </div>
                         <div>
-                          <div className="text-sm font-black text-[var(--color-midnight)]">{guest.name}</div>
+                          <div className="text-sm font-black text-foreground">{guest.name}</div>
                           {guest.tableNumber && (
                             <div className="text-[10px] font-bold text-[var(--color-brand)] uppercase">Mesa {guest.tableNumber}</div>
                           )}
@@ -292,20 +292,20 @@ export default function GuestsPageClient({ event }: { event: any }) {
                     </td>
                     <td className="px-8 py-5">
                       <div className="space-y-0.5">
-                        <div className="flex items-center gap-2 text-xs font-medium text-[var(--color-midnight)]/60">
+                        <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
                           <Phone className="h-3 w-3" />
                           {guest.phone || "—"}
                         </div>
-                        <div className="text-[10px] font-medium text-[var(--color-midnight)]/40">{guest.email || "—"}</div>
+                        <div className="text-[10px] font-medium text-muted-foreground">{guest.email || "—"}</div>
                       </div>
                     </td>
                     <td className="px-8 py-5">
-                      <span className="text-xs font-bold text-[var(--color-midnight)]/60">
+                      <span className="text-xs font-bold text-muted-foreground">
                         {guest.relationship ? RELATIONSHIP_LABELS[guest.relationship] : "—"}
                       </span>
                     </td>
                     <td className="px-8 py-5 text-center">
-                      <div className="inline-flex items-center gap-2 rounded-full bg-black/5 px-3 py-1 text-[10px] font-black text-[var(--color-midnight)]">
+                      <div className="inline-flex items-center gap-2 rounded-full bg-muted px-3 py-1 text-[10px] font-black text-foreground">
                         {guest.rsvp?.confirmedGuests || 0} / {guest.allowedGuests}
                       </div>
                     </td>
@@ -317,26 +317,26 @@ export default function GuestsPageClient({ event }: { event: any }) {
                         {RSVP_STATUS_LABELS[guest.rsvp?.status || "PENDING"]}
                       </span>
                     </td>
-                    <td className="px-8 py-5 text-center text-xs font-bold text-[var(--color-midnight)]/40">
+                    <td className="px-8 py-5 text-center text-xs font-bold text-muted-foreground">
                       {guest._count?.invitationViews || 0}
                     </td>
                     <td className="px-8 py-5">
                       <div className="flex items-center justify-end gap-2" onClick={(e) => e.stopPropagation()}>
                         <button 
                           onClick={() => copyInviteUrl(guest.uniqueToken)}
-                          className="rounded-full p-2 text-[var(--color-midnight)]/20 hover:bg-[var(--color-brand)]/10 hover:text-[var(--color-brand)] transition-all"
+                          className="rounded-full p-2 text-muted-foreground transition-all hover:bg-[var(--color-brand)]/10 hover:text-[var(--color-brand)]"
                         >
                           <Copy className="h-4 w-4" />
                         </button>
                         <button 
                           onClick={() => { setSelectedGuest(guest); setIsFormOpen(true); }}
-                          className="rounded-full p-2 text-[var(--color-midnight)]/20 hover:bg-blue-50 hover:text-blue-600 transition-all"
+                          className="rounded-full p-2 text-muted-foreground transition-all hover:bg-blue-100/70 hover:text-blue-700 dark:hover:bg-blue-900/30 dark:hover:text-blue-300"
                         >
                           <Edit2 className="h-4 w-4" />
                         </button>
                         <button 
                           onClick={() => handleDelete(guest.id)}
-                          className="rounded-full p-2 text-[var(--color-midnight)]/20 hover:bg-rose-50 hover:text-rose-600 transition-all"
+                          className="rounded-full p-2 text-muted-foreground transition-all hover:bg-rose-100/70 hover:text-rose-700 dark:hover:bg-rose-900/30 dark:hover:text-rose-300"
                         >
                           <Trash2 className="h-4 w-4" />
                         </button>
@@ -351,11 +351,11 @@ export default function GuestsPageClient({ event }: { event: any }) {
         
         {filteredGuests.length === 0 && (
           <div className="flex flex-col items-center justify-center py-20 text-center">
-            <div className="mb-6 rounded-full bg-black/5 p-6">
-              <Users className="h-12 w-12 text-[var(--color-midnight)]/20" />
+            <div className="mb-6 rounded-full bg-muted p-6">
+              <Users className="h-12 w-12 text-muted-foreground" />
             </div>
-            <h3 className="text-xl font-bold text-[var(--color-midnight)]">No se encontraron invitados</h3>
-            <p className="mt-2 text-sm text-[var(--color-midnight)]/40">Intenta ajustar los filtros o agrega un nuevo invitado.</p>
+            <h3 className="text-xl font-bold text-foreground">No se encontraron invitados</h3>
+            <p className="mt-2 text-sm text-muted-foreground">Intenta ajustar los filtros o agrega un nuevo invitado.</p>
           </div>
         )}
       </div>

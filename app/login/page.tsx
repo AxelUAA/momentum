@@ -3,12 +3,17 @@ import { redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 
-export default async function LoginPage() {
+type SearchParams = Promise<{ callbackUrl?: string }>;
+
+export default async function LoginPage({ searchParams }: { searchParams: SearchParams }) {
   const session = await auth();
+  const { callbackUrl } = await searchParams;
 
   if (session) {
-    redirect("/");
+    redirect(callbackUrl ?? "/");
   }
+
+  const redirectTo = callbackUrl ?? "/";
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-zinc-100 to-zinc-200 px-4 dark:from-zinc-900 dark:to-zinc-950">
@@ -27,7 +32,7 @@ export default async function LoginPage() {
         <form
           action={async () => {
             "use server";
-            await signIn("google", { redirectTo: "/" });
+            await signIn("google", { redirectTo });
           }}
         >
           <button

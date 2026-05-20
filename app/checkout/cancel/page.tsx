@@ -11,13 +11,13 @@ export default function CheckoutCancelPage() {
           Cancelaste el proceso de pago
         </h1>
         <p className="mt-3 text-[var(--color-midnight)]/70">
-          No se realizó ningún cargo. Puedes volver al dashboard para intentarlo de nuevo.
+          No se realizó ningún cargo. Puedes volver al catálogo y elegir una plantilla cuando estés listo.
         </p>
         <Link
-          href="/dashboard"
+          href="/plantillas"
           className="mt-8 inline-flex rounded-lg border border-black/10 px-5 py-3 text-sm font-bold uppercase tracking-wider text-[var(--color-midnight)] hover:bg-black/[0.02]"
         >
-          Volver al dashboard
+          Ver plantillas
         </Link>
       </div>
     </main>

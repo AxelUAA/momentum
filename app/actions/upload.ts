@@ -12,6 +12,42 @@ async function requireAdmin() {
   return session.user;
 }
 
+const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
+const MIME_TO_EXT: Record<string, string> = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" };
+
+async function uploadToSupabase(file: File, path: string): Promise<{ success: boolean; url?: string; error?: string }> {
+  if (file.size > 5 * 1024 * 1024) return { success: false, error: "El archivo excede el límite de 5MB" };
+  if (!ALLOWED_TYPES.includes(file.type)) return { success: false, error: "Formato no permitido (jpg, png, webp)" };
+
+  const supabase = createAdminClient();
+  const { error } = await supabase.storage.from("event-images").upload(path, file, { contentType: file.type, upsert: true });
+  if (error) { console.error("[uploadToSupabase]", error); return { success: false, error: "Error al subir imagen" }; }
+
+  const { data: { publicUrl } } = supabase.storage.from("event-images").getPublicUrl(path);
+  return { success: true, url: publicUrl };
+}
+
+export async function uploadPortalImage(
+  formData: FormData,
+  clientToken: string,
+  category: "cover" | "gallery",
+): Promise<{ success: boolean; url?: string; error?: string }> {
+  const event = await prisma.event.findUnique({
+    where: { clientToken },
+    select: { id: true, status: true },
+  });
+  if (!event) return { success: false, error: "Portal no encontrado" };
+
+  const file = formData.get("file") as File;
+  if (!file) return { success: false, error: "No se encontró el archivo" };
+
+  const ext = MIME_TO_EXT[file.type] || "jpg";
+  const filename = category === "cover" ? `cover.${ext}` : `${crypto.randomUUID()}.${ext}`;
+  const path = `${event.id}/${category === "cover" ? "cover" : "portal-gallery"}/${filename}`;
+
+  return uploadToSupabase(file, path);
+}
+
 export async function uploadEventImage(
   formData: FormData,
   eventId: string,
@@ -23,53 +59,41 @@ export async function uploadEventImage(
     return { success: false, error: "No autorizado" };
   }
 
-  // Verificar que el evento exista (no filtramos por userId: cualquier admin puede gestionarlo)
   const event = await prisma.event.findUnique({ where: { id: eventId } });
   if (!event) return { success: false, error: "Evento no encontrado" };
 
   const file = formData.get("file") as File;
   if (!file) return { success: false, error: "No se encontró el archivo" };
 
-  // Validar tamaño (5MB)
-  if (file.size > 5 * 1024 * 1024) {
-    return { success: false, error: "El archivo excede el límite de 5MB" };
-  }
-
-  // Validar tipo MIME
-  const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
-  if (!allowedTypes.includes(file.type)) {
-    return { success: false, error: "Formato de imagen no permitido (usar jpg, png o webp)" };
-  }
-
-  const supabase = createAdminClient();
-  // Derivar extensión desde MIME type (confiable) porque browser-image-compression
-  // suele devolver el File con nombre tipo "xxx.blob", lo que ensucia las URLs.
-  const mimeToExt: Record<string, string> = {
-    "image/jpeg": "jpg",
-    "image/png": "png",
-    "image/webp": "webp",
-  };
-  const ext = mimeToExt[file.type] || "jpg";
+  const ext = MIME_TO_EXT[file.type] || "jpg";
   const filename = `${crypto.randomUUID()}.${ext}`;
   const path = `${eventId}/${category}/${filename}`;
 
-  const { error } = await supabase.storage
-    .from("event-images")
-    .upload(path, file, {
-      contentType: file.type,
-      upsert: false,
-    });
+  return uploadToSupabase(file, path);
+}
 
-  if (error) {
-    console.error("[uploadEventImage] Supabase error:", error);
-    return { success: false, error: "Error al subir a Supabase" };
-  }
+export async function uploadClientImage(
+  formData: FormData,
+  eventId: string,
+  category: "cover" | "gallery",
+): Promise<{ success: boolean; url?: string; error?: string }> {
+  const session = await auth();
+  if (!session?.user?.id) return { success: false, error: "No autenticado" };
 
-  const { data: { publicUrl } } = supabase.storage
-    .from("event-images")
-    .getPublicUrl(path);
+  const event = await prisma.event.findUnique({
+    where: { id: eventId, userId: session.user.id },
+    select: { id: true },
+  });
+  if (!event) return { success: false, error: "Evento no encontrado" };
 
-  return { success: true, url: publicUrl };
+  const file = formData.get("file") as File;
+  if (!file) return { success: false, error: "No se encontró el archivo" };
+
+  const ext = MIME_TO_EXT[file.type] || "jpg";
+  const filename = category === "cover" ? `cover.${ext}` : `${crypto.randomUUID()}.${ext}`;
+  const path = `${event.id}/${category === "cover" ? "cover" : "gallery"}/${filename}`;
+
+  return uploadToSupabase(file, path);
 }
 
 export async function deleteEventImage(url: string) {

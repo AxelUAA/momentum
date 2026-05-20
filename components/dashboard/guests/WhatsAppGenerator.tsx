@@ -114,29 +114,29 @@ Por favor confirma antes del {deadline}.
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            className="relative w-full max-w-5xl rounded-[2.5rem] bg-white p-8 shadow-2xl md:p-12 overflow-hidden flex flex-col max-h-[90vh]"
+            className="relative flex max-h-[90vh] w-full max-w-5xl flex-col overflow-hidden rounded-[2.5rem] border border-border bg-card p-8 text-card-foreground shadow-2xl md:p-12"
           >
-            <button onClick={onClose} className="absolute right-8 top-8 rounded-full p-2 hover:bg-black/5 transition-all">
-              <X className="h-5 w-5 text-[var(--color-midnight)]/40" />
+            <button onClick={onClose} className="absolute right-8 top-8 rounded-full p-2 transition-all hover:bg-muted/60">
+              <X className="h-5 w-5 text-muted-foreground" />
             </button>
 
             <div className="mb-8">
-              <h2 className="text-2xl font-black text-[var(--color-midnight)] tracking-tight">Generador de WhatsApp</h2>
-              <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-midnight)]/30">Personaliza y exporta mensajes masivos</p>
+              <h2 className="text-2xl font-black tracking-tight">Generador de WhatsApp</h2>
+              <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Personaliza y exporta mensajes masivos</p>
             </div>
 
             <div className="flex-1 overflow-hidden grid grid-cols-1 lg:grid-cols-2 gap-8">
               {/* Left: Editor */}
               <div className="flex flex-col space-y-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-xs font-black uppercase tracking-widest text-[var(--color-midnight)]/40">Plantilla del mensaje</h3>
+                  <h3 className="text-xs font-black uppercase tracking-widest text-muted-foreground">Plantilla del mensaje</h3>
                   <div className="flex items-center gap-2">
-                    <Filter className="h-3 w-3 text-[var(--color-midnight)]/40" />
+                    <Filter className="h-3 w-3 text-muted-foreground" />
                     <button 
                       onClick={() => setOnlyNoRsvp(!onlyNoRsvp)}
                       className={cn(
                         "text-[10px] font-bold px-2 py-1 rounded-md transition-all",
-                        onlyNoRsvp ? "bg-[var(--color-brand)]/10 text-[var(--color-brand)]" : "bg-black/5 text-[var(--color-midnight)]/40"
+                        onlyNoRsvp ? "bg-[var(--color-brand)]/10 text-[var(--color-brand)]" : "bg-muted text-muted-foreground"
                       )}
                     >
                       Solo sin confirmar
@@ -150,7 +150,7 @@ Por favor confirma antes del {deadline}.
                       <button 
                         key={v.tag}
                         onClick={() => insertVariable(v.tag)}
-                        className="rounded-lg bg-black/5 px-2 py-1 text-[10px] font-bold text-[var(--color-midnight)] hover:bg-[var(--color-brand)]/10 hover:text-[var(--color-brand)] transition-all"
+                        className="rounded-lg bg-muted px-2 py-1 text-[10px] font-bold text-foreground transition-all hover:bg-[var(--color-brand)]/10 hover:text-[var(--color-brand)]"
                       >
                         {v.tag}
                       </button>
@@ -159,25 +159,25 @@ Por favor confirma antes del {deadline}.
                   <textarea 
                     value={template}
                     onChange={(e) => setTemplate(e.target.value)}
-                    className="flex-1 w-full rounded-2xl border border-black/5 bg-black/5 p-6 text-sm font-medium outline-none focus:bg-white focus:ring-4 focus:ring-[var(--color-brand)]/10 transition-all resize-none no-scrollbar"
+                    className="no-scrollbar flex-1 w-full resize-none rounded-2xl border border-border bg-background p-6 text-sm font-medium text-foreground outline-none transition-all focus:bg-background focus:ring-4 focus:ring-[var(--color-brand)]/10"
                   />
                 </div>
               </div>
 
               {/* Right: Preview */}
-              <div className="flex flex-col space-y-4 bg-black/5 rounded-[2rem] p-6">
-                <h3 className="text-xs font-black uppercase tracking-widest text-[var(--color-midnight)]/40">Vista previa (Primer invitado)</h3>
+              <div className="flex flex-col space-y-4 rounded-[2rem] bg-muted/60 p-6">
+                <h3 className="text-xs font-black uppercase tracking-widest text-muted-foreground">Vista previa (Primer invitado)</h3>
                 
                 {filteredGuests.length > 0 ? (
                   <div className="flex-1 flex flex-col">
-                    <div className="bg-white rounded-2xl p-6 text-sm font-medium text-[var(--color-midnight)] whitespace-pre-wrap flex-1 shadow-sm overflow-y-auto no-scrollbar">
+                    <div className="no-scrollbar flex-1 overflow-y-auto whitespace-pre-wrap rounded-2xl border border-border bg-background p-6 text-sm font-medium text-foreground shadow-sm">
                       {getPreview(filteredGuests[0])}
                     </div>
-                    <div className="mt-4 p-4 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center gap-3">
-                      <div className="rounded-full bg-emerald-500 p-1.5 text-white">
+                    <div className="mt-4 flex items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-100/70 p-4 dark:border-emerald-900/60 dark:bg-emerald-900/20">
+                      <div className="rounded-full bg-emerald-600 p-1.5 text-white dark:bg-emerald-500">
                         <Check className="h-3 w-3" />
                       </div>
-                      <span className="text-[10px] font-bold text-emerald-700">Se generarán {filteredGuests.length} mensajes personalizados</span>
+                      <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-300">Se generarán {filteredGuests.length} mensajes personalizados</span>
                     </div>
                   </div>
                 ) : (
@@ -192,7 +192,7 @@ Por favor confirma antes del {deadline}.
               <button 
                 onClick={downloadTxt}
                 disabled={filteredGuests.length === 0}
-                className="flex-1 flex items-center justify-center gap-2 rounded-full border border-black/5 bg-white py-4 text-sm font-bold text-[var(--color-midnight)] hover:bg-black/5 transition-all disabled:opacity-50"
+                className="flex flex-1 items-center justify-center gap-2 rounded-full border border-border bg-background py-4 text-sm font-bold text-foreground transition-all hover:bg-muted/50 disabled:opacity-50"
               >
                 <Download className="h-4 w-4" />
                 Descargar .txt (Manual)
@@ -200,14 +200,14 @@ Por favor confirma antes del {deadline}.
               <button 
                 onClick={downloadCsv}
                 disabled={filteredGuests.length === 0}
-                className="flex-1 flex items-center justify-center gap-2 rounded-full border border-black/5 bg-white py-4 text-sm font-bold text-[var(--color-midnight)] hover:bg-black/5 transition-all disabled:opacity-50"
+                className="flex flex-1 items-center justify-center gap-2 rounded-full border border-border bg-background py-4 text-sm font-bold text-foreground transition-all hover:bg-muted/50 disabled:opacity-50"
               >
                 <Download className="h-4 w-4" />
                 Descargar .csv (API)
               </button>
               <button 
                 disabled={filteredGuests.length === 0}
-                className="flex-[2] flex items-center justify-center gap-2 rounded-full bg-[var(--color-midnight)] py-4 text-sm font-bold text-white shadow-xl shadow-[var(--color-midnight)]/10 hover:shadow-[var(--color-midnight)]/20 active:scale-95 transition-all disabled:opacity-50"
+                className="flex-[2] flex items-center justify-center gap-2 rounded-full bg-primary py-4 text-sm font-bold text-primary-foreground shadow-xl shadow-black/10 transition-all hover:shadow-black/20 active:scale-95 disabled:opacity-50"
               >
                 <MessageSquare className="h-4 w-4" />
                 Generar Links wa.me

@@ -41,6 +41,10 @@
   --color-surface: var(--surface);
   --color-success: #5B8C7B;
   --color-error: #9B3A4E;
+  /* Alias histórico: --color-brand se usa en 24 archivos pero nunca se definió.
+     Lo apuntamos a champagne (el accent gold de la marca) para que no quede
+     transparente. */
+  --color-brand: var(--color-champagne);
 
   /* — Typography — */
   --font-sans: var(--font-inter);
@@ -230,6 +234,26 @@
    Utility Classes
    ─────────────────────────────────────────────────────────── */
 @layer utilities {
+  .badge-status-success {
+    @apply bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300;
+  }
+
+  .badge-status-info {
+    @apply bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300;
+  }
+
+  .badge-status-warning {
+    @apply bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300;
+  }
+
+  .badge-status-danger {
+    @apply bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300;
+  }
+
+  .badge-status-neutral {
+    @apply bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300;
+  }
+
   /* Champagne gold shimmer effect for CTAs */
   .shimmer {
     background: linear-gradient(

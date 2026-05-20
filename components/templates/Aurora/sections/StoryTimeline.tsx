@@ -5,7 +5,9 @@ import { useRef } from "react";
 import Image from "next/image";
 import type { TimelineItem } from "@/types/event-settings";
 
-export function StoryTimeline({ items, story }: { items: TimelineItem[]; story: string }) {
+export function StoryTimeline({ items, story }: { items?: TimelineItem[]; story?: string }) {
+  if (!items?.length && !story) return null;
+
   const containerRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
     target: containerRef,
@@ -45,7 +47,7 @@ export function StoryTimeline({ items, story }: { items: TimelineItem[]; story: 
         />
 
         <div className="flex flex-col gap-16 md:gap-32">
-          {items.map((item: any, index: number) => {
+          {(items ?? []).map((item: any, index: number) => {
             const isEven = index % 2 === 0;
             return (
               <motion.div 

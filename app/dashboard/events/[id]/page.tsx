@@ -14,6 +14,7 @@ import { TIER_INFO } from "@/lib/event-sections-map";
 import { sectionLabel } from "@/lib/section-labels";
 import { DeleteEventDialog } from "@/components/dashboard/DeleteEventDialog";
 import { createOneTimeCheckout } from "@/app/actions/billing";
+import { updateEventStatus } from "@/app/actions/events";
 
 export const dynamic = "force-dynamic";
 
@@ -45,6 +46,13 @@ export default async function EventDetailPage({ params }: { params: { id: string
 
   if (!event) notFound();
 
+  // Check if this user has an active subscription (enables self-publish)
+  const activeSubscription = session?.user?.id
+    ? await prisma.subscription.findFirst({
+        where: { userId: session.user.id, status: "ACTIVE" },
+        select: { id: true },
+      })
+    : null;
   const daysToEvent = event.eventDate 
     ? differenceInDays(new Date(event.eventDate), new Date()) 
     : null;
@@ -64,14 +72,26 @@ export default async function EventDetailPage({ params }: { params: { id: string
     redirect(result.url);
   }
 
+  async function publishEvent() {
+    "use server";
+    await updateEventStatus(id, "ACTIVE");
+    redirect(`/dashboard/events/${id}`);
+  }
+
+  async function unpublishEvent() {
+    "use server";
+    await updateEventStatus(id, "DRAFT");
+    redirect(`/dashboard/events/${id}`);
+  }
+
   const paymentBadgeClass =
     event.paymentStatus === "PAID"
-      ? "bg-green-100 text-green-700"
+      ? "badge-status-success"
       : event.paymentStatus === "PENDING_VOUCHER"
-        ? "bg-yellow-100 text-yellow-700"
+        ? "badge-status-warning"
         : event.paymentStatus === "UNPAID"
-          ? "bg-red-100 text-red-700"
-          : "bg-gray-100 text-gray-700";
+          ? "badge-status-danger"
+          : "badge-status-neutral";
 
   return (
     <div className="space-y-8 p-6 md:p-8 animate-in fade-in duration-700">
@@ -86,14 +106,18 @@ export default async function EventDetailPage({ params }: { params: { id: string
           </Link>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-bold tracking-tight text-[var(--color-midnight)] dark:text-[var(--color-cream)]">
+              <h1 className="text-2xl font-bold tracking-tight">
                 {event.title}
               </h1>
               <span className={cn(
                 "rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider",
-                event.status === "ACTIVE" ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"
+                event.status === "ACTIVE" ? "badge-status-success" :
+                event.status === "ARCHIVED" ? "badge-status-neutral" : "badge-status-warning"
               )}>
-                {event.status}
+                {event.status === "ACTIVE" ? "Activa" :
+                 event.status === "DRAFT" ? "Borrador" :
+                 event.status === "ARCHIVED" ? "Archivada" :
+                 event.status}
               </span>
             </div>
             <div className="flex items-center gap-3 text-sm text-muted-foreground">
@@ -118,7 +142,7 @@ export default async function EventDetailPage({ params }: { params: { id: string
           <Link
             href={`/e/${event.slug}`}
             target="_blank"
-            className={cn(buttonVariants({ variant: "default" }), "gap-2 rounded-xl bg-[var(--color-midnight)] text-[var(--color-cream)]")}
+            className={cn(buttonVariants({ variant: "default" }), "gap-2 rounded-xl")}
           >
             <Eye className="h-4 w-4" />
             Ver Invitación
@@ -132,9 +156,9 @@ export default async function EventDetailPage({ params }: { params: { id: string
         </div>
       </div>
 
-      <div className="rounded-2xl border border-black/5 bg-white p-6 shadow-sm space-y-4">
+      <div className="space-y-4 rounded-2xl border border-border bg-card p-6 text-card-foreground shadow-sm">
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-xs font-bold uppercase tracking-wider text-[var(--color-midnight)]/60">
+          <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
             Estado de pago
           </span>
           <span className={cn("rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider", paymentBadgeClass)}>
@@ -148,16 +172,16 @@ export default async function EventDetailPage({ params }: { params: { id: string
         </div>
 
         {event.paymentStatus === "PAID" ? (
-          <div className="grid grid-cols-1 gap-2 text-sm text-[var(--color-midnight)]/70 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-2 text-sm text-muted-foreground sm:grid-cols-2">
             <p>
               Pagado el:{" "}
-              <span className="font-semibold text-[var(--color-midnight)]">
+              <span className="font-semibold text-foreground">
                 {event.paidAt ? format(new Date(event.paidAt), "d 'de' MMM yyyy", { locale: es }) : "—"}
               </span>
             </p>
             <p>
               Activo hasta:{" "}
-              <span className="font-semibold text-[var(--color-midnight)]">
+              <span className="font-semibold text-foreground">
                 {event.activeUntil
                   ? format(new Date(event.activeUntil), "d 'de' MMM yyyy", { locale: es })
                   : "—"}
@@ -170,7 +194,7 @@ export default async function EventDetailPage({ params }: { params: { id: string
           <form action={startOneTimePayment}>
             <button
               type="submit"
-              className="inline-flex rounded-lg bg-[var(--color-brand)] px-5 py-3 text-sm font-bold uppercase tracking-wider text-white hover:opacity-90"
+              className="inline-flex rounded-lg bg-accent px-5 py-3 text-sm font-bold uppercase tracking-wider text-accent-foreground transition-opacity hover:opacity-90"
             >
               Pagar ahora
             </button>
@@ -178,11 +202,47 @@ export default async function EventDetailPage({ params }: { params: { id: string
         ) : null}
 
         {event.paymentStatus === "PENDING_VOUCHER" ? (
-          <p className="text-sm text-[var(--color-midnight)]/70">
+          <p className="text-sm text-muted-foreground">
             Esperando confirmación del pago en OXXO/SPEI.
           </p>
         ) : null}
       </div>
+
+      {/* Publish / Unpublish — self-service subscribers only */}
+      {activeSubscription ? (
+        <div className="flex items-center justify-between rounded-2xl border border-border bg-card p-5 shadow-sm">
+          <div>
+            <p className="text-sm font-semibold text-foreground">
+              {event.status === "ACTIVE" ? "Invitación publicada" : "Invitación sin publicar"}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {event.status === "ACTIVE"
+                ? "Los invitados pueden verla en su enlace único."
+                : "Publícala para que los invitados puedan acceder."}
+            </p>
+          </div>
+          {event.status === "ACTIVE" ? (
+            <form action={unpublishEvent}>
+              <button
+                type="submit"
+                className="rounded-xl border border-border px-4 py-2 text-xs font-bold text-muted-foreground transition-all hover:border-destructive hover:text-destructive"
+              >
+                Despublicar
+              </button>
+            </form>
+          ) : (
+            <form action={publishEvent}>
+              <button
+                type="submit"
+                disabled={event.paymentStatus !== "PAID"}
+                className="rounded-xl bg-[var(--color-brand)] px-5 py-2.5 text-xs font-bold text-[var(--color-midnight)] shadow-sm transition-all hover:opacity-90 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                Publicar invitación
+              </button>
+            </form>
+          )}
+        </div>
+      ) : null}
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -292,7 +352,7 @@ export default async function EventDetailPage({ params }: { params: { id: string
                         <td className="py-3">
                           <span className={cn(
                             "rounded-full px-2 py-0.5 text-[8px] font-bold uppercase",
-                            guest.rsvp?.status === "CONFIRMED" ? "bg-green-50 text-green-700" : "bg-gray-50 text-gray-600"
+                            guest.rsvp?.status === "CONFIRMED" ? "badge-status-success" : "badge-status-neutral"
                           )}>
                             {guest.rsvp?.status || "Pendiente"}
                           </span>

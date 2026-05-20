@@ -10,7 +10,9 @@ const HowItWorks = nextDynamic(() => import("@/components/sections/HowItWorks").
 const TemplatesShowcase = nextDynamic(() => import("@/components/sections/TemplatesShowcase").then(mod => mod.TemplatesShowcase));
 const Features = nextDynamic(() => import("@/components/sections/Features").then(mod => mod.Features));
 const Pricing = nextDynamic(() => import("@/components/sections/Pricing").then(mod => mod.Pricing));
-const Testimonials = nextDynamic(() => import("@/components/sections/Testimonials").then(mod => mod.Testimonials));
+// Testimonials removida temporalmente: dejaremos esa sección oculta hasta tener
+// clientes reales con quotes verificables. Para reactivar, vuelve a importar
+// Testimonials desde "@/components/sections/Testimonials" y agrégala al main.
 const FAQ = nextDynamic(() => import("@/components/sections/FAQ").then(mod => mod.FAQ));
 const FinalCTA = nextDynamic(() => import("@/components/sections/FinalCTA").then(mod => mod.FinalCTA));
 const Footer = nextDynamic(() => import("@/components/sections/Footer").then(mod => mod.Footer));
@@ -24,14 +26,13 @@ export default async function Home() {
     <div className="flex min-h-screen flex-col items-center justify-between">
       <Navbar session={session} />
       <main className="w-full flex-1 flex flex-col">
-        <Hero />
+        <Hero isLoggedIn={!!session} />
         <ValueProps />
         <Problem />
         <HowItWorks />
         <TemplatesShowcase />
         <Features />
         <Pricing />
-        <Testimonials />
         <FAQ />
         <FinalCTA />
       </main>

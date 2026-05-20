@@ -1,7 +1,7 @@
 "use client";
-import { Eye, Pencil, Copy, Archive, CreditCard } from "lucide-react";
+import { Eye, Pencil, Copy, Archive, CreditCard, Activity, Globe, GlobeLock } from "lucide-react";
 import Link from "next/link";
-import { duplicateEvent, archiveEvent } from "@/app/actions/events";
+import { duplicateEvent, archiveEvent, updateEventStatus } from "@/app/actions/events";
 import { createOneTimeCheckout } from "@/app/actions/billing";
 import { toast } from "sonner";
 import { useState } from "react";
@@ -12,6 +12,9 @@ interface EventActionsProps {
   eventTitle: string;
   eventSlug: string;
   paymentStatus?: "UNPAID" | "PENDING_VOUCHER" | "PAID" | "EXPIRED" | "REFUNDED";
+  /** Solo se pasa cuando el usuario tiene suscripción activa */
+  isSubscriber?: boolean;
+  eventStatus?: string;
 }
 
 export function EventActions({
@@ -19,6 +22,8 @@ export function EventActions({
   eventTitle,
   eventSlug,
   paymentStatus,
+  isSubscriber,
+  eventStatus,
 }: EventActionsProps) {
   const [isPending, setIsPending] = useState(false);
 
@@ -71,7 +76,28 @@ export function EventActions({
     }
   };
 
+  const handlePublish = async () => {
+    setIsPending(true);
+    try {
+      const nextStatus = eventStatus === "ACTIVE" ? "DRAFT" : "ACTIVE";
+      const result = await updateEventStatus(eventId, nextStatus);
+      if (result.success) {
+        toast.success(nextStatus === "ACTIVE" ? "Invitación publicada" : "Invitación despublicada");
+        // Reload para reflejar el nuevo status
+        window.location.reload();
+      } else {
+        toast.error(result.error || "No se pudo cambiar el status");
+      }
+    } catch {
+      toast.error("Error inesperado");
+    } finally {
+      setIsPending(false);
+    }
+  };
+
   const needsPayment = paymentStatus && paymentStatus !== "PAID";
+  const isActive     = eventStatus === "ACTIVE";
+  const canPublish   = isSubscriber && paymentStatus === "PAID";
 
   return (
     <div className="flex items-center justify-end gap-1 md:gap-2 transition-opacity">
@@ -79,13 +105,37 @@ export function EventActions({
         <button
           onClick={handlePay}
           disabled={isPending}
-          className="flex h-11 items-center gap-2 rounded-lg bg-[var(--color-midnight)] px-3 text-xs font-bold uppercase tracking-wider text-white hover:opacity-90 transition-all md:h-9 disabled:opacity-50"
+          className="flex h-11 items-center gap-2 rounded-lg bg-primary px-3 text-xs font-bold uppercase tracking-wider text-primary-foreground transition-all hover:opacity-90 md:h-9 disabled:opacity-50"
           title="Pagar invitación"
         >
           <CreditCard className="h-3.5 w-3.5" />
           Pagar
         </button>
       ) : null}
+
+      {/* Publicar / Despublicar — solo suscriptores */}
+      {canPublish ? (
+        <button
+          onClick={handlePublish}
+          disabled={isPending}
+          title={isActive ? "Despublicar" : "Publicar"}
+          className={`flex h-11 w-11 items-center justify-center rounded-lg transition-all md:h-9 md:w-9 shadow-sm disabled:opacity-50 ${
+            isActive
+              ? "text-amber-600 bg-amber-50 hover:bg-amber-100 ring-1 ring-amber-200"
+              : "text-emerald-700 bg-emerald-50 hover:bg-emerald-100 ring-1 ring-emerald-200"
+          }`}
+        >
+          {isActive ? <GlobeLock className="h-4 w-4" /> : <Globe className="h-4 w-4" />}
+        </button>
+      ) : null}
+
+      <Link
+        href={`/dashboard/events/${eventId}/progress`}
+        className="flex h-11 w-11 items-center justify-center rounded-lg text-[var(--color-brand)] bg-[var(--color-brand)]/10 hover:bg-[var(--color-brand)] hover:text-white transition-all md:h-9 md:w-9 shadow-sm"
+        title="Ver progreso"
+      >
+        <Activity className="h-4 w-4" />
+      </Link>
       <Link
         href={`/dashboard/events/${eventId}`}
         className="flex h-11 w-11 items-center justify-center rounded-lg text-muted-foreground opacity-60 hover:bg-background hover:text-[var(--color-brand)] hover:opacity-100 transition-all md:h-9 md:w-9 shadow-sm ring-1 ring-border/50"

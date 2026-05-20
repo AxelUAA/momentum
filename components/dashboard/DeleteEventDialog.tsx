@@ -45,16 +45,16 @@ export function DeleteEventDialog({ eventId, eventTitle, eventSlug }: Props) {
       <button
         onClick={() => setIsOpen(true)}
         title="Eliminar evento"
-        className="flex h-11 w-11 items-center justify-center rounded-lg text-red-600/40 hover:bg-red-50 hover:text-red-600 transition-all md:h-9 md:w-9 shadow-sm ring-1 ring-red-100"
+        className="flex h-11 w-11 items-center justify-center rounded-lg text-red-600/40 hover:bg-destructive/10 hover:text-red-600 transition-all md:h-9 md:w-9 shadow-sm ring-1 ring-destructive/20"
       >
         <Trash2 className="w-4 h-4" />
       </button>
 
       {isOpen && typeof document !== "undefined" && createPortal(
         <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 animate-in fade-in zoom-in duration-200">
+          <div className="bg-card rounded-xl shadow-2xl max-w-md w-full p-6 animate-in fade-in zoom-in duration-200">
             <div className="flex items-start gap-3 mb-4">
-              <div className="p-2 bg-red-50 rounded-full shrink-0">
+              <div className="p-2 bg-destructive/10 rounded-full shrink-0">
                 <AlertTriangle className="w-5 h-5 text-red-600" />
               </div>
               <div>
@@ -67,7 +67,7 @@ export function DeleteEventDialog({ eventId, eventTitle, eventSlug }: Props) {
               </div>
             </div>
 
-            <div className="mb-4 bg-red-50 border border-red-200 rounded-lg p-3">
+            <div className="mb-4 bg-destructive/10 border border-destructive/30 rounded-lg p-3">
               <p className="text-sm text-[var(--color-midnight)] font-medium">
                 {eventTitle}
               </p>

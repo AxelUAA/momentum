@@ -23,19 +23,9 @@ async function main() {
 
   console.log(`Usuario encontrado: ${user.name} (${user.email})`);
 
-  // Crear o actualizar el Template Aurora
-  const template = await prisma.template.upsert({
-    where: { slug: "aurora" },
-    update: {
-      name: "Aurora",
-      type: "WEDDING",
-      description: "Elegancia atemporal para bodas modernas",
-      isActive: true,
-      isPremium: false,
-      sortOrder: 1,
-      config: {}
-    },
-    create: {
+  // Crear o actualizar los 4 Templates
+  const templatesData = [
+    {
       slug: "aurora",
       name: "Aurora",
       type: "WEDDING",
@@ -44,10 +34,68 @@ async function main() {
       isPremium: false,
       sortOrder: 1,
       config: {}
+    },
+    {
+      slug: "confetti",
+      name: "Confetti",
+      type: "BIRTHDAY",
+      description: "Colorido y alegre. Ideal para cumpleaños de cualquier edad.",
+      isActive: true,
+      isPremium: false,
+      sortOrder: 2,
+      config: {}
+    },
+    {
+      slug: "bloom",
+      name: "Bloom",
+      type: "XV",
+      description: "Romántico y juvenil. Diseñado especialmente para quinceañeras.",
+      isActive: true,
+      isPremium: true,
+      sortOrder: 3,
+      config: {}
+    },
+    {
+      slug: "nube",
+      name: "Nube",
+      type: "BABY_SHOWER",
+      description: "Suave y tierno. El favorito para celebrar la llegada de un bebé.",
+      isActive: true,
+      isPremium: true,
+      sortOrder: 4,
+      config: {}
     }
-  });
+  ];
 
-  console.log(`Template creado/actualizado: ${template.name}`);
+  let template;
+  for (const t of templatesData) {
+    template = await prisma.template.upsert({
+      where: { slug: t.slug },
+      update: {
+        name: t.name,
+        type: t.type as any,
+        description: t.description,
+        isActive: t.isActive,
+        isPremium: t.isPremium,
+        sortOrder: t.sortOrder,
+        config: t.config
+      },
+      create: {
+        slug: t.slug,
+        name: t.name,
+        type: t.type as any,
+        description: t.description,
+        isActive: t.isActive,
+        isPremium: t.isPremium,
+        sortOrder: t.sortOrder,
+        config: t.config
+      }
+    });
+    console.log(`Template creado/actualizado: ${template.name}`);
+  }
+
+  const auroraTemplate = await prisma.template.findUnique({ where: { slug: "aurora" }});
+  if (!auroraTemplate) throw new Error("Aurora template not found");
 
   // Configuración del evento (settings JSON)
   const eventSettings = {
@@ -94,7 +142,7 @@ async function main() {
     where: { slug: "boda-maria-juan" },
     update: {
       userId: user.id,
-      templateId: template.id,
+      templateId: auroraTemplate.id,
       type: "WEDDING",
       tier: "COMPLETE",
       title: "María & Juan",
@@ -126,7 +174,7 @@ async function main() {
     create: {
       slug: "boda-maria-juan",
       userId: user.id,
-      templateId: template.id,
+      templateId: auroraTemplate.id,
       type: "WEDDING",
       tier: "COMPLETE",
       title: "María & Juan",

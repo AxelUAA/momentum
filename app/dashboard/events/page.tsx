@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import Link from "next/link";
-import { Plus, Search, Eye, Pencil, Copy, Archive, Filter } from "lucide-react";
+import { Plus, Search, Eye, Pencil, Copy, Archive, Filter, AlertTriangle, Zap } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { cn } from "@/lib/utils";
@@ -11,28 +11,55 @@ import { EventActions } from "@/components/dashboard/events/EventActions";
 
 export const dynamic = "force-dynamic";
 
+const PLAN_LIMIT: Record<string, number> = {
+  ORGANIZADOR_PLUS: 5,
+  ORGANIZADOR_PRO: 20,
+};
+
 const PAYMENT_BADGE: Record<
   string,
   { label: string; className: string }
 > = {
-  PAID: { label: "Pagado", className: "bg-emerald-100 text-emerald-700" },
-  PENDING_VOUCHER: { label: "Procesando", className: "bg-amber-100 text-amber-700" },
-  UNPAID: { label: "Sin pagar", className: "bg-red-50 text-red-700" },
-  EXPIRED: { label: "Expirado", className: "bg-red-100 text-red-700" },
-  REFUNDED: { label: "Reembolsado", className: "bg-slate-100 text-slate-700" },
+  PAID: { label: "Pagado", className: "badge-status-success" },
+  PENDING_VOUCHER: { label: "Procesando", className: "badge-status-warning" },
+  UNPAID: { label: "Sin pagar", className: "badge-status-danger" },
+  EXPIRED: { label: "Expirado", className: "badge-status-danger" },
+  REFUNDED: { label: "Reembolsado", className: "badge-status-neutral" },
 };
 
 export default async function EventsPage() {
   const session = await auth();
-  
-  const events = await prisma.event.findMany({
-    orderBy: { createdAt: "desc" },
-    include: {
-      _count: {
-        select: { guests: true }
-      }
-    }
-  });
+
+  if (!session?.user?.id) {
+    return null;
+  }
+
+  const isAdmin = session.user.role === "ADMIN";
+  const where = isAdmin ? {} : { userId: session.user.id };
+
+  const [events, subscription] = await Promise.all([
+    prisma.event.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+      include: { _count: { select: { guests: true } } },
+    }),
+    isAdmin
+      ? Promise.resolve(null)
+      : prisma.subscription.findFirst({
+          where: { userId: session.user.id, status: "ACTIVE" },
+          select: {
+            id: true,
+            plan: true,
+            _count: { select: { events: { where: { paymentStatus: "PAID" } } } },
+          },
+        }),
+  ]);
+
+  const isSubscriber = !isAdmin && !!subscription;
+  const planLimit    = isSubscriber ? (PLAN_LIMIT[subscription!.plan] ?? 5) : null;
+  const usedSlots    = isSubscriber ? subscription!._count.events : null;
+  const slotsLeft    = planLimit !== null && usedSlots !== null ? planLimit - usedSlots : null;
+  const atLimit      = slotsLeft !== null && slotsLeft <= 0;
 
   return (
     <div className="space-y-8 p-6 md:p-8">
@@ -43,17 +70,72 @@ export default async function EventsPage() {
             Eventos
           </h1>
           <p className="text-muted-foreground">
-            Gestiona y crea las invitaciones para tus clientes.
+            {isAdmin ? "Gestiona y crea las invitaciones para tus clientes." : "Tus eventos e invitaciones activas."}
           </p>
         </div>
-        <Link
-          href="/dashboard/events/new"
-          className={cn(buttonVariants(), "gap-2 shimmer border-none text-[var(--color-midnight)]")}
-        >
-          <Plus className="h-4 w-4" />
-          Crear nuevo evento
-        </Link>
+        {atLimit ? (
+          <div className="flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-2.5 text-sm font-bold text-amber-700 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-400">
+            <AlertTriangle className="h-4 w-4 shrink-0" />
+            Límite de plan alcanzado
+          </div>
+        ) : (
+          <Link
+            href="/dashboard/events/new"
+            className={cn(buttonVariants(), "gap-2 shimmer border-none text-[var(--color-midnight)]")}
+          >
+            <Plus className="h-4 w-4" />
+            Crear nuevo evento
+          </Link>
+        )}
       </div>
+
+      {/* Plan usage banner — subscribers only */}
+      {isSubscriber && planLimit !== null && usedSlots !== null && (
+        <div className={cn(
+          "flex flex-col gap-3 rounded-2xl border p-4 sm:flex-row sm:items-center sm:justify-between",
+          atLimit
+            ? "border-red-200 bg-red-50 dark:border-red-900 dark:bg-red-950/30"
+            : "border-border bg-card"
+        )}>
+          <div className="flex items-center gap-3">
+            <div className={cn(
+              "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl",
+              atLimit ? "bg-red-100 dark:bg-red-900/40" : "bg-[var(--color-brand)]/10"
+            )}>
+              {atLimit
+                ? <AlertTriangle className="h-4 w-4 text-red-500" />
+                : <Zap className="h-4 w-4 text-[var(--color-brand)]" />
+              }
+            </div>
+            <div>
+              <p className={cn("text-sm font-bold", atLimit ? "text-red-600 dark:text-red-400" : "text-foreground")}>
+                {usedSlots} de {planLimit} eventos usados en tu plan
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {atLimit
+                  ? "Actualiza tu plan para crear más eventos."
+                  : `Te quedan ${slotsLeft} evento${slotsLeft !== 1 ? "s" : ""} disponibles.`}
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="h-2 w-32 overflow-hidden rounded-full bg-muted">
+              <div
+                className={cn(
+                  "h-full rounded-full",
+                  atLimit ? "bg-red-500" : "bg-[var(--color-brand)]"
+                )}
+                style={{ width: `${Math.min(100, Math.round((usedSlots / planLimit) * 100))}%` }}
+              />
+            </div>
+            {atLimit && (
+              <Link href="/dashboard/billing" className="text-xs font-bold text-[var(--color-brand)] underline whitespace-nowrap">
+                Actualizar plan
+              </Link>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Filters (Simplified for now) */}
       <div className="flex flex-col gap-4 md:flex-row md:items-center">
@@ -126,9 +208,9 @@ export default async function EventsPage() {
                       <td className="px-6 py-4 text-center">
                         <span className={cn(
                           "inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider",
-                          event.tier === "LUXURY" ? "bg-amber-100 text-amber-700" :
+                          event.tier === "LUXURY" ? "badge-status-warning" :
                           event.tier === "COMPLETE" ? "bg-[var(--color-brand)]/20 text-[var(--color-brand)]" :
-                          "bg-slate-100 text-slate-700"
+                          "badge-status-neutral"
                         )}>
                           {TIER_INFO[event.tier as keyof typeof TIER_INFO]?.label || event.tier}
                         </span>
@@ -151,9 +233,9 @@ export default async function EventsPage() {
                       <td className="px-6 py-4 text-center">
                         <span className={cn(
                           "inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider",
-                          event.status === "ACTIVE" ? "bg-green-100 text-green-700" :
-                          event.status === "DRAFT" ? "bg-yellow-100 text-yellow-700" :
-                          "bg-slate-100 text-slate-700"
+                          event.status === "ACTIVE" ? "badge-status-success" :
+                          event.status === "DRAFT" ? "badge-status-warning" :
+                          "badge-status-neutral"
                         )}>
                           {event.status}
                         </span>
@@ -167,6 +249,8 @@ export default async function EventsPage() {
                           eventTitle={event.title}
                           eventSlug={event.slug}
                           paymentStatus={event.paymentStatus}
+                          isSubscriber={isSubscriber}
+                          eventStatus={event.status}
                         />
                       </td>
                     </tr>
@@ -188,7 +272,7 @@ export default async function EventsPage() {
                     </div>
                     <span className={cn(
                       "inline-flex items-center rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider",
-                      event.status === "ACTIVE" ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"
+                      event.status === "ACTIVE" ? "badge-status-success" : "badge-status-warning"
                     )}>
                       {event.status}
                     </span>
@@ -203,7 +287,7 @@ export default async function EventsPage() {
                     </div>
                     <div className="rounded-xl border border-border bg-background/50 p-3 text-center">
                        <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">Invitados</p>
-                       <p className="font-black text-[var(--color-midnight)]">{event._count.guests}</p>
+                       <p className="font-black text-foreground">{event._count.guests}</p>
                     </div>
                   </div>
 
@@ -231,6 +315,8 @@ export default async function EventsPage() {
                         eventTitle={event.title}
                         eventSlug={event.slug}
                         paymentStatus={event.paymentStatus}
+                        isSubscriber={isSubscriber}
+                        eventStatus={event.status}
                       />
                   </div>
                 </div>

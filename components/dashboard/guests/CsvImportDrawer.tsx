@@ -139,15 +139,15 @@ export default function CsvImportDrawer({ isOpen, onClose, eventId }: Props) {
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className="fixed inset-y-0 right-0 z-50 w-full max-w-xl bg-white shadow-2xl overflow-hidden flex flex-col"
+            className="fixed inset-y-0 right-0 z-50 flex w-full max-w-xl flex-col overflow-hidden border-l border-border bg-card text-card-foreground shadow-2xl"
           >
-            <div className="p-8 border-b border-black/5 flex items-center justify-between">
+            <div className="flex items-center justify-between border-b border-border p-8">
               <div>
-                <h2 className="text-2xl font-black text-[var(--color-midnight)] tracking-tight">Importar Invitados</h2>
-                <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-midnight)]/30">Carga masiva vía CSV</p>
+                <h2 className="text-2xl font-black tracking-tight">Importar Invitados</h2>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Carga masiva vía CSV</p>
               </div>
-              <button onClick={onClose} className="rounded-full p-2 hover:bg-black/5 transition-all">
-                <X className="h-5 w-5 text-[var(--color-midnight)]/40" />
+              <button onClick={onClose} className="rounded-full p-2 transition-all hover:bg-muted/60">
+                <X className="h-5 w-5 text-muted-foreground" />
               </button>
             </div>
 
@@ -156,13 +156,13 @@ export default function CsvImportDrawer({ isOpen, onClose, eventId }: Props) {
                 <div className="space-y-6">
                   <div 
                     onClick={() => fileInputRef.current?.click()}
-                    className="group border-2 border-dashed border-black/10 rounded-[2.5rem] p-12 flex flex-col items-center justify-center text-center cursor-pointer hover:border-[var(--color-brand)] hover:bg-[var(--color-brand)]/5 transition-all"
+                    className="group flex cursor-pointer flex-col items-center justify-center rounded-[2.5rem] border-2 border-dashed border-border p-12 text-center transition-all hover:border-[var(--color-brand)] hover:bg-[var(--color-brand)]/5"
                   >
-                    <div className="rounded-2xl bg-black/5 p-4 mb-4 group-hover:bg-[var(--color-brand)] group-hover:text-white transition-all">
+                    <div className="mb-4 rounded-2xl bg-muted p-4 transition-all group-hover:bg-[var(--color-brand)] group-hover:text-white">
                       <FileUp className="h-8 w-8" />
                     </div>
-                    <h3 className="font-bold text-[var(--color-midnight)]">Sube tu archivo CSV</h3>
-                    <p className="text-xs text-[var(--color-midnight)]/40 mt-1">Haz clic para seleccionar o arrastra y suelta</p>
+                    <h3 className="font-bold text-foreground">Sube tu archivo CSV</h3>
+                    <p className="mt-1 text-xs text-muted-foreground">Haz clic para seleccionar o arrastra y suelta</p>
                     <input 
                       type="file" 
                       ref={fileInputRef}
@@ -172,11 +172,11 @@ export default function CsvImportDrawer({ isOpen, onClose, eventId }: Props) {
                     />
                   </div>
 
-                  <div className="rounded-[2rem] bg-black/5 p-6 space-y-4">
-                    <h4 className="text-[10px] font-black uppercase tracking-widest text-[var(--color-midnight)]/40">Columnas soportadas</h4>
+                  <div className="space-y-4 rounded-[2rem] bg-muted p-6">
+                    <h4 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Columnas soportadas</h4>
                     <div className="flex flex-wrap gap-2">
                       {["nombre*", "teléfono", "email", "acompañantes", "relación", "invitado_por"].map(h => (
-                        <span key={h} className="rounded-full bg-white px-3 py-1 text-[10px] font-bold text-[var(--color-midnight)] border border-black/5">
+                        <span key={h} className="rounded-full border border-border bg-background px-3 py-1 text-[10px] font-bold text-foreground">
                           {h}
                         </span>
                       ))}
@@ -193,14 +193,14 @@ export default function CsvImportDrawer({ isOpen, onClose, eventId }: Props) {
               ) : (
                 <div className="space-y-6">
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="rounded-[2rem] bg-emerald-50 p-6 border border-emerald-100">
+                    <div className="rounded-[2rem] border border-emerald-200 bg-emerald-100/70 p-6 dark:border-emerald-900/60 dark:bg-emerald-900/20">
                       <div className="flex items-center gap-2 text-emerald-600 mb-1">
                         <CheckCircle2 className="h-4 w-4" />
                         <span className="text-[10px] font-black uppercase tracking-widest">Válidos</span>
                       </div>
                       <div className="text-2xl font-black text-emerald-700">{validationResults.valid.length}</div>
                     </div>
-                    <div className="rounded-[2rem] bg-rose-50 p-6 border border-rose-100">
+                    <div className="rounded-[2rem] border border-rose-200 bg-rose-100/70 p-6 dark:border-rose-900/60 dark:bg-rose-900/20">
                       <div className="flex items-center gap-2 text-rose-600 mb-1">
                         <AlertCircle className="h-4 w-4" />
                         <span className="text-[10px] font-black uppercase tracking-widest">Errores</span>
@@ -211,15 +211,15 @@ export default function CsvImportDrawer({ isOpen, onClose, eventId }: Props) {
 
                   {validationResults.invalid.length > 0 && (
                     <div className="space-y-3">
-                      <h4 className="text-[10px] font-black uppercase tracking-widest text-[var(--color-midnight)]/40 ml-1">Detalle de errores</h4>
+                      <h4 className="ml-1 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Detalle de errores</h4>
                       <div className="space-y-2">
                         {validationResults.invalid.slice(0, 5).map((err, i) => (
-                          <div key={i} className="text-xs p-3 rounded-xl bg-rose-50 text-rose-600 border border-rose-100">
+                          <div key={i} className="rounded-xl border border-rose-200 bg-rose-100/70 p-3 text-xs text-rose-700 dark:border-rose-900/60 dark:bg-rose-900/20 dark:text-rose-300">
                             Fila {err.row}: {err.errors.join(", ")}
                           </div>
                         ))}
                         {validationResults.invalid.length > 5 && (
-                          <div className="text-[10px] text-center text-[var(--color-midnight)]/40 font-bold">
+                          <div className="text-center text-[10px] font-bold text-muted-foreground">
                             ... y {validationResults.invalid.length - 5} errores más
                           </div>
                         )}
@@ -244,16 +244,16 @@ export default function CsvImportDrawer({ isOpen, onClose, eventId }: Props) {
                   )}
 
                   <div className="space-y-3">
-                    <h4 className="text-[10px] font-black uppercase tracking-widest text-[var(--color-midnight)]/40 ml-1">Vista previa (Primeros 5)</h4>
-                    <div className="rounded-2xl border border-black/5 overflow-hidden">
+                    <h4 className="ml-1 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Vista previa (Primeros 5)</h4>
+                    <div className="overflow-hidden rounded-2xl border border-border">
                       <table className="w-full text-left text-[10px]">
-                        <thead className="bg-black/5">
+                        <thead className="bg-muted/40">
                           <tr>
                             <th className="px-4 py-2 font-black uppercase">Nombre</th>
                             <th className="px-4 py-2 font-black uppercase">Teléfono</th>
                           </tr>
                         </thead>
-                        <tbody className="divide-y divide-black/5">
+                        <tbody className="divide-y divide-border">
                           {validationResults.valid.slice(0, 5).map((v, i) => (
                             <tr key={i}>
                               <td className="px-4 py-2 font-medium">{v.name}</td>
@@ -268,10 +268,10 @@ export default function CsvImportDrawer({ isOpen, onClose, eventId }: Props) {
               )}
             </div>
 
-            <div className="p-8 border-t border-black/5 bg-black/5 flex gap-4">
+            <div className="flex gap-4 border-t border-border bg-muted/40 p-8">
               <button
                 onClick={step === 1 ? onClose : () => setStep(1)}
-                className="flex-1 rounded-full bg-white py-4 text-sm font-bold text-[var(--color-midnight)] border border-black/5 hover:bg-black/10 transition-all"
+                className="flex-1 rounded-full border border-border bg-background py-4 text-sm font-bold text-foreground transition-all hover:bg-muted"
               >
                 {step === 1 ? "Cancelar" : "Atrás"}
               </button>
@@ -285,7 +285,7 @@ export default function CsvImportDrawer({ isOpen, onClose, eventId }: Props) {
                 onClick={handleImport}
                 className={cn(
                   "flex-[2] flex items-center justify-center gap-2 rounded-full py-4 text-sm font-bold text-white shadow-xl active:scale-95 transition-all disabled:opacity-50",
-                  "bg-[var(--color-midnight)] shadow-[var(--color-midnight)]/10 hover:shadow-[var(--color-midnight)]/20"
+                  "bg-primary text-primary-foreground shadow-black/10 hover:shadow-black/20"
                 )}
               >
                 {isProcessing ? (

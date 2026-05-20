@@ -12,7 +12,7 @@ import { GiftRegistry } from "./sections/GiftRegistry";
 import { ShareSection } from "./sections/ShareSection";
 import { useState } from "react";
 import type { Event, Guest, Rsvp, Template, User } from "@prisma/client";
-import type { EventSettings } from "@/types/event-settings";
+import type { WeddingSettings } from "@/types/event-settings";
 
 export type AuroraProps = {
   event: Event & { template: Template; user: User };
@@ -21,7 +21,7 @@ export type AuroraProps = {
 
 export function AuroraTemplate({ event, guest }: AuroraProps) {
   const [opened, setOpened] = useState(false);
-  const settings = event.settings as unknown as EventSettings;
+  const settings = event.settings as unknown as WeddingSettings;
   const activeSections = (event.activeSections as Record<string, boolean>) || {};
 
   return (
@@ -41,10 +41,10 @@ export function AuroraTemplate({ event, guest }: AuroraProps) {
                   location={{ lat: event.locationLat, lng: event.locationLng, name: event.locationName, address: event.locationAddress }} 
                 />
               )}
-              {activeSections.dressCode !== false && <DressCodeMoodboard data={settings.dressCode} />}
+              {activeSections.dressCode === true && <DressCodeMoodboard data={settings.dressCode} />}
               {activeSections.gallery !== false && <PhotoGallery images={settings.gallery} />}
               {activeSections.weather !== false && <WeatherForecast location={{ lat: event.locationLat, lng: event.locationLng }} />}
-              {activeSections.giftRegistry !== false && <GiftRegistry config={settings.giftRegistry} />}
+              {activeSections.giftRegistry === true && <GiftRegistry config={settings.giftRegistry} />}
               {activeSections.rsvp !== false && <RsvpForm guest={guest} eventSlug={event.slug} guestToken={guest.uniqueToken} />}
               <ShareSection title={event.title} slug={event.slug} uniqueToken={guest.uniqueToken} />
             </>

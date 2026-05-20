@@ -1,12 +1,72 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { AuroraTemplate } from "@/components/templates/Aurora";
+import { ConfettiTemplate } from "@/components/templates/Confetti";
+import { BloomTemplate } from "@/components/templates/Bloom";
+import { NubeTemplate } from "@/components/templates/Nube";
+
+import type { Metadata } from "next";
 
 interface PageProps {
   params: Promise<{
     slug: string;
     guestToken: string;
   }>;
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { slug, guestToken } = await params;
+  
+  const event = await prisma.event.findUnique({
+    where: { slug: slug },
+    select: { title: true, coverImage: true, type: true }
+  });
+
+  if (!event) return { title: "Invitación no encontrada | Momentum" };
+
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_BASE_URL || "https://momentuminvites.com";
+  
+  const TYPE_LABELS: Record<string, string> = {
+    WEDDING: "Nuestra Boda",
+    XV: "Mis XV Años",
+    BIRTHDAY: "Mi Cumpleaños",
+    CORPORATE: "Evento",
+    BAPTISM: "Bautizo",
+    GRADUATION: "Graduación",
+    BABY_SHOWER: "Baby Shower",
+  };
+  
+  const eventType = TYPE_LABELS[event.type] || "Evento Especial";
+  const title = event.title;
+  const description = `Estás invitado a este gran ${eventType.toLowerCase()}. Haz clic para ver todos los detalles de tu invitación personal.`;
+  const image = event.coverImage || `${baseUrl}/og-default.png`;
+
+  return {
+    title: `${title} | Invitación Personal`,
+    description,
+    openGraph: {
+      title,
+      description,
+      url: `${baseUrl}/e/${slug}/${guestToken}`,
+      siteName: "Momentum Invites",
+      images: [
+        {
+          url: image,
+          width: 1200,
+          height: 630,
+          alt: title,
+        },
+      ],
+      locale: "es_MX",
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [image],
+    },
+  };
 }
 
 export default async function InvitationPage({ params }: PageProps) {
@@ -77,7 +137,15 @@ export default async function InvitationPage({ params }: PageProps) {
   }).catch(console.error);
 
   // 4. Renderizar el template correspondiente
-  // Por ahora asumimos que todos van a Aurora según el seed, pero en el futuro
-  // se podría hacer un switch(event.template.slug)
-  return <AuroraTemplate event={event} guest={guest} />;
+  switch (event.template.slug) {
+    case "nube":
+      return <NubeTemplate event={event} guest={guest} />;
+    case "bloom":
+      return <BloomTemplate event={event} guest={guest} />;
+    case "confetti":
+      return <ConfettiTemplate event={event} guest={guest} />;
+    case "aurora":
+    default:
+      return <AuroraTemplate event={event} guest={guest} />;
+  }
 }
