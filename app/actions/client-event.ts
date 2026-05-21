@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { generateUniqueToken } from "@/lib/guest-helpers";
+import { checkGuestLimit } from "@/lib/tier-gate";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -265,6 +266,16 @@ export async function addClientGuest(
 
     const parsed = guestSchema.safeParse(data);
     if (!parsed.success) return { success: false, error: parsed.error.issues[0].message };
+
+    // Validar límite de invitados del tier
+    const currentCount = await prisma.guest.count({ where: { eventId } });
+    const { allowed, limit } = checkGuestLimit(event.tier, currentCount, 1);
+    if (!allowed) {
+      return {
+        success: false,
+        error: `Tu plan permite un máximo de ${limit} invitados. Actualiza tu plan para agregar más.`,
+      };
+    }
 
     let token = generateUniqueToken();
     for (let i = 0; i < 5; i++) {

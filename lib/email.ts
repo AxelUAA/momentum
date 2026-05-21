@@ -81,7 +81,7 @@ export async function sendStatusEmail(
 ) {
   if (!resend) return { success: false, error: "Resend no configurado" };
 
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://momentuminvites.com";
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://momentuminvites.com";
   const portalUrl = event.clientToken
     ? `${baseUrl}/portal/${event.clientToken}`
     : `${baseUrl}/dashboard/events/${event.id}/progress`;

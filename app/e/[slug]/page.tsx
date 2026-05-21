@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
+import { resolveActiveSections } from "@/lib/tier-gate";
 import { AuroraTemplate } from "@/components/templates/Aurora";
 import { ConfettiTemplate } from "@/components/templates/Confetti";
 import { BloomTemplate } from "@/components/templates/Bloom";
@@ -144,18 +145,25 @@ export default async function PublicInvitationPage({ params, searchParams }: Pag
     rsvp: null
   };
 
-  // 3. Renderizar template según el slug del template del evento
+  // 3. Aplicar tier-gate sobre activeSections antes de pasarlo al template
+  const guardedSections = resolveActiveSections(
+    event.tier,
+    (event.activeSections ?? {}) as Record<string, boolean>,
+  );
+  const eventForTemplate = { ...event, activeSections: guardedSections };
+
+  // 4. Renderizar template según el slug del template del evento
   const templateSlug = event.template.slug;
 
   switch (templateSlug) {
     case "nube":
-      return <NubeTemplate event={event as any} guest={mockGuest as any} />;
+      return <NubeTemplate event={eventForTemplate as any} guest={mockGuest as any} />;
     case "bloom":
-      return <BloomTemplate event={event as any} guest={mockGuest as any} />;
+      return <BloomTemplate event={eventForTemplate as any} guest={mockGuest as any} />;
     case "confetti":
-      return <ConfettiTemplate event={event as any} guest={mockGuest as any} />;
+      return <ConfettiTemplate event={eventForTemplate as any} guest={mockGuest as any} />;
     case "aurora":
     default:
-      return <AuroraTemplate event={event as any} guest={mockGuest as any} />;
+      return <AuroraTemplate event={eventForTemplate as any} guest={mockGuest as any} />;
   }
 }

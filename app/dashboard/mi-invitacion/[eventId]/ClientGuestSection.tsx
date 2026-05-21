@@ -12,16 +12,17 @@ interface Props {
   initialGuests: Guest[];
   isActive: boolean;
   isFree: boolean;
+  maxGuests: number | null;
 }
 
-const FREE_GUEST_LIMIT = 20;
+
 
 const BASE_URL =
   typeof window !== "undefined"
     ? window.location.origin
     : process.env.NEXT_PUBLIC_BASE_URL || "https://momentum-alpha-six.vercel.app";
 
-export function ClientGuestSection({ eventId, slug, initialGuests, isActive, isFree }: Props) {
+export function ClientGuestSection({ eventId, slug, initialGuests, isActive, isFree, maxGuests }: Props) {
   const [guests, setGuests] = useState<Guest[]>(initialGuests);
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ name: "", phone: "", email: "", allowedGuests: 1 });
@@ -29,7 +30,7 @@ export function ClientGuestSection({ eventId, slug, initialGuests, isActive, isF
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
-  const guestLimit = isFree ? FREE_GUEST_LIMIT : null;
+  const guestLimit = maxGuests;
   const atLimit = guestLimit !== null && guests.length >= guestLimit;
 
   function guestLink(token: string) {
@@ -84,7 +85,7 @@ export function ClientGuestSection({ eventId, slug, initialGuests, isActive, isF
             <p className="text-xs text-muted-foreground mt-0.5">
               {guests.length === 0
                 ? "Agrega invitados para enviarles su link personalizado"
-                : `${guests.length}${guestLimit ? `/${guestLimit}` : ""} invitado${guests.length !== 1 ? "s" : ""}`}
+                : `${guests.length}${guestLimit !== null ? `/${guestLimit}` : " (Ilimitados)"} invitado${guests.length !== 1 ? "s" : ""}`}
             </p>
           </div>
         </div>
@@ -95,9 +96,12 @@ export function ClientGuestSection({ eventId, slug, initialGuests, isActive, isF
 
       <div className="p-6 space-y-4">
         {/* Free limit warning */}
-        {isFree && (
+        {guestLimit !== null && (
           <div className="rounded-xl bg-muted/50 border border-border px-4 py-3 text-xs text-muted-foreground">
-            Invitación gratis — máximo {FREE_GUEST_LIMIT} invitados. Los links personalizados estarán disponibles cuando tu invitación esté activa.
+            {isFree
+              ? `Invitación gratis — máximo ${guestLimit} invitados. Los links personalizados estarán disponibles cuando tu invitación esté activa.`
+              : `Tu plan permite un máximo de ${guestLimit} invitados.`
+            }
           </div>
         )}
 

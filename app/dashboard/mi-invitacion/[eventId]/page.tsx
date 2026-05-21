@@ -8,6 +8,7 @@ import {
   Image as ImageIcon, Lock, Sparkles, Star, TrendingUp,
 } from "lucide-react";
 import { getClientEventData } from "@/app/actions/client-event";
+import { getTierFeatures } from "@/lib/event-sections-map";
 import { ClientEventForm } from "./ClientEventForm";
 import { ClientImageSection } from "./ClientImageSection";
 import { ClientGuestSection } from "./ClientGuestSection";
@@ -268,9 +269,10 @@ export default async function ClientEventPage({ params }: Props) {
   if (!event) notFound();
 
   const isFree = event.tier === "FREE";
+  const features = getTierFeatures(event.tier);
   const isActive = event.status === "ACTIVE" || event.status === "COMPLETED";
   const isEditable = !["ACTIVE", "COMPLETED", "ARCHIVED"].includes(event.status);
-  const canManagePhotos = !isFree && !["DRAFT", "PAID"].includes(event.status);
+  const canManagePhotos = features.gallery && !["DRAFT", "PAID"].includes(event.status);
   const canManageGuests = !["DRAFT", "PAID"].includes(event.status);
   const tierLabel = TIER_LABEL[event.tier] ?? event.tier;
 
@@ -365,6 +367,7 @@ export default async function ClientEventPage({ params }: Props) {
           initialGuests={event.guests}
           isActive={isActive}
           isFree={isFree}
+          maxGuests={features.maxGuests}
         />
       )}
 

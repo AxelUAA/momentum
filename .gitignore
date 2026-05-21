@@ -44,3 +44,6 @@ next-env.d.ts
 
 # dev scratch (debug scripts, not for prod)
 /scratch
+
+# Claude local config (permisos locales, no subir)
+.claude/

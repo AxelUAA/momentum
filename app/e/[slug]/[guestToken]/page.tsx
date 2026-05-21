@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { resolveActiveSections } from "@/lib/tier-gate";
 import { AuroraTemplate } from "@/components/templates/Aurora";
 import { ConfettiTemplate } from "@/components/templates/Confetti";
 import { BloomTemplate } from "@/components/templates/Bloom";
@@ -136,16 +137,23 @@ export default async function InvitationPage({ params }: PageProps) {
     }
   }).catch(console.error);
 
-  // 4. Renderizar el template correspondiente
+  // 4. Aplicar tier-gate sobre activeSections
+  const guardedSections = resolveActiveSections(
+    event.tier,
+    (event.activeSections ?? {}) as Record<string, boolean>,
+  );
+  const eventForTemplate = { ...event, activeSections: guardedSections };
+
+  // 5. Renderizar el template correspondiente
   switch (event.template.slug) {
     case "nube":
-      return <NubeTemplate event={event} guest={guest} />;
+      return <NubeTemplate event={eventForTemplate as any} guest={guest} />;
     case "bloom":
-      return <BloomTemplate event={event} guest={guest} />;
+      return <BloomTemplate event={eventForTemplate as any} guest={guest} />;
     case "confetti":
-      return <ConfettiTemplate event={event} guest={guest} />;
+      return <ConfettiTemplate event={eventForTemplate as any} guest={guest} />;
     case "aurora":
     default:
-      return <AuroraTemplate event={event} guest={guest} />;
+      return <AuroraTemplate event={eventForTemplate as any} guest={guest} />;
   }
 }

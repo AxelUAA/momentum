@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import { revalidatePath } from "next/cache";
 import { generateUniqueToken } from "@/lib/guest-helpers";
 import { guestFormSchema, type GuestFormData } from "@/types/guest";
+import { checkGuestLimit } from "@/lib/tier-gate";
 
 async function requireAdmin() {
   const session = await auth();
@@ -18,6 +19,22 @@ export async function createGuest(eventId: string, data: GuestFormData) {
   const parsed = guestFormSchema.safeParse(data);
   if (!parsed.success) {
     return { success: false, error: parsed.error.issues[0].message };
+  }
+
+  // Validar límite de invitados del tier
+  const event = await prisma.event.findUnique({
+    where: { id: eventId },
+    select: { tier: true },
+  });
+  if (!event) return { success: false, error: "Evento no encontrado" };
+
+  const currentCount = await prisma.guest.count({ where: { eventId } });
+  const { allowed, limit } = checkGuestLimit(event.tier, currentCount, 1);
+  if (!allowed) {
+    return {
+      success: false,
+      error: `Tu plan permite un máximo de ${limit} invitados.`,
+    };
   }
 
   // Genera token único, reintenta si hay colisión
@@ -95,11 +112,28 @@ export async function bulkCreateGuests(
   const results = { created: 0, failed: 0, errors: [] as string[] };
 
   try {
+    // Validar límite de invitados del tier antes de procesar el batch
+    const event = await prisma.event.findUnique({
+      where: { id: eventId },
+      select: { tier: true },
+    });
+    if (!event) return { success: false, error: "Evento no encontrado" };
+
     // Pre-fetch existing emails/phones for this event
     const existing = await prisma.guest.findMany({
       where: { eventId },
       select: { email: true, phone: true },
     });
+
+    const currentCount = existing.length;
+    const { allowed, limit } = checkGuestLimit(event.tier, currentCount, guests.length);
+    if (!allowed) {
+      return {
+        success: false,
+        error: `Tu plan permite un máximo de ${limit} invitados. Actualmente tienes ${currentCount} y estás intentando agregar ${guests.length}.`,
+      };
+    }
+
     const existingEmails = new Set(
       existing.map((g) => g.email).filter((v): v is string => Boolean(v))
     );

@@ -1,37 +1,35 @@
 # Momentum
 
-Plataforma premium para la gestión y creación de invitaciones digitales y eventos de lujo.
+Plataforma SaaS premium para la creación y gestión de invitaciones digitales de lujo.
 
-## Características
+## Stack
 
-- 🎨 **Diseño Exquisito**: Estética minimalista con paleta de colores champagne y azul medianoche.
-- ⚡ **Alto Rendimiento**: Construido con Next.js y optimizado para una carga instantánea.
-- 📱 **Mobile First**: Experiencia perfecta en cualquier dispositivo.
-- 🔐 **Seguridad**: Autenticación robusta y manejo seguro de datos.
+- **Framework**: Next.js 16 (App Router) + React 19 + TypeScript 5
+- **Estilos**: Tailwind CSS v4 + Shadcn/ui
+- **Base de Datos**: PostgreSQL (Supabase) + Prisma ORM
+- **Autenticación**: NextAuth.js v5 + Google OAuth
+- **Pagos**: Stripe (one-time + suscripciones, OXXO/SPEI/tarjeta)
+- **Email**: Resend + React Email
+- **Storage**: Supabase Storage (imágenes/PDFs)
+- **Deploy**: Vercel
 
-## Desarrollo
-
-Primero, instala las dependencias:
+## Desarrollo local
 
 ```bash
 npm install
-```
-
-Luego, inicia el servidor de desarrollo:
-
-```bash
 npm run dev
 ```
 
-Abre [http://localhost:3000](http://localhost:3000) en tu navegador para ver el resultado.
+Requiere `.env.local` configurado (ver `.env.example`).
 
-## Tecnologías
+## Templates disponibles
 
-- **Framework**: Next.js 15+
-- **Estilos**: Tailwind CSS
-- **Base de Datos**: Prisma / PostgreSQL
-- **Autenticación**: NextAuth.js
-- **Componentes**: Shadcn UI / Magic UI
+| Template | Tipo de evento |
+|----------|---------------|
+| Aurora | Bodas |
+| Bloom | Quinceañeras (XV) |
+| Confetti | Cumpleaños |
+| Nube | Baby Shower |
 
 ---
 
