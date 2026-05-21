@@ -32,7 +32,7 @@ export const eventFormSchema = z.object({
 
   // Paso 1: Info básica (compartido)
   type: z.enum(["WEDDING","XV","BIRTHDAY","CORPORATE","BAPTISM","GRADUATION","BABY_SHOWER","CASUAL","OTHER"]),
-  tier: z.enum(["EXPRESS","ESSENTIAL","COMPLETE","LUXURY"]),
+  tier: z.enum(["FREE","EXPRESS","ESSENTIAL","COMPLETE","LUXURY"]),
   templateId: z.string().optional(),
   title: z.string().optional(),
   slug: z.union([z.string().regex(/^[a-z0-9-]+$/, "Solo minúsculas, números y guiones"), z.literal("")]).optional(),

@@ -1,5 +1,6 @@
 "use server";
 
+import React from "react";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { sendPortalRecoveryEmail } from "@/lib/email-senders";
@@ -142,6 +143,7 @@ export async function submitIntake(
       where: { clientToken },
       select: {
         id: true,
+        type: true,
         status: true,
         settings: true,
         title: true,
@@ -172,6 +174,159 @@ export async function submitIntake(
       intake: data.typeFields,
     };
 
+    const tf = data.typeFields;
+    const patch: Record<string, unknown> = {};
+
+    if (tf.spotifyUrl?.trim()) {
+      patch.musicUrl = tf.spotifyUrl.trim();
+    }
+
+    if (tf.dressCode?.trim()) {
+      const existingDressCode =
+        (currentSettings.dressCode as Record<string, unknown>) ?? {};
+      patch.dressCode = {
+        title: "Código de vestimenta",
+        description: tf.dressCode.trim(),
+        images: (existingDressCode.images as string[]) ?? [],
+      };
+    }
+
+    if (tf.giftRegistry?.trim()) {
+      patch.giftRegistry = [
+        { store: "Mesa de regalos", url: tf.giftRegistry.trim() },
+      ];
+    }
+
+    switch (event.type) {
+      case "WEDDING":
+        if (tf.coupleName?.trim() && !currentSettings.story) {
+          patch.story = `${tf.coupleName.trim()} se unen en matrimonio.`;
+        }
+        if (data.locationName?.trim()) {
+          const existingCeremony =
+            (currentSettings.ceremony as Record<string, unknown>) ?? {};
+          patch.ceremony = {
+            ...existingCeremony,
+            name: data.locationName.trim(),
+            address:
+              data.locationAddress?.trim() ??
+              (existingCeremony.address as string) ??
+              "",
+          };
+        }
+        break;
+
+      case "XV":
+        if (tf.honoree?.trim()) {
+          patch.celebrantName = tf.honoree.trim();
+        }
+        if (data.locationName?.trim()) {
+          const existingFiesta =
+            (currentSettings.fiesta as Record<string, unknown>) ?? {};
+          patch.fiesta = {
+            ...existingFiesta,
+            name: data.locationName.trim(),
+            address:
+              data.locationAddress?.trim() ??
+              (existingFiesta.address as string) ??
+              "",
+          };
+        }
+        break;
+
+      case "BIRTHDAY":
+        if (tf.honoree?.trim()) patch.celebrantName = tf.honoree.trim();
+        if (tf.age?.trim()) {
+          const age = parseInt(tf.age, 10);
+          if (!isNaN(age)) patch.celebrantAge = age;
+        }
+        if (tf.theme?.trim()) patch.babyShowerTheme = tf.theme.trim();
+        if (data.locationName?.trim()) {
+          const existingVenue =
+            (currentSettings.venue as Record<string, unknown>) ?? {};
+          patch.venue = {
+            ...existingVenue,
+            name: data.locationName.trim(),
+            address:
+              data.locationAddress?.trim() ??
+              (existingVenue.address as string) ??
+              "",
+          };
+        }
+        break;
+
+      case "BABY_SHOWER":
+        if (tf.honoree?.trim()) {
+          const existingParents =
+            (currentSettings.parentNames as Record<string, unknown>) ?? {};
+          patch.parentNames = { ...existingParents, mom: tf.honoree.trim() };
+        }
+        if (tf.babyName?.trim()) patch.babyName = tf.babyName.trim();
+        if (tf.theme?.trim()) patch.babyShowerTheme = tf.theme.trim();
+        if (data.locationName?.trim()) {
+          const existingVenue =
+            (currentSettings.venue as Record<string, unknown>) ?? {};
+          patch.venue = {
+            ...existingVenue,
+            name: data.locationName.trim(),
+            address:
+              data.locationAddress?.trim() ??
+              (existingVenue.address as string) ??
+              "",
+          };
+        }
+        break;
+
+      case "BAPTISM":
+        if (tf.honoree?.trim()) patch.celebrantName = tf.honoree.trim();
+        if (data.locationName?.trim()) {
+          const existingCeremony =
+            (currentSettings.ceremony as Record<string, unknown>) ?? {};
+          patch.ceremony = {
+            ...existingCeremony,
+            name: data.locationName.trim(),
+            address:
+              data.locationAddress?.trim() ??
+              (existingCeremony.address as string) ??
+              "",
+          };
+        }
+        break;
+
+      case "GRADUATION":
+        if (tf.honoree?.trim()) patch.celebrantName = tf.honoree.trim();
+        if (data.locationName?.trim()) {
+          const existingVenue =
+            (currentSettings.venue as Record<string, unknown>) ?? {};
+          patch.venue = {
+            ...existingVenue,
+            name: data.locationName.trim(),
+            address:
+              data.locationAddress?.trim() ??
+              (existingVenue.address as string) ??
+              "",
+          };
+        }
+        break;
+
+      case "CORPORATE":
+        if (data.locationName?.trim()) {
+          const existingVenue =
+            (currentSettings.venue as Record<string, unknown>) ?? {};
+          patch.venue = {
+            ...existingVenue,
+            name: data.locationName.trim(),
+            address:
+              data.locationAddress?.trim() ??
+              (existingVenue.address as string) ??
+              "",
+          };
+        }
+        break;
+    }
+
+    const finalSettings = { ...updatedSettings, ...patch };
+
     await prisma.event.update({
       where: { id: event.id },
       data: {
@@ -181,12 +336,12 @@ export async function submitIntake(
         locationAddress: data.locationAddress.trim() || null,
         coverImage: data.coverImageUrl.trim() || undefined,
         intakeNotes: data.intakeNotes.trim() || null,
-        settings: updatedSettings,
+        settings: finalSettings,
         status: "INTAKE_COMPLETE",
       },
     });
 
-    // Notificar al organizador que el intake fue completado
+    // 1. Confirmación al cliente
     try {
       if (event.user?.email) {
         await sendStatusEmail(
@@ -201,7 +356,69 @@ export async function submitIntake(
         );
       }
     } catch (emailErr) {
-      console.error("[submitIntake] email notification failed:", emailErr);
+      console.error("[submitIntake] email al cliente falló:", emailErr);
+    }
+
+    // 2. Notificación al admin — nueva
+    try {
+      const { sendEmail, REPLY_TO_EMAIL } = await import("@/lib/email");
+      const { resend } = await import("@/lib/email");
+      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://momentuminvites.com";
+      const adminUrl = `${baseUrl}/dashboard/admin/operations/${event.id}`;
+      const clientDisplay =
+        data.typeFields?.coupleName ||
+        data.typeFields?.honoree ||
+        data.typeFields?.company ||
+        event.title;
+
+      const fieldLines = Object.entries(data.typeFields ?? {})
+        .filter(([, v]) => v?.trim())
+        .map(([k, v]) => `• ${k}: ${v}`)
+        .join("\n");
+
+      if (resend) {
+        await sendEmail({
+          to: REPLY_TO_EMAIL,
+          subject: `📋 Nuevo intake listo — "${event.title}"`,
+          react: React.createElement(
+            "div",
+            { style: { fontFamily: "sans-serif", padding: "24px", maxWidth: "600px" } },
+            React.createElement("h2", { style: { marginBottom: "8px" } }, "Intake completado ✅"),
+            React.createElement(
+              "p",
+              { style: { color: "#555", marginBottom: "16px" } },
+              "El cliente ",
+              React.createElement("strong", null, clientDisplay),
+              " completó su información para ",
+              React.createElement("strong", null, `"${event.title}"`),
+              ". Ya puedes empezar a construir la invitación."
+            ),
+            fieldLines
+              ? React.createElement(
+                  "div",
+                  { style: { background: "#f9fafb", border: "1px solid #e5e7eb", borderRadius: "8px", padding: "16px", marginBottom: "16px" } },
+                  React.createElement("p", { style: { fontWeight: "bold", margin: "0 0 8px" } }, "Datos del cliente:"),
+                  React.createElement("pre", { style: { margin: 0, fontSize: "13px", whiteSpace: "pre-wrap", color: "#374151" } }, fieldLines)
+                )
+              : null,
+            data.intakeNotes?.trim()
+              ? React.createElement(
+                  "div",
+                  { style: { background: "#fffbeb", border: "1px solid #fde68a", borderRadius: "8px", padding: "16px", marginBottom: "16px" } },
+                  React.createElement("p", { style: { fontWeight: "bold", margin: "0 0 8px" } }, "Notas adicionales:"),
+                  React.createElement("p", { style: { margin: 0, fontSize: "13px", color: "#374151" } }, data.intakeNotes)
+                )
+              : null,
+            React.createElement(
+              "a",
+              { href: adminUrl, style: { display: "inline-block", background: "#1e1b4b", color: "#fff", padding: "10px 20px", borderRadius: "8px", textDecoration: "none", fontWeight: "bold" } },
+              "Ver en operaciones →"
+            )
+          ),
+        });
+      }
+    } catch (adminEmailErr) {
+      console.error("[submitIntake] email al admin falló:", adminEmailErr);
     }
 
     revalidatePath(`/portal/${clientToken}`);

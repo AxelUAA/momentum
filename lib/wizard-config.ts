@@ -72,6 +72,7 @@ export const WIZARD_STEPS: Record<string, StepConfig[]> = {
 
 const DEFAULT_STEPS: StepConfig[] = [
   { title: "Básicos", component: Step1BasicInfo },
+  { title: "Diseño", component: Step2Template },
   { title: "Lugar", component: Step3SingleVenue },
   { title: "Dress Code", component: Step4DressCode },
   { title: "Avanzado", component: Step5Advanced },

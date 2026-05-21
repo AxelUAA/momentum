@@ -216,19 +216,25 @@ export default async function EventsPage() {
                         </span>
                       </td>
                       <td className="px-6 py-4 text-center">
-                        {(() => {
-                          const badge = PAYMENT_BADGE[event.paymentStatus] ?? PAYMENT_BADGE.UNPAID;
-                          return (
-                            <span
-                              className={cn(
-                                "inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider",
-                                badge.className,
-                              )}
-                            >
-                              {badge.label}
-                            </span>
-                          );
-                        })()}
+                        {event.tier === "FREE" ? (
+                          <span className="inline-flex items-center rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-400 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider">
+                            No aplica
+                          </span>
+                        ) : (
+                          (() => {
+                            const badge = PAYMENT_BADGE[event.paymentStatus] ?? PAYMENT_BADGE.UNPAID;
+                            return (
+                              <span
+                                className={cn(
+                                  "inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider",
+                                  badge.className,
+                                )}
+                              >
+                                {badge.label}
+                              </span>
+                            );
+                          })()
+                        )}
                       </td>
                       <td className="px-6 py-4 text-center">
                         <span className={cn(
@@ -251,6 +257,7 @@ export default async function EventsPage() {
                           paymentStatus={event.paymentStatus}
                           isSubscriber={isSubscriber}
                           eventStatus={event.status}
+                          eventTier={event.tier}
                         />
                       </td>
                     </tr>
@@ -296,19 +303,25 @@ export default async function EventsPage() {
                        <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-brand)] bg-[var(--color-brand)]/10 px-2 py-1 rounded-md">
                           {event.type}
                        </span>
-                       {(() => {
-                         const badge = PAYMENT_BADGE[event.paymentStatus] ?? PAYMENT_BADGE.UNPAID;
-                         return (
-                           <span
-                             className={cn(
-                               "inline-flex items-center rounded-md px-2 py-1 text-[10px] font-bold uppercase tracking-wider",
-                               badge.className,
-                             )}
-                           >
-                             {badge.label}
-                           </span>
-                         );
-                       })()}
+                       {event.tier === "FREE" ? (
+                         <span className="inline-flex items-center rounded-md bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-400 px-2 py-1 text-[10px] font-bold uppercase tracking-wider">
+                           No aplica
+                         </span>
+                       ) : (
+                         (() => {
+                           const badge = PAYMENT_BADGE[event.paymentStatus] ?? PAYMENT_BADGE.UNPAID;
+                           return (
+                             <span
+                               className={cn(
+                                 "inline-flex items-center rounded-md px-2 py-1 text-[10px] font-bold uppercase tracking-wider",
+                                 badge.className,
+                               )}
+                             >
+                               {badge.label}
+                             </span>
+                           );
+                         })()
+                       )}
                      </div>
                      <EventActions
                         eventId={event.id}
@@ -317,6 +330,7 @@ export default async function EventsPage() {
                         paymentStatus={event.paymentStatus}
                         isSubscriber={isSubscriber}
                         eventStatus={event.status}
+                        eventTier={event.tier}
                       />
                   </div>
                 </div>

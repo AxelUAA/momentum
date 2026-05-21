@@ -156,57 +156,73 @@ export default async function EventDetailPage({ params }: { params: { id: string
         </div>
       </div>
 
-      <div className="space-y-4 rounded-2xl border border-border bg-card p-6 text-card-foreground shadow-sm">
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-            Estado de pago
-          </span>
-          <span className={cn("rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider", paymentBadgeClass)}>
-            {event.paymentStatus}
-          </span>
-          {event.subscriptionId ? (
-            <span className="rounded-full bg-[var(--color-brand)]/20 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[var(--color-brand)]">
-              Cubierto por suscripción
+      {event.tier !== "FREE" ? (
+        <div className="space-y-4 rounded-2xl border border-border bg-card p-6 text-card-foreground shadow-sm">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+              Estado de pago
             </span>
+            <span className={cn("rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider", paymentBadgeClass)}>
+              {event.paymentStatus}
+            </span>
+            {event.subscriptionId ? (
+              <span className="rounded-full bg-[var(--color-brand)]/20 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[var(--color-brand)]">
+                Cubierto por suscripción
+              </span>
+            ) : null}
+          </div>
+
+          {event.paymentStatus === "PAID" ? (
+            <div className="grid grid-cols-1 gap-2 text-sm text-muted-foreground sm:grid-cols-2">
+              <p>
+                Pagado el:{" "}
+                <span className="font-semibold text-foreground">
+                  {event.paidAt ? format(new Date(event.paidAt), "d 'de' MMM yyyy", { locale: es }) : "—"}
+                </span>
+              </p>
+              <p>
+                Activo hasta:{" "}
+                <span className="font-semibold text-foreground">
+                  {event.activeUntil
+                    ? format(new Date(event.activeUntil), "d 'de' MMM yyyy", { locale: es })
+                    : "—"}
+                </span>
+              </p>
+            </div>
+          ) : null}
+
+          {event.paymentStatus === "UNPAID" ? (
+            <form action={startOneTimePayment}>
+              <button
+                type="submit"
+                className="inline-flex rounded-lg bg-accent px-5 py-3 text-sm font-bold uppercase tracking-wider text-accent-foreground transition-opacity hover:opacity-90"
+              >
+                Pagar ahora
+              </button>
+            </form>
+          ) : null}
+
+          {event.paymentStatus === "PENDING_VOUCHER" ? (
+            <p className="text-sm text-muted-foreground">
+              Esperando confirmación del pago en OXXO/SPEI.
+            </p>
           ) : null}
         </div>
-
-        {event.paymentStatus === "PAID" ? (
-          <div className="grid grid-cols-1 gap-2 text-sm text-muted-foreground sm:grid-cols-2">
-            <p>
-              Pagado el:{" "}
-              <span className="font-semibold text-foreground">
-                {event.paidAt ? format(new Date(event.paidAt), "d 'de' MMM yyyy", { locale: es }) : "—"}
-              </span>
-            </p>
-            <p>
-              Activo hasta:{" "}
-              <span className="font-semibold text-foreground">
-                {event.activeUntil
-                  ? format(new Date(event.activeUntil), "d 'de' MMM yyyy", { locale: es })
-                  : "—"}
-              </span>
-            </p>
+      ) : (
+        <div className="space-y-4 rounded-2xl border border-border bg-card p-6 text-card-foreground shadow-sm">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+              Tipo de Invitación
+            </span>
+            <span className="rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-400 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider">
+              Gratuita
+            </span>
           </div>
-        ) : null}
-
-        {event.paymentStatus === "UNPAID" ? (
-          <form action={startOneTimePayment}>
-            <button
-              type="submit"
-              className="inline-flex rounded-lg bg-accent px-5 py-3 text-sm font-bold uppercase tracking-wider text-accent-foreground transition-opacity hover:opacity-90"
-            >
-              Pagar ahora
-            </button>
-          </form>
-        ) : null}
-
-        {event.paymentStatus === "PENDING_VOUCHER" ? (
           <p className="text-sm text-muted-foreground">
-            Esperando confirmación del pago en OXXO/SPEI.
+            Esta invitación es gratuita y no requiere pago. Será revisada y activada por el administrador.
           </p>
-        ) : null}
-      </div>
+        </div>
+      )}
 
       {/* Publish / Unpublish — self-service subscribers only */}
       {activeSubscription ? (

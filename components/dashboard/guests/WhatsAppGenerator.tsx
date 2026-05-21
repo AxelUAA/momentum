@@ -31,7 +31,10 @@ Por favor confirma antes del {deadline}.
   
   const filteredGuests = useMemo(() => {
     return guests.filter(g => {
-      if (onlyNoRsvp && g.rsvp && g.rsvp.status !== "PENDING") return false;
+      if (onlyNoRsvp) {
+        const rsvpStatus = g.rsvpStatus || g.rsvp?.status;
+        if (rsvpStatus && rsvpStatus !== "PENDING") return false;
+      }
       return true;
     });
   }, [guests, onlyNoRsvp]);

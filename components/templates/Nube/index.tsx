@@ -47,7 +47,7 @@ export function NubeTemplate({ event, guest }: NubeProps) {
         <ThemeSection
           theme={settings.theme}
           colors={settings.colors}
-          dressCode={settings.dressCode}
+          dressCode={activeSections.dressCode === true ? settings.dressCode : undefined}
           primaryColor={primaryColor}
         />
       )}

@@ -135,7 +135,7 @@ async function SubscriberHome({
           </div>
         ) : (
           <Link
-            href="/dashboard/events/new"
+            href="/dashboard/nueva-suscriptor"
             className="inline-flex items-center gap-2 rounded-xl bg-[var(--color-midnight)] px-5 py-2.5 text-sm font-bold text-[var(--color-cream)] hover:opacity-90 transition-opacity shrink-0"
           >
             <Plus className="h-4 w-4" />
@@ -226,7 +226,7 @@ async function SubscriberHome({
           </div>
           {!atLimit && (
             <Link
-              href="/dashboard/events/new"
+              href="/dashboard/nueva-suscriptor"
               className="mt-4 inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--color-brand)] hover:underline"
             >
               Crear evento con plantilla <ArrowRight className="h-3 w-3" />
@@ -277,7 +277,7 @@ async function SubscriberHome({
           </p>
           {!atLimit && (
             <Link
-              href="/dashboard/events/new"
+              href="/dashboard/nueva-suscriptor"
               className="mt-6 inline-flex items-center gap-2 rounded-xl bg-[var(--color-midnight)] px-6 py-3 text-sm font-bold text-[var(--color-cream)] hover:opacity-90 transition-opacity"
             >
               <Plus className="h-4 w-4" />

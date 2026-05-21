@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 import { eventFormSchema, type EventFormData, type EventFormInput } from "@/types/event-form";
 import { createEvent } from "@/app/actions/events";
 import { getWizardSteps } from "@/lib/wizard-config";
+import { getTierFeatures } from "@/lib/event-sections-map";
 
 type TemplateOption = {
   id: string;
@@ -41,9 +42,20 @@ export default function NewEventWizard({ isAdmin, templates = [] }: { isAdmin?: 
 
   const { handleSubmit, trigger, watch, reset } = methods;
 
-  // ─── Dynamic steps based on event type ─────────────────────────────────
+  // ─── Dynamic steps based on event type and tier features ───────────────
   const eventType = watch("type");
-  const steps = getWizardSteps(eventType);
+  const tier = watch("tier") || "ESSENTIAL";
+  const features = getTierFeatures(tier);
+  const rawSteps = getWizardSteps(eventType);
+  const steps = rawSteps.filter((step) => {
+    if (step.title.includes("Dress Code") && !features.dressCode) {
+      return false;
+    }
+    if ((step.title.includes("deseos") || step.title.includes("regalos")) && !features.giftRegistry) {
+      return false;
+    }
+    return true;
+  });
   const prevType = useRef(eventType);
 
   // Reset to step 1 when event type changes (except on initial render)

@@ -27,7 +27,7 @@ export function Step1BasicInfo({ isAdmin, hidePrice }: { isAdmin?: boolean; hide
   const selectedTier = watch("tier");
 
   const tierLabels: Record<string, string> = {
-    EXPRESS: "Express", ESSENTIAL: "Pro ($499 MXN)", COMPLETE: "Completa", LUXURY: "Premium ($999 MXN)",
+    FREE: "Gratuita", EXPRESS: "Express", ESSENTIAL: "Pro ($499 MXN)", COMPLETE: "Completa", LUXURY: "Premium ($999 MXN)",
   };
 
   return (

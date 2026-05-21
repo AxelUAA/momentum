@@ -50,69 +50,92 @@ export default async function EventProgressPage({ params }: { params: Promise<{ 
     "ACTIVE"
   ];
   
+  const isFree = event.tier === "FREE";
+
   // Actually, we should map based on event.status and event.paymentStatus
   // For the sake of the user request, let's determine the conceptual "progress status"
   let currentProgressStatus = event.status as string;
-  if (event.paymentStatus !== "PAID" && event.status === "DRAFT") {
-    currentProgressStatus = "UNPAID";
-  } else if (event.paymentStatus === "PAID" && event.status === "DRAFT") {
-    currentProgressStatus = "PAID";
+  if (!isFree) {
+    if (event.paymentStatus !== "PAID" && event.status === "DRAFT") {
+      currentProgressStatus = "UNPAID";
+    } else if (event.paymentStatus === "PAID" && event.status === "DRAFT") {
+      currentProgressStatus = "PAID";
+    }
   }
 
   // To make math easy
   const getStatusIndex = (st: string) => statuses.indexOf(st);
   const currentIndex = getStatusIndex(currentProgressStatus);
 
-  const timelineSteps = [
-    {
-      id: "PAID",
-      icon: CheckCircle2,
-      title: "Pago confirmado",
-      description: "Tu pago ha sido procesado exitosamente.",
-      isComplete: currentIndex >= getStatusIndex("PAID"),
-      isActive: currentProgressStatus === "PAID"
-    },
-    {
-      id: "INTAKE_COMPLETE",
-      icon: CheckCircle,
-      title: "Datos enviados",
-      description: "Hemos recibido toda la información de tu evento.",
-      isComplete: currentIndex >= getStatusIndex("INTAKE_COMPLETE"),
-      isActive: currentProgressStatus === "INTAKE_COMPLETE"
-    },
-    {
-      id: "BUILDING",
-      icon: Wrench,
-      title: "Construyendo tu invitación",
-      description: "Nuestro equipo está trabajando en tu diseño.",
-      isComplete: currentIndex > getStatusIndex("BUILDING"),
-      isActive: currentProgressStatus === "BUILDING"
-    },
-    {
-      id: "REVIEW",
-      icon: Eye,
-      title: "Lista para revisar",
-      description: "Tu invitación está lista para tu aprobación.",
-      isComplete: currentIndex > getStatusIndex("REVIEW") && currentProgressStatus !== "CHANGES_REQUESTED",
-      isActive: currentProgressStatus === "REVIEW"
-    },
-    {
-      id: "CHANGES_REQUESTED",
-      icon: FileEdit,
-      title: "Se requieren cambios",
-      description: "Estamos aplicando tus comentarios.",
-      isComplete: currentIndex > getStatusIndex("CHANGES_REQUESTED"),
-      isActive: currentProgressStatus === "CHANGES_REQUESTED"
-    },
-    {
-      id: "ACTIVE",
-      icon: PartyPopper,
-      title: "¡Tu invitación está activa!",
-      description: "Lista para ser compartida con tus invitados.",
-      isComplete: currentProgressStatus === "ACTIVE",
-      isActive: currentProgressStatus === "ACTIVE"
-    }
-  ];
+  const timelineSteps = isFree
+    ? [
+        {
+          id: "DRAFT",
+          icon: CheckCircle,
+          title: "Información recibida",
+          description: "Hemos recibido los datos básicos de tu invitación.",
+          isComplete: event.status === "ACTIVE",
+          isActive: event.status === "DRAFT"
+        },
+        {
+          id: "ACTIVE",
+          icon: PartyPopper,
+          title: "¡Tu invitación está activa!",
+          description: "Lista para ser compartida con tus invitados.",
+          isComplete: event.status === "ACTIVE",
+          isActive: event.status === "ACTIVE"
+        }
+      ]
+    : [
+        {
+          id: "PAID",
+          icon: CheckCircle2,
+          title: "Pago confirmado",
+          description: "Tu pago ha sido procesado exitosamente.",
+          isComplete: currentIndex >= getStatusIndex("PAID"),
+          isActive: currentProgressStatus === "PAID"
+        },
+        {
+          id: "INTAKE_COMPLETE",
+          icon: CheckCircle,
+          title: "Datos enviados",
+          description: "Hemos recibido toda la información de tu evento.",
+          isComplete: currentIndex >= getStatusIndex("INTAKE_COMPLETE"),
+          isActive: currentProgressStatus === "INTAKE_COMPLETE"
+        },
+        {
+          id: "BUILDING",
+          icon: Wrench,
+          title: "Construyendo tu invitación",
+          description: "Nuestro equipo está trabajando en tu diseño.",
+          isComplete: currentIndex > getStatusIndex("BUILDING"),
+          isActive: currentProgressStatus === "BUILDING"
+        },
+        {
+          id: "REVIEW",
+          icon: Eye,
+          title: "Lista para revisar",
+          description: "Tu invitación está lista para tu aprobación.",
+          isComplete: currentIndex > getStatusIndex("REVIEW") && currentProgressStatus !== "CHANGES_REQUESTED",
+          isActive: currentProgressStatus === "REVIEW"
+        },
+        {
+          id: "CHANGES_REQUESTED",
+          icon: FileEdit,
+          title: "Se requieren cambios",
+          description: "Estamos aplicando tus comentarios.",
+          isComplete: currentIndex > getStatusIndex("CHANGES_REQUESTED"),
+          isActive: currentProgressStatus === "CHANGES_REQUESTED"
+        },
+        {
+          id: "ACTIVE",
+          icon: PartyPopper,
+          title: "¡Tu invitación está activa!",
+          description: "Lista para ser compartida con tus invitados.",
+          isComplete: currentProgressStatus === "ACTIVE",
+          isActive: currentProgressStatus === "ACTIVE"
+        }
+      ];
 
   return (
     <div className="space-y-8 p-6 md:p-8 max-w-5xl mx-auto">

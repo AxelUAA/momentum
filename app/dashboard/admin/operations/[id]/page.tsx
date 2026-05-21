@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { QuickStatusButton } from "../QuickStatusButton";
+import { getTierFeatures, TIER_INFO } from "@/lib/event-sections-map";
 
 export const metadata = {
   title: "Detalle de operación | Momentum Admin",
@@ -243,6 +244,10 @@ export default async function OperationDetailPage({
   const typeFieldDefs = TYPE_FIELDS[event.type] ?? [];
   const hasIntakeData = event.status !== "PAID";
 
+  const features = getTierFeatures(event.tier);
+  const tierInfo = TIER_INFO[event.tier as keyof typeof TIER_INFO];
+  const guestCount = await prisma.guest.count({ where: { eventId: event.id } });
+
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://momentuminvites.com";
 
   return (
@@ -284,7 +289,7 @@ export default async function OperationDetailPage({
               <span>{clientDisplayEmail}</span>
               <span>·</span>
               <span className="font-semibold text-foreground">
-                {event.tier === "LUXURY" ? "Premium" : "Pro"}
+                {tierInfo?.label ?? event.tier}
               </span>
               {event.eventDate && (
                 <>
@@ -444,6 +449,59 @@ export default async function OperationDetailPage({
                   Portal del cliente
                 </a>
               )}
+            </div>
+          </div>
+
+          {/* Plan del cliente */}
+          <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
+            <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+              Plan del cliente
+            </h3>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-bold">{tierInfo?.label ?? event.tier}</span>
+                <span className="text-sm font-semibold text-[var(--color-brand)]">
+                  {tierInfo ? (tierInfo.price === 0 ? "Gratis" : `$${tierInfo.price.toLocaleString()} MXN`) : "—"}
+                </span>
+              </div>
+
+              <div className="rounded-xl bg-muted/40 p-3">
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Invitados</span>
+                  <span className="font-bold">
+                    {guestCount} / {features.maxGuests !== null ? features.maxGuests : "Ilimitados"}
+                  </span>
+                </div>
+                {features.maxGuests !== null && (
+                  <div className="mt-2 h-1.5 rounded-full bg-muted overflow-hidden">
+                    <div
+                      className="h-full rounded-full bg-[var(--color-brand)] transition-all"
+                      style={{ width: `${Math.min(100, (guestCount / features.maxGuests) * 100)}%` }}
+                    />
+                  </div>
+                )}
+              </div>
+
+              <div className="space-y-1">
+                {([
+                  ["RSVP", features.rsvp],
+                  ["Galería", features.gallery],
+                  ["Mapa", features.map],
+                  ["Cuenta regresiva", features.countdown],
+                  ["Código de vestimenta", features.dressCode],
+                  ["Mesa de regalos", features.giftRegistry],
+                  ["Spotify", features.spotify],
+                  ["Libro de visitas", features.guestbook],
+                  ["WhatsApp Generator", features.whatsappGenerator],
+                ] as const).map(([label, enabled]) => (
+                  <div key={label} className="flex items-center justify-between text-sm">
+                    <span className={enabled ? "text-foreground" : "text-muted-foreground/50"}>{label}</span>
+                    <span className={enabled ? "text-emerald-600 font-bold" : "text-muted-foreground/30"}>
+                      {enabled ? "✓" : "—"}
+                    </span>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>

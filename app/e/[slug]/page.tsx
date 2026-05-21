@@ -105,8 +105,9 @@ export default async function PublicInvitationPage({ params, searchParams }: Pag
   // Gating: paymentStatus + activeUntil
   const now = new Date();
   const isExpired = event.activeUntil ? new Date(event.activeUntil) < now : false;
+  const isFree = event.tier === "FREE";
 
-  if (event.paymentStatus !== "PAID" || isExpired) {
+  if ((event.paymentStatus !== "PAID" && !isFree) || isExpired) {
     const messageByStatus: Record<string, string> = {
       UNPAID: "Esta invitación está pendiente de pago. Contacta a quien te la envió.",
       PENDING_VOUCHER: "Esta invitación se está procesando. Disponible en pocas horas.",

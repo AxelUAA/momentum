@@ -12,6 +12,7 @@ import { getTierFeatures } from "@/lib/event-sections-map";
 import { ClientEventForm } from "./ClientEventForm";
 import { ClientImageSection } from "./ClientImageSection";
 import { ClientGuestSection } from "./ClientGuestSection";
+import { ChangeRequestForm } from "./ChangeRequestForm";
 
 export const dynamic = "force-dynamic";
 
@@ -362,12 +363,12 @@ export default async function ClientEventPage({ params }: Props) {
       {/* Guests */}
       {canManageGuests && (
         <ClientGuestSection
-          eventId={event.id}
-          slug={event.slug}
+          event={event}
           initialGuests={event.guests}
           isActive={isActive}
           isFree={isFree}
           maxGuests={features.maxGuests}
+          whatsappGenerator={features.whatsappGenerator}
         />
       )}
 
@@ -376,6 +377,11 @@ export default async function ClientEventPage({ params }: Props) {
 
       {/* Views analytics (active only) */}
       {isActive && <ViewStats stats={event.viewStats} />}
+
+      {/* Solicitar cambios — solo cuando está activa */}
+      {event.status === "ACTIVE" && (
+        <ChangeRequestForm eventId={event.id} />
+      )}
 
       {/* Preview CTA */}
       {isActive && <PreviewCTA slug={event.slug} />}

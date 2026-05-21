@@ -17,5 +17,11 @@ export default async function EditEventPage({ params }: { params: { id: string }
 
   if (!event) notFound();
 
-  return <EditEventClient event={event} isAdmin={isAdmin} />;
+  const templates = await prisma.template.findMany({
+    where: { isActive: true },
+    select: { id: true, name: true, slug: true, type: true, previewImageUrl: true, isPremium: true },
+    orderBy: { sortOrder: "asc" },
+  });
+
+  return <EditEventClient event={event} isAdmin={isAdmin} templates={templates} />;
 }

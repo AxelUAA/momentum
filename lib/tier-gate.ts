@@ -24,6 +24,7 @@ export function resolveActiveSections(
     gallery: "gallery",
     rsvp: "rsvp",
     giftRegistry: "giftRegistry",
+    wishList: "giftRegistry",
     guestbook: "guestbook",
     spotify: "spotify",
   };

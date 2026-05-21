@@ -21,6 +21,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Papa from "papaparse";
 import { format } from "date-fns";
+import { getTierFeatures } from "@/lib/event-sections-map";
 
 // Components
 import GuestFormModal from "./GuestFormModal";
@@ -30,6 +31,7 @@ import GuestDetailDrawer from "./GuestDetailDrawer";
 
 export default function GuestsPageClient({ event }: { event: any }) {
   const router = useRouter();
+  const features = getTierFeatures(event.tier ?? "ESSENTIAL");
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [relationFilter, setRelationFilter] = useState("ALL");
@@ -233,13 +235,24 @@ export default function GuestsPageClient({ event }: { event: any }) {
             <FileUp className="h-4 w-4" />
             Importar CSV
           </button>
-          <button 
-            onClick={() => setIsWhatsAppOpen(true)}
-            className="flex h-12 items-center gap-2 rounded-2xl border border-border bg-background px-5 text-xs font-bold text-foreground transition-all hover:bg-muted/40"
-          >
-            <MessageSquare className="h-4 w-4" />
-            WhatsApp
-          </button>
+          {features.whatsappGenerator ? (
+            <button 
+              onClick={() => setIsWhatsAppOpen(true)}
+              className="flex h-12 items-center gap-2 rounded-2xl border border-border bg-background px-5 text-xs font-bold text-foreground transition-all hover:bg-muted/40"
+            >
+              <MessageSquare className="h-4 w-4" />
+              WhatsApp
+            </button>
+          ) : (
+            <button 
+              disabled
+              title="Disponible en plan Completa o Premium"
+              className="flex h-12 items-center gap-2 rounded-2xl border border-border bg-muted/30 px-5 text-xs font-bold text-muted-foreground/50 cursor-not-allowed"
+            >
+              <MessageSquare className="h-4 w-4" />
+              WhatsApp
+            </button>
+          )}
           <button 
             onClick={handleExport}
             className="flex h-12 items-center gap-2 rounded-2xl border border-border bg-background px-5 text-xs font-bold text-foreground transition-all hover:bg-muted/40"
@@ -373,12 +386,14 @@ export default function GuestsPageClient({ event }: { event: any }) {
         eventId={event.id}
       />
       
-      <WhatsAppGenerator 
-        isOpen={isWhatsAppOpen} 
-        onClose={() => setIsWhatsAppOpen(false)} 
-        guests={filteredGuests}
-        event={event}
-      />
+      {features.whatsappGenerator && (
+        <WhatsAppGenerator 
+          isOpen={isWhatsAppOpen} 
+          onClose={() => setIsWhatsAppOpen(false)} 
+          guests={filteredGuests}
+          event={event}
+        />
+      )}
       
       <GuestDetailDrawer 
         isOpen={isDetailOpen} 

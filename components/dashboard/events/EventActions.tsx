@@ -15,6 +15,7 @@ interface EventActionsProps {
   /** Solo se pasa cuando el usuario tiene suscripción activa */
   isSubscriber?: boolean;
   eventStatus?: string;
+  eventTier?: string;
 }
 
 export function EventActions({
@@ -24,6 +25,7 @@ export function EventActions({
   paymentStatus,
   isSubscriber,
   eventStatus,
+  eventTier,
 }: EventActionsProps) {
   const [isPending, setIsPending] = useState(false);
 
@@ -95,7 +97,7 @@ export function EventActions({
     }
   };
 
-  const needsPayment = paymentStatus && paymentStatus !== "PAID";
+  const needsPayment = paymentStatus && paymentStatus !== "PAID" && eventTier !== "FREE";
   const isActive     = eventStatus === "ACTIVE";
   const canPublish   = isSubscriber && paymentStatus === "PAID";
 

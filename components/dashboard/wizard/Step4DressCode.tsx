@@ -3,14 +3,14 @@ import { useFormContext, Controller } from "react-hook-form";
 import { EventFormData } from "@/types/event-form";
 import { Shirt, Lock } from "lucide-react";
 import { ImageUploader } from "@/components/shared/ImageUploader";
-
-const LIMITED_TIERS = ["EXPRESS", "ESSENTIAL"];
+import { getTierFeatures } from "@/lib/event-sections-map";
 
 export function Step4DressCode() {
   const { register, control, watch } = useFormContext<EventFormData>();
   const tier = watch("tier");
+  const features = getTierFeatures(tier);
 
-  if (LIMITED_TIERS.includes(tier)) {
+  if (!features.dressCode) {
     return (
       <div className="space-y-12 animate-in fade-in slide-in-from-bottom-6 duration-700">
         <div className="flex flex-col items-center justify-center gap-4 rounded-[2.5rem] border border-dashed border-border bg-muted/20 p-16 text-center">
@@ -18,11 +18,10 @@ export function Step4DressCode() {
             <Lock className="h-8 w-8 text-muted-foreground/40" />
           </div>
           <div className="space-y-2">
-            <h3 className="text-lg font-black text-foreground">No incluido en el Plan Pro</h3>
+            <h3 className="text-lg font-black text-foreground">No incluido en tu Plan</h3>
             <p className="text-sm text-muted-foreground max-w-xs">
               El código de vestimenta está disponible únicamente en el{" "}
-              <span className="font-bold text-foreground">Plan Premium ($999)</span>.
-              El cliente eligió el Plan Pro.
+              <span className="font-bold text-foreground">Plan Completo ($1,199) y Premium ($999)</span>.
             </p>
           </div>
         </div>

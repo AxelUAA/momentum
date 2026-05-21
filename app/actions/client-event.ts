@@ -1,11 +1,13 @@
 "use server";
 
+import React from "react";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { generateUniqueToken } from "@/lib/guest-helpers";
 import { checkGuestLimit } from "@/lib/tier-gate";
+import { sendStatusEmail } from "@/lib/email";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -392,5 +394,212 @@ export async function createFreeInvitation(
     return { success: true, eventId: event.id };
   } catch (e) {
     return { success: false, error: e instanceof Error ? e.message : "Error al crear la invitación" };
+  }
+}
+
+// ─── Subscriber events ────────────────────────────────────────────────────────
+
+export type SubscriberEventInput = {
+  type: string;
+  templateSlug: string;
+  title: string;
+  eventDate?: string;
+};
+
+export async function createSubscriberEvent(
+  data: SubscriberEventInput,
+): Promise<{ success: boolean; eventId?: string; error?: string }> {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) return { success: false, error: "No autenticado" };
+
+    const subscription = await prisma.subscription.findFirst({
+      where: { userId: session.user.id, status: "ACTIVE" },
+      select: {
+        id: true,
+        plan: true,
+        _count: { select: { events: { where: { paymentStatus: "PAID" } } } },
+      },
+    });
+
+    if (!subscription) {
+      return { success: false, error: "No tienes una suscripción activa." };
+    }
+
+    const planLimits = { ORGANIZADOR_PLUS: 5, ORGANIZADOR_PRO: 20 } as const;
+    const limit = planLimits[subscription.plan as keyof typeof planLimits] ?? 5;
+    if (subscription._count.events >= limit) {
+      return {
+        success: false,
+        error: `Tu plan permite hasta ${limit} eventos activos. Archiva uno para crear otro.`,
+      };
+    }
+
+    const tierByPlan = {
+      ORGANIZADOR_PLUS: "ESSENTIAL",
+      ORGANIZADOR_PRO: "COMPLETE",
+    } as const;
+    const tier = tierByPlan[subscription.plan as keyof typeof tierByPlan] ?? "ESSENTIAL";
+
+    const VALID_TYPES = ["WEDDING","XV","BIRTHDAY","BABY_SHOWER","BAPTISM","GRADUATION","CORPORATE","CASUAL","OTHER"];
+    const eventType = VALID_TYPES.includes(data.type) ? data.type : "WEDDING";
+
+    const template =
+      (await prisma.template.findUnique({ where: { slug: data.templateSlug }, select: { id: true } })) ??
+      (await prisma.template.findUnique({ where: { slug: "aurora" }, select: { id: true } }));
+
+    if (!template) return { success: false, error: "Plantilla no encontrada." };
+
+    const base = data.title.trim()
+      .toLowerCase()
+      .normalize("NFD").replace(/[̀-ͯ]/g, "")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, 35);
+    const slug = `${base || "evento"}-${Date.now().toString(36)}`;
+
+    let eventDate: Date | undefined;
+    if (data.eventDate) {
+      const d = new Date(data.eventDate);
+      if (!isNaN(d.getTime())) eventDate = d;
+    }
+
+    const activeUntil = new Date();
+    activeUntil.setDate(activeUntil.getDate() + 60);
+
+    const newEvent = await prisma.event.create({
+      data: {
+        userId: session.user.id,
+        templateId: template.id,
+        title: data.title.trim() || "Nueva invitación",
+        slug,
+        type: eventType as any,
+        tier: tier as any,
+        status: "PAID",
+        paymentStatus: "PAID",
+        paidAt: new Date(),
+        activeUntil,
+        subscriptionId: subscription.id,
+        activeSections: {},
+      },
+    });
+
+    revalidatePath("/dashboard");
+    return { success: true, eventId: newEvent.id };
+  } catch (error) {
+    console.error("[createSubscriberEvent]", error);
+    return { success: false, error: "Error al crear el evento. Intenta de nuevo." };
+  }
+}
+
+// ─── Change requests ──────────────────────────────────────────────────────────
+
+export async function submitChangeRequest(
+  eventId: string,
+  changeText: string,
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) return { success: false, error: "No autenticado" };
+
+    const event = await prisma.event.findUnique({
+      where: { id: eventId },
+      select: {
+        id: true,
+        userId: true,
+        status: true,
+        title: true,
+        slug: true,
+        clientToken: true,
+        clientName: true,
+        intakeNotes: true,
+        user: { select: { email: true, name: true } },
+      },
+    });
+
+    if (!event || event.userId !== session.user.id) {
+      return { success: false, error: "Evento no encontrado" };
+    }
+
+    if (event.status !== "ACTIVE") {
+      return { success: false, error: "Solo puedes pedir cambios cuando tu invitación está activa" };
+    }
+
+    const text = changeText.trim();
+    if (!text) return { success: false, error: "Escribe qué cambios necesitas" };
+    if (text.length > 1000) return { success: false, error: "El mensaje no puede superar 1000 caracteres" };
+
+    const timestamp = new Date().toLocaleDateString("es-MX", {
+      day: "numeric", month: "long", year: "numeric",
+      hour: "2-digit", minute: "2-digit",
+    });
+    const prevNotes = event.intakeNotes ?? "";
+    const separator = prevNotes ? "\n\n---\n" : "";
+    const newNotes = `${prevNotes}${separator}📝 Cambios solicitados el ${timestamp}:\n${text}`;
+
+    await prisma.event.update({
+      where: { id: event.id },
+      data: {
+        status: "CHANGES_REQUESTED",
+        intakeNotes: newNotes,
+      },
+    });
+
+    const { sendEmail, REPLY_TO_EMAIL } = await import("@/lib/email");
+    const { resend } = await import("@/lib/email");
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://momentuminvites.com";
+    const adminUrl = `${baseUrl}/dashboard/admin/operations/${event.id}`;
+    const clientDisplay = event.clientName ?? event.user.name ?? event.user.email;
+
+    if (resend) {
+      await sendEmail({
+        to: REPLY_TO_EMAIL,
+        subject: `✏️ ${clientDisplay} pide cambios en "${event.title}"`,
+        react: React.createElement(
+          "div",
+          { style: { fontFamily: "sans-serif", padding: "24px", maxWidth: "600px" } },
+          React.createElement("h2", { style: { marginBottom: "8px" } }, "Solicitud de cambios"),
+          React.createElement(
+            "p",
+            { style: { color: "#555", marginBottom: "16px" } },
+            React.createElement("strong", null, clientDisplay),
+            " ha solicitado cambios en su invitación ",
+            React.createElement("strong", null, `"${event.title}"`),
+            "."
+          ),
+          React.createElement(
+            "div",
+            { style: { background: "#f9fafb", border: "1px solid #e5e7eb", borderRadius: "8px", padding: "16px", marginBottom: "20px" } },
+            React.createElement("p", { style: { margin: 0, whiteSpace: "pre-wrap", color: "#1a1a1a" } }, text)
+          ),
+          React.createElement(
+            "a",
+            { href: adminUrl, style: { display: "inline-block", background: "#1e1b4b", color: "#fff", padding: "10px 20px", borderRadius: "8px", textDecoration: "none", fontWeight: "bold" } },
+            "Ver en operaciones →"
+          )
+        ),
+      });
+    }
+
+    try {
+      await sendStatusEmail(
+        {
+          id: event.id,
+          title: event.title,
+          slug: event.slug,
+          clientToken: event.clientToken,
+          user: event.user,
+        },
+        "CHANGES_REQUESTED",
+      );
+    } catch {
+      // No bloquear si falla el email al cliente
+    }
+
+    revalidatePath(`/dashboard/mi-invitacion/${eventId}`);
+    return { success: true };
+  } catch (error) {
+    console.error("[submitChangeRequest]", error);
+    return { success: false, error: "Error al enviar tu solicitud. Intenta de nuevo." };
   }
 }

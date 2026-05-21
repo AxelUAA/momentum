@@ -90,7 +90,7 @@ export default async function InvitationPage({ params }: PageProps) {
     notFound();
   }
 
-  if (event.paymentStatus !== "PAID") {
+  if (event.paymentStatus !== "PAID" && event.tier !== "FREE") {
     const messageByStatus: Record<string, string> = {
       UNPAID: "Esta invitación está pendiente de pago. Contacta a quien te la envió.",
       PENDING_VOUCHER: "Esta invitación se está procesando. Disponible en pocas horas.",

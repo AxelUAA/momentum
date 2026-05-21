@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import { createAdminClient } from "@/lib/supabase/server";
 import { sendStatusEmail } from "@/lib/email";
 import { eventFormSchema, type EventFormData } from "@/types/event-form";
+import { resolveActiveSections } from "@/lib/tier-gate";
 import type { Prisma } from "@prisma/client";
 
 const VALID_EVENT_STATUSES = [
@@ -212,7 +213,7 @@ export async function updateEvent(id: string, data: Partial<EventFormData>) {
   try {
     const current = await prisma.event.findUnique({
       where: { id },
-      select: { settings: true, slug: true, userId: true },
+      select: { settings: true, slug: true, userId: true, tier: true },
     });
     if (!current) {
       return { success: false, error: "Evento no encontrado" };
@@ -228,7 +229,17 @@ export async function updateEvent(id: string, data: Partial<EventFormData>) {
     if (data.tier) updateData.tier = data.tier;
     if (data.eventDate) updateData.eventDate = new Date(data.eventDate);
     if (data.coverImage !== undefined) updateData.coverImage = data.coverImage;
-    if (data.activeSections) updateData.activeSections = data.activeSections;
+    if (data.templateId) {
+      updateData.template = { connect: { id: data.templateId } };
+    }
+    if (data.activeSections) {
+      // Sanitizar: forzar a false las secciones no incluidas en el tier
+      const tierForGate = data.tier ?? current.tier;
+      updateData.activeSections = resolveActiveSections(
+        tierForGate,
+        data.activeSections as Record<string, boolean>,
+      );
+    }
 
     // DEEP MERGE: nunca reemplazar settings completo. Construimos el patch parcial
     // y lo mergeamos sobre el JSON actual para que editar una sección no borre las demás.
@@ -487,14 +498,19 @@ export async function updateEventStatus(id: string, status: string) {
 export async function updateActiveSections(id: string, sections: Prisma.InputJsonValue) {
   const user = await requireUser();
   try {
-    const current = await prisma.event.findUnique({ where: { id }, select: { userId: true } });
+    const current = await prisma.event.findUnique({ where: { id }, select: { userId: true, tier: true } });
     if (!current) return { success: false, error: "Evento no encontrado" };
     if (user.role !== "ADMIN" && current.userId !== user.id) {
       return { success: false, error: "No autorizado" };
     }
+    // Sanitizar: forzar a false las secciones no incluidas en el tier
+    const resolved = resolveActiveSections(
+      current.tier,
+      sections as Record<string, boolean>,
+    );
     const event = await prisma.event.update({
       where: { id },
-      data: { activeSections: sections },
+      data: { activeSections: resolved },
     });
     revalidatePath(`/dashboard/events/${id}`);
     revalidatePath(`/e/${event.slug}`);

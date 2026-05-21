@@ -18,6 +18,7 @@ import { Step4DressCode } from "@/components/dashboard/wizard/Step4DressCode";
 import { Step5Advanced } from "@/components/dashboard/wizard/Step5Advanced";
 
 import { getWizardSteps } from "@/lib/wizard-config";
+import { getTierFeatures } from "@/lib/event-sections-map";
 
 // Normaliza giftRegistry entre formatos viejos (objeto con digitalEnvelope/liverpool)
 // y el nuevo (array de {store, url}). Permite que eventos legacy coexistan.
@@ -42,7 +43,7 @@ function normalizeGiftRegistry(raw: unknown): Array<{ store: string; url: string
   return [];
 }
 
-export default function EditEventClient({ event, isAdmin }: { event: any, isAdmin?: boolean }) {
+export default function EditEventClient({ event, isAdmin, templates = [] }: { event: any; isAdmin?: boolean; templates?: any[] }) {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("step-0");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -62,7 +63,7 @@ export default function EditEventClient({ event, isAdmin }: { event: any, isAdmi
       title: event.title || "",
       slug: event.slug || "",
       type: event.type || "WEDDING",
-      tier: event.tier || "EXPRESS",
+      tier: event.tier || "FREE",
       eventDate: event.eventDate ? new Date(event.eventDate).toISOString().split('T')[0] : "",
       eventTime: event.settings?.eventTime || event.settings?.venue?.time || "",
       coverImage: event.coverImage || null,
@@ -138,6 +139,7 @@ export default function EditEventClient({ event, isAdmin }: { event: any, isAdmi
       clientName: event.clientName || event.settings?.client?.name || event.settings?.clientName || "",
       clientEmail: event.clientEmail || event.settings?.client?.email || event.settings?.clientEmail || "",
       clientPhone: event.settings?.client?.phone || event.settings?.clientPhone || "",
+      templateId: event.templateId || "",
       id: event.id,
     }
   });
@@ -184,8 +186,20 @@ export default function EditEventClient({ event, isAdmin }: { event: any, isAdmi
     return FileText;
   };
 
+  const currentTier = methods.watch("tier") || event.tier || "FREE";
+  const features = getTierFeatures(currentTier);
+
   const SECTIONS = getWizardSteps(eventType)
     .filter(step => step.title !== "Revisión")
+    .filter(step => {
+      if (step.title.includes("Dress Code") && !features.dressCode) {
+        return false;
+      }
+      if ((step.title.includes("deseos") || step.title.includes("regalos")) && !features.giftRegistry) {
+        return false;
+      }
+      return true;
+    })
     .map((step, idx) => ({
       id: `step-${idx}`,
       title: step.title,
@@ -350,7 +364,7 @@ export default function EditEventClient({ event, isAdmin }: { event: any, isAdmi
 
             <FormProvider {...methods}>
               <form onSubmit={handleSubmit(onSubmit)}>
-                <ActiveComponent isAdmin={isAdmin} hidePrice={true} />
+                <ActiveComponent isAdmin={isAdmin} hidePrice={true} templates={templates} />
                 {error && (
                   <div className="mt-8 rounded-xl bg-destructive/10 p-4 text-sm font-medium text-destructive">
                     {error}

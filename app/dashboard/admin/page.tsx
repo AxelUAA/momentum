@@ -306,11 +306,17 @@ export default async function AdminDashboardPage() {
                     </span>
                   </td>
                   <td className="px-6 py-4 text-center">
-                    <span
-                      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ${paymentBadge(ev.paymentStatus)}`}
-                    >
-                      {ev.paymentStatus}
-                    </span>
+                    {ev.tier === "FREE" ? (
+                      <span className="inline-flex items-center rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-400 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider">
+                        No aplica
+                      </span>
+                    ) : (
+                      <span
+                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ${paymentBadge(ev.paymentStatus)}`}
+                      >
+                        {ev.paymentStatus}
+                      </span>
+                    )}
                   </td>
                   <td className="px-6 py-4 text-xs">
                     {ev.user.email}
@@ -343,11 +349,17 @@ export default async function AdminDashboardPage() {
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 <span>{ev.type}</span>
                 <span>·</span>
-                <span
-                  className={`inline-flex items-center rounded-full px-2 py-0.5 text-[9px] font-bold uppercase ${paymentBadge(ev.paymentStatus)}`}
-                >
-                  {ev.paymentStatus}
-                </span>
+                {ev.tier === "FREE" ? (
+                  <span className="inline-flex items-center rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-400 px-2 py-0.5 text-[9px] font-bold uppercase">
+                    No aplica
+                  </span>
+                ) : (
+                  <span
+                    className={`inline-flex items-center rounded-full px-2 py-0.5 text-[9px] font-bold uppercase ${paymentBadge(ev.paymentStatus)}`}
+                  >
+                    {ev.paymentStatus}
+                  </span>
+                )}
               </div>
               <p className="text-xs text-muted-foreground">
                 {ev.user.email} ·{" "}

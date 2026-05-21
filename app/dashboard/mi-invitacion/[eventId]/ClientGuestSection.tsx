@@ -1,18 +1,19 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Users, Plus, Trash2, Copy, Check, ChevronDown, ChevronUp, Loader2, Eye } from "lucide-react";
+import { Users, Plus, Trash2, Copy, Check, ChevronDown, ChevronUp, Loader2, Eye, MessageSquare } from "lucide-react";
 import { addClientGuest, removeClientGuest, type ClientEventData } from "@/app/actions/client-event";
+import WhatsAppGenerator from "@/components/dashboard/guests/WhatsAppGenerator";
 
 type Guest = ClientEventData["guests"][0];
 
 interface Props {
-  eventId: string;
-  slug: string;
+  event: ClientEventData;
   initialGuests: Guest[];
   isActive: boolean;
   isFree: boolean;
   maxGuests: number | null;
+  whatsappGenerator: boolean;
 }
 
 
@@ -22,13 +23,16 @@ const BASE_URL =
     ? window.location.origin
     : process.env.NEXT_PUBLIC_BASE_URL || "https://momentum-alpha-six.vercel.app";
 
-export function ClientGuestSection({ eventId, slug, initialGuests, isActive, isFree, maxGuests }: Props) {
+export function ClientGuestSection({ event, initialGuests, isActive, isFree, maxGuests, whatsappGenerator }: Props) {
+  const eventId = event.id;
+  const slug = event.slug;
   const [guests, setGuests] = useState<Guest[]>(initialGuests);
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ name: "", phone: "", email: "", allowedGuests: 1 });
   const [formError, setFormError] = useState("");
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  const [isWhatsAppOpen, setIsWhatsAppOpen] = useState(false);
 
   const guestLimit = maxGuests;
   const atLimit = guestLimit !== null && guests.length >= guestLimit;
@@ -89,9 +93,42 @@ export function ClientGuestSection({ eventId, slug, initialGuests, isActive, isF
             </p>
           </div>
         </div>
-        <span className="rounded-full bg-muted px-3 py-1 text-xs font-bold text-muted-foreground">
-          {guests.length}
-        </span>
+        <div className="flex items-center gap-3">
+          {isActive ? (
+            whatsappGenerator ? (
+              <button
+                onClick={() => setIsWhatsAppOpen(true)}
+                className="flex items-center gap-1.5 rounded-xl border border-border bg-background px-3.5 py-1.5 text-xs font-bold text-foreground transition-all hover:bg-muted/40"
+              >
+                <MessageSquare className="h-3.5 w-3.5" />
+                WhatsApp
+              </button>
+            ) : (
+              <button
+                disabled
+                title="Disponible en plan Completa o Premium"
+                className="flex items-center gap-1.5 rounded-xl border border-border bg-muted/30 px-3.5 py-1.5 text-xs font-bold text-muted-foreground/50 cursor-not-allowed"
+              >
+                <MessageSquare className="h-3.5 w-3.5" />
+                WhatsApp
+              </button>
+            )
+          ) : (
+            whatsappGenerator && (
+              <button
+                disabled
+                title="Estará disponible cuando tu invitación esté activa"
+                className="flex items-center gap-1.5 rounded-xl border border-border bg-muted/30 px-3.5 py-1.5 text-xs font-bold text-muted-foreground/50 cursor-not-allowed"
+              >
+                <MessageSquare className="h-3.5 w-3.5" />
+                WhatsApp
+              </button>
+            )
+          )}
+          <span className="rounded-full bg-muted px-3 py-1 text-xs font-bold text-muted-foreground">
+            {guests.length}
+          </span>
+        </div>
       </div>
 
       <div className="p-6 space-y-4">
@@ -256,6 +293,15 @@ export function ClientGuestSection({ eventId, slug, initialGuests, isActive, isF
           </div>
         )}
       </div>
+
+      {whatsappGenerator && (
+        <WhatsAppGenerator
+          isOpen={isWhatsAppOpen}
+          onClose={() => setIsWhatsAppOpen(false)}
+          guests={guests}
+          event={event}
+        />
+      )}
     </div>
   );
 }
