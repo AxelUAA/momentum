@@ -360,13 +360,13 @@ export default async function ClientEventPage({ params }: Props) {
 
       {/* Data form */}
       {isEditable ? (
-        <ClientEventForm event={event} initiallySubmitted={isFree} />
+        <ClientEventForm event={event} />
       ) : (
         <LockedNotice event={event} />
       )}
 
-      {/* Fotos: portada siempre disponible cuando editable; galería solo si el tier la incluye */}
-      {(canManageCover || canManageGallery) && (
+      {/* Fotos: portada siempre disponible cuando editable; galería solo si el tier la incluye. FREE tier maneja su propia foto dentro de ClientEventForm */}
+      {!isFree && (canManageCover || canManageGallery) && (
         <ClientImageSection
           eventId={event.id}
           initialCover={event.coverImage}

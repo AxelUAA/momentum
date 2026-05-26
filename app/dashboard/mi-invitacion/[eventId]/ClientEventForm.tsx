@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { saveClientEventData, type ClientEventData, type SaveDataInput } from "@/app/actions/client-event";
 import { Loader2, Save, CheckCircle2, PenLine, Clock } from "lucide-react";
+import { ClientImageSection } from "./ClientImageSection";
 import { format } from "date-fns";
 
 // ─── Type-specific labels ─────────────────────────────────────────────────────
@@ -69,7 +70,7 @@ const inputCls =
 
 // ─── Main form ────────────────────────────────────────────────────────────────
 
-export function ClientEventForm({ event, initiallySubmitted = false }: { event: ClientEventData; initiallySubmitted?: boolean }) {
+export function ClientEventForm({ event }: { event: ClientEventData }) {
   const typeConfig = getTypeConfig(event.type);
   const bioConfig = BIO_CONFIG[event.type] ?? BIO_CONFIG.DEFAULT;
   const funFactsConfig = FUNFACTS_CONFIG[event.type] ?? FUNFACTS_CONFIG.WEDDING;
@@ -99,7 +100,7 @@ export function ClientEventForm({ event, initiallySubmitted = false }: { event: 
   const [bio, setBio] = useState((event.settings.bio as string) ?? "");
   const [funFacts, setFunFacts] = useState<string[]>(initialFunFacts);
   const [notes, setNotes] = useState(event.intakeNotes ?? "");
-  const [submitted, setSubmitted] = useState(initiallySubmitted);
+  const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
@@ -168,6 +169,7 @@ export function ClientEventForm({ event, initiallySubmitted = false }: { event: 
   }
 
   return (
+    <div className="space-y-4">
     <div className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
       {/* Header */}
       <div className="px-6 py-5 border-b border-border flex items-center justify-between">
@@ -406,6 +408,18 @@ export function ClientEventForm({ event, initiallySubmitted = false }: { event: 
           )}
         </button>
       </div>
+    </div>
+
+    {/* Foto de portada — solo tier FREE, dentro del flujo del formulario */}
+    {isFree && (
+      <ClientImageSection
+        eventId={event.id}
+        initialCover={event.coverImage}
+        initialGallery={event.gallery}
+        isEditable
+        showGallery={false}
+      />
+    )}
     </div>
   );
 }

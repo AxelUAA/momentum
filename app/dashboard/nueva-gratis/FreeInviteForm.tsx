@@ -12,102 +12,28 @@ import { createFreeInvitation, type FreeInviteInput } from "@/app/actions/client
 // ─── Data ─────────────────────────────────────────────────────────────────────
 
 const EVENT_TYPES: { value: string; Icon: LucideIcon; label: string; desc: string }[] = [
-  { value: "WEDDING",     Icon: Heart,          label: "Boda",        desc: "Ceremonia matrimonial" },
-  { value: "XV",          Icon: Crown,          label: "XV Años",     desc: "Quinceañera" },
-  { value: "BIRTHDAY",    Icon: Cake,           label: "Cumpleaños",  desc: "Celebración" },
-  { value: "BABY_SHOWER", Icon: Baby,           label: "Baby Shower", desc: "Llegada del bebé" },
-  { value: "BAPTISM",     Icon: Droplets,       label: "Bautizo",     desc: "Sacramento" },
-  { value: "GRADUATION",  Icon: GraduationCap,  label: "Graduación",  desc: "Ceremonia" },
-  { value: "CORPORATE",   Icon: Building2,      label: "Corporativo", desc: "Evento de empresa" },
-  { value: "CASUAL",      Icon: PartyPopper,    label: "Celebración", desc: "Evento especial" },
+  { value: "WEDDING",     Icon: Heart,         label: "Boda",        desc: "Ceremonia matrimonial" },
+  { value: "XV",          Icon: Crown,         label: "XV Años",     desc: "Quinceañera" },
+  { value: "BIRTHDAY",    Icon: Cake,          label: "Cumpleaños",  desc: "Celebración" },
+  { value: "BABY_SHOWER", Icon: Baby,          label: "Baby Shower", desc: "Llegada del bebé" },
+  { value: "BAPTISM",     Icon: Droplets,      label: "Bautizo",     desc: "Sacramento" },
+  { value: "GRADUATION",  Icon: GraduationCap, label: "Graduación",  desc: "Ceremonia" },
+  { value: "CORPORATE",   Icon: Building2,     label: "Corporativo", desc: "Evento de empresa" },
+  { value: "CASUAL",      Icon: PartyPopper,   label: "Celebración", desc: "Evento especial" },
 ];
 
-type TypeConfig = {
-  titleLabel: string;
-  titlePlaceholder: string;
-  locationLabel: string;
-  bioLabel: string;
-  bioPlaceholder: string;
-  funFactLabel?: string;
-  funFactPlaceholder?: string;
+const TYPE_LABELS: Record<string, { label: string; placeholder: string }> = {
+  WEDDING:     { label: "Nombres de los novios",    placeholder: "María y Juan García" },
+  XV:          { label: "Nombre de la quinceañera", placeholder: "Sofía González" },
+  BIRTHDAY:    { label: "¿Quién cumple años?",      placeholder: "Carlos — 30 años" },
+  BABY_SHOWER: { label: "Nombres de los papás",     placeholder: "Ana y Roberto Martínez" },
+  BAPTISM:     { label: "Nombre del bebé",          placeholder: "Valentina García" },
+  GRADUATION:  { label: "Nombre del graduado",      placeholder: "Andrés López — Ingeniería Civil" },
+  CORPORATE:   { label: "Nombre del evento",        placeholder: "Conferencia Anual 2026 — TechCorp" },
+  CASUAL:      { label: "Nombre de la celebración", placeholder: "Despedida de Soltero — Mario" },
 };
 
-const TYPE_CONFIG: Record<string, TypeConfig> = {
-  WEDDING: {
-    titleLabel: "Nombres de los novios",
-    titlePlaceholder: "María y Juan García",
-    locationLabel: "Lugar de la ceremonia o recepción",
-    bioLabel: "Historia de los novios",
-    bioPlaceholder: "¿Cómo se conocieron? ¿Cuándo fue la propuesta? Cuéntanos su historia…",
-    funFactLabel: "Un dato curioso de la pareja",
-    funFactPlaceholder: "Ej: Se conocieron en un viaje a Oaxaca",
-  },
-  XV: {
-    titleLabel: "Nombre de la quinceañera",
-    titlePlaceholder: "Sofía González",
-    locationLabel: "Lugar del evento",
-    bioLabel: "Mensaje de la quinceañera",
-    bioPlaceholder: "Un mensaje especial o lo que quieres compartir con tus invitados…",
-    funFactLabel: "Un dato curioso",
-    funFactPlaceholder: "Ej: Su color favorito es el azul marino",
-  },
-  BIRTHDAY: {
-    titleLabel: "¿Quién cumple años?",
-    titlePlaceholder: "Carlos — 30 años",
-    locationLabel: "Lugar de la fiesta",
-    bioLabel: "Mensaje del festejado",
-    bioPlaceholder: "Una reflexión o lo que quieras que lean tus invitados…",
-    funFactLabel: "Un dato curioso",
-    funFactPlaceholder: "Ej: Le encanta la fotografía desde los 12 años",
-  },
-  BABY_SHOWER: {
-    titleLabel: "Nombres de los papás",
-    titlePlaceholder: "Ana y Roberto Martínez",
-    locationLabel: "Lugar del evento",
-    bioLabel: "Mensaje de los papás",
-    bioPlaceholder: "¿Cómo se sienten? ¿Algo especial sobre la llegada del bebé?…",
-  },
-  BAPTISM: {
-    titleLabel: "Nombre del bebé",
-    titlePlaceholder: "Valentina García",
-    locationLabel: "Lugar del bautizo",
-    bioLabel: "Mensaje para los invitados",
-    bioPlaceholder: "Palabras de bienvenida o el significado de este día para tu familia…",
-  },
-  GRADUATION: {
-    titleLabel: "Nombre del graduado",
-    titlePlaceholder: "Andrés López — Ingeniería Civil",
-    locationLabel: "Lugar de la ceremonia",
-    bioLabel: "Mensaje del graduado",
-    bioPlaceholder: "Tu reflexión sobre este logro, agradecimientos, o lo que viene…",
-    funFactLabel: "Un logro o dato curioso",
-    funFactPlaceholder: "Ej: Estudió con beca completa los 5 años",
-  },
-  CORPORATE: {
-    titleLabel: "Nombre del evento",
-    titlePlaceholder: "Conferencia Anual 2026 — TechCorp",
-    locationLabel: "Lugar del evento",
-    bioLabel: "Descripción del evento",
-    bioPlaceholder: "De qué trata el evento, qué se celebra o los objetivos del encuentro…",
-  },
-  CASUAL: {
-    titleLabel: "Nombre de la celebración",
-    titlePlaceholder: "Despedida de Soltero — Mario",
-    locationLabel: "Lugar del evento",
-    bioLabel: "¿De qué va la celebración?",
-    bioPlaceholder: "Cuéntanos sobre el evento y lo que quieres que sepan tus invitados…",
-  },
-};
-
-const DEFAULT_CONFIG: TypeConfig = {
-  titleLabel: "Nombre del evento",
-  titlePlaceholder: "Mi evento especial",
-  locationLabel: "Lugar del evento",
-  bioLabel: "Descripción",
-  bioPlaceholder: "Cuéntanos más sobre tu evento…",
-};
-
-const TYPES_WITH_FUNFACT = new Set(["WEDDING", "XV", "BIRTHDAY", "GRADUATION"]);
+const DEFAULT_LABEL = { label: "Nombre del evento", placeholder: "Mi evento especial" };
 
 // ─── Primitives ───────────────────────────────────────────────────────────────
 
@@ -122,12 +48,10 @@ const inputCls = [
 function Field({
   label,
   tag,
-  hint,
   children,
 }: {
   label: string;
-  tag?: "required" | "optional";
-  hint?: string;
+  tag?: "required";
   children: React.ReactNode;
 }) {
   return (
@@ -141,14 +65,8 @@ function Field({
             requerido
           </span>
         )}
-        {tag === "optional" && (
-          <span className="shrink-0 text-[10px] text-muted-foreground/30">opcional</span>
-        )}
       </div>
       {children}
-      {hint && (
-        <p className="text-[11px] leading-relaxed text-muted-foreground/40">{hint}</p>
-      )}
     </div>
   );
 }
@@ -158,7 +76,6 @@ function Field({
 function TypePicker({ onSelect }: { onSelect: (type: string) => void }) {
   return (
     <div className="space-y-8">
-      {/* Header */}
       <div className="space-y-3 text-center">
         <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-[var(--color-champagne)]">
           Paso 1 de 2
@@ -174,7 +91,6 @@ function TypePicker({ onSelect }: { onSelect: (type: string) => void }) {
         </p>
       </div>
 
-      {/* Grid */}
       <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
         {EVENT_TYPES.map(({ value, Icon, label, desc }) => (
           <button
@@ -185,21 +101,15 @@ function TypePicker({ onSelect }: { onSelect: (type: string) => void }) {
               "group flex cursor-pointer flex-col items-center gap-3.5 rounded-2xl border border-border/60",
               "bg-card p-5 text-center",
               "transition-all duration-200 active:scale-[0.97]",
-              "hover:border-[var(--color-champagne)]/50 hover:bg-[var(--color-champagne)]/[0.05]",
-              "hover:shadow-sm",
+              "hover:border-[var(--color-champagne)]/50 hover:bg-[var(--color-champagne)]/[0.05] hover:shadow-sm",
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-champagne)]/40",
             ].join(" ")}
           >
-            {/* Icon container */}
             <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-muted/70 transition-all duration-200 group-hover:bg-[var(--color-champagne)]/12">
               <Icon className="h-6 w-6 text-muted-foreground/60 transition-all duration-200 group-hover:text-[var(--color-champagne)]" />
             </div>
-
-            {/* Labels */}
             <div className="space-y-0.5">
-              <p className="text-[13px] font-semibold leading-tight text-foreground">
-                {label}
-              </p>
+              <p className="text-[13px] font-semibold leading-tight text-foreground">{label}</p>
               <p className="text-[10px] leading-tight text-muted-foreground/45">{desc}</p>
             </div>
           </button>
@@ -209,29 +119,22 @@ function TypePicker({ onSelect }: { onSelect: (type: string) => void }) {
   );
 }
 
-// ─── Step 2 — Event form ──────────────────────────────────────────────────────
+// ─── Step 2 — Title only ──────────────────────────────────────────────────────
 
 export function FreeInviteForm() {
   const router = useRouter();
   const [step, setStep] = useState<1 | 2>(1);
   const [type, setType] = useState("");
   const [title, setTitle] = useState("");
-  const [eventDate, setEventDate] = useState("");
-  const [locationName, setLocationName] = useState("");
-  const [bio, setBio] = useState("");
-  const [funFact, setFunFact] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
-  const config = TYPE_CONFIG[type] ?? DEFAULT_CONFIG;
-  const hasFunFact = TYPES_WITH_FUNFACT.has(type);
+  const cfg = TYPE_LABELS[type] ?? DEFAULT_LABEL;
   const selectedType = EVENT_TYPES.find((t) => t.value === type);
 
   function handleTypeSelect(t: string) {
     setType(t);
     setTitle("");
-    setBio("");
-    setFunFact("");
     setStep(2);
   }
 
@@ -242,10 +145,6 @@ export function FreeInviteForm() {
       const data: FreeInviteInput = {
         type: type as FreeInviteInput["type"],
         title: title.trim(),
-        eventDate: eventDate || undefined,
-        locationName: locationName.trim() || undefined,
-        bio: bio.trim() || undefined,
-        funFact: hasFunFact && funFact.trim() ? funFact.trim() : undefined,
       };
       const result = await createFreeInvitation(data);
       if (result.success && result.eventId) {
@@ -256,12 +155,8 @@ export function FreeInviteForm() {
     });
   }
 
-  // ── Step 1 ─────────────────────────────────────────────────────────────────
-  if (step === 1) {
-    return <TypePicker onSelect={handleTypeSelect} />;
-  }
+  if (step === 1) return <TypePicker onSelect={handleTypeSelect} />;
 
-  // ── Step 2 ─────────────────────────────────────────────────────────────────
   const SelectedIcon = selectedType?.Icon;
 
   return (
@@ -283,7 +178,6 @@ export function FreeInviteForm() {
           </span>
           Cambiar tipo
         </button>
-
         <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground/30">
           Paso 2 de 2
         </p>
@@ -296,11 +190,9 @@ export function FreeInviteForm() {
             <SelectedIcon className="h-5 w-5 text-[var(--color-champagne)]" />
           </div>
           <div className="min-w-0">
-            <p className="text-xs font-bold text-[var(--color-champagne)]">
-              {selectedType?.label}
-            </p>
+            <p className="text-xs font-bold text-[var(--color-champagne)]">{selectedType?.label}</p>
             <p className="mt-0.5 text-[11px] leading-snug text-muted-foreground/50">
-              Los campos están personalizados para este tipo de evento
+              El resto de los detalles los completas en el siguiente paso
             </p>
           </div>
         </div>
@@ -315,14 +207,12 @@ export function FreeInviteForm() {
 
       {/* Form */}
       <form onSubmit={handleSubmit} className="space-y-6">
-
-        {/* Title */}
-        <Field label={config.titleLabel} tag="required">
+        <Field label={cfg.label} tag="required">
           <input
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder={config.titlePlaceholder}
+            placeholder={cfg.placeholder}
             required
             maxLength={150}
             className={inputCls}
@@ -330,62 +220,6 @@ export function FreeInviteForm() {
           />
         </Field>
 
-        {/* Date + Location */}
-        <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="Fecha del evento" tag="optional">
-            <input
-              type="date"
-              value={eventDate}
-              onChange={(e) => setEventDate(e.target.value)}
-              className={inputCls}
-            />
-          </Field>
-          <Field label={config.locationLabel} tag="optional">
-            <input
-              type="text"
-              value={locationName}
-              onChange={(e) => setLocationName(e.target.value)}
-              placeholder="Salón Jardín, Ciudad de México"
-              maxLength={200}
-              className={inputCls}
-            />
-          </Field>
-        </div>
-
-        {/* Bio */}
-        <Field
-          label={config.bioLabel}
-          tag="optional"
-          hint="Este texto se usará para crear el contenido de tu invitación."
-        >
-          <textarea
-            value={bio}
-            onChange={(e) => setBio(e.target.value)}
-            rows={4}
-            placeholder={config.bioPlaceholder}
-            maxLength={500}
-            className={`${inputCls} resize-none`}
-          />
-          <p className="mt-1.5 text-right font-mono text-[10px] text-muted-foreground/25 tabular-nums">
-            {bio.length} / 500
-          </p>
-        </Field>
-
-        {/* Fun fact */}
-        {hasFunFact && (
-          <Field label={config.funFactLabel!} tag="optional">
-            <input
-              type="text"
-              value={funFact}
-              onChange={(e) => setFunFact(e.target.value)}
-              placeholder={config.funFactPlaceholder}
-              maxLength={300}
-              className={inputCls}
-            />
-          </Field>
-        )}
-
-        {/* Error */}
         {error && (
           <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 dark:border-red-900 dark:bg-red-950/30">
             <p className="text-sm font-medium text-red-600 dark:text-red-400">{error}</p>
@@ -407,9 +241,7 @@ export function FreeInviteForm() {
             ].map(({ ok, text }) => (
               <div
                 key={text}
-                className={`flex items-center gap-2 text-xs ${
-                  ok ? "text-foreground/65" : "text-muted-foreground/35"
-                }`}
+                className={`flex items-center gap-2 text-xs ${ok ? "text-foreground/65" : "text-muted-foreground/35"}`}
               >
                 {ok
                   ? <Check className="h-3.5 w-3.5 shrink-0 text-emerald-500" />
@@ -421,7 +253,6 @@ export function FreeInviteForm() {
           </div>
         </div>
 
-        {/* Submit */}
         <button
           type="submit"
           disabled={isPending || !title.trim()}
@@ -434,15 +265,9 @@ export function FreeInviteForm() {
           ].join(" ")}
         >
           {isPending ? (
-            <>
-              <Loader2 className="h-4 w-4 animate-spin" />
-              Creando tu invitación…
-            </>
+            <><Loader2 className="h-4 w-4 animate-spin" /> Creando tu invitación…</>
           ) : (
-            <>
-              Crear mi invitación gratis
-              <ArrowRight className="h-4 w-4" />
-            </>
+            <>Crear mi invitación gratis <ArrowRight className="h-4 w-4" /></>
           )}
         </button>
       </form>
