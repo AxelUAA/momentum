@@ -47,8 +47,8 @@
   --color-brand: var(--color-champagne);
 
   /* — Typography — */
-  --font-sans: var(--font-inter);
-  --font-heading: var(--font-fraunces);
+  --font-sans: var(--font-dm-sans);
+  --font-heading: var(--font-playfair);
   --font-display: var(--font-cormorant);
   --font-mono: var(--font-geist-mono);
 
@@ -81,6 +81,10 @@
    Light Mode — Momentum Palette
    ─────────────────────────────────────────────────────────── */
 :root {
+  /* Font aliases — allow existing var(--font-fraunces) usage to resolve to Playfair Display */
+  --font-fraunces: var(--font-playfair);
+  --font-inter: var(--font-dm-sans);
+
   /* Core */
   --background: #FAF7F2;
   --foreground: #0F1B2D;

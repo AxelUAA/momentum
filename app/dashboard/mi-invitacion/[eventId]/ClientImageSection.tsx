@@ -10,11 +10,12 @@ interface Props {
   initialCover: string | null;
   initialGallery: string[];
   isEditable: boolean;
+  showGallery?: boolean;
 }
 
 const MAX_GALLERY = 8;
 
-export function ClientImageSection({ eventId, initialCover, initialGallery, isEditable }: Props) {
+export function ClientImageSection({ eventId, initialCover, initialGallery, isEditable, showGallery = true }: Props) {
   const [cover, setCover] = useState<string | null>(initialCover);
   const [gallery, setGallery] = useState<string[]>(initialGallery);
   const [uploadingCover, setUploadingCover] = useState(false);
@@ -92,7 +93,9 @@ export function ClientImageSection({ eventId, initialCover, initialGallery, isEd
           <p className="text-xs text-muted-foreground mt-0.5">
             {!isEditable
               ? "Las fotos ya no pueden cambiarse mientras la invitación está activa."
-              : `Portada + hasta ${MAX_GALLERY} fotos en galería`}
+              : showGallery
+              ? `Portada + hasta ${MAX_GALLERY} fotos en galería`
+              : "Sube una foto que represente tu evento"}
           </p>
         </div>
       </div>
@@ -154,8 +157,8 @@ export function ClientImageSection({ eventId, initialCover, initialGallery, isEd
           <input ref={coverRef} type="file" accept="image/jpeg,image/png,image/webp" onChange={handleCoverUpload} className="hidden" />
         </div>
 
-        {/* Gallery */}
-        {(gallery.length > 0 || isEditable) && (
+        {/* Gallery — solo si el tier lo permite */}
+        {showGallery && (gallery.length > 0 || isEditable) && (
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">

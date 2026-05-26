@@ -1,20 +1,21 @@
 import type { Metadata } from "next";
-import { Inter, Fraunces, Cormorant_Garamond } from "next/font/google";
+import { DM_Sans, Playfair_Display, Cormorant_Garamond } from "next/font/google";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { Toaster } from "sonner";
 import "./globals.css";
 
 /* ─── Fonts ─────────────────────────────────────────────── */
 
-const inter = Inter({
-  variable: "--font-inter",
+const dmSans = DM_Sans({
+  variable: "--font-dm-sans",
   subsets: ["latin"],
   display: "swap",
 });
 
-const fraunces = Fraunces({
-  variable: "--font-fraunces",
+const playfair = Playfair_Display({
+  variable: "--font-playfair",
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
   display: "swap",
 });
 
@@ -70,7 +71,7 @@ export default function RootLayout({
   return (
     <html
       lang="es"
-      className={`${inter.variable} ${fraunces.variable} ${cormorant.variable} h-full antialiased`}
+      className={`${dmSans.variable} ${playfair.variable} ${cormorant.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col">

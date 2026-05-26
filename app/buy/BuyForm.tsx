@@ -3,16 +3,30 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Loader2, Lock, ArrowLeft, Eye, Star, Check, User } from "lucide-react";
+import {
+  Loader2, Lock, ArrowLeft, Eye, Star, Check, User,
+  Heart, Crown, Cake, Baby, Droplets, GraduationCap, Building2,
+  type LucideIcon,
+} from "lucide-react";
 
 const TYPE_LABELS: Record<string, string> = {
-  WEDDING:     "💍 Boda",
-  XV:          "👑 XV Años",
-  BIRTHDAY:    "🎂 Cumpleaños",
-  BABY_SHOWER: "🍼 Baby Shower",
-  BAPTISM:     "✝️ Bautizo",
-  GRADUATION:  "🎓 Graduación",
-  CORPORATE:   "💼 Corporativo",
+  WEDDING:     "Boda",
+  XV:          "XV Años",
+  BIRTHDAY:    "Cumpleaños",
+  BABY_SHOWER: "Baby Shower",
+  BAPTISM:     "Bautizo",
+  GRADUATION:  "Graduación",
+  CORPORATE:   "Corporativo",
+};
+
+const TYPE_ICON: Record<string, LucideIcon> = {
+  WEDDING:     Heart,
+  XV:          Crown,
+  BIRTHDAY:    Cake,
+  BABY_SHOWER: Baby,
+  BAPTISM:     Droplets,
+  GRADUATION:  GraduationCap,
+  CORPORATE:   Building2,
 };
 
 const DEMO_URLS: Record<string, string> = {
@@ -53,6 +67,7 @@ export default function BuyForm({ template, userName, userEmail }: Props) {
   const demoUrl = DEMO_URLS[template.slug] ?? null;
   const imgSrc = template.previewImageUrl ?? FALLBACK_IMAGES[template.slug] ?? null;
   const typeLabel = TYPE_LABELS[template.type] ?? template.type;
+  const TypeIcon = TYPE_ICON[template.type] ?? Star;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -113,7 +128,9 @@ export default function BuyForm({ template, userName, userEmail }: Props) {
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <div className="w-full h-full flex items-center justify-center text-6xl">🎉</div>
+                <div className="w-full h-full flex items-center justify-center">
+                  <TypeIcon className="h-16 w-16 text-[var(--color-champagne)]/40" />
+                </div>
               )}
               {template.isPremium && (
                 <div className="absolute top-3 right-3">

@@ -134,6 +134,8 @@ const saveDataSchema = z.object({
   locationName: z.string().max(200).optional(),
   locationAddress: z.string().max(300).optional(),
   intakeNotes: z.string().max(1000).optional(),
+  bio: z.string().max(2000).optional(),
+  funFacts: z.array(z.string().max(300)).max(5).optional(),
   customFields: z.record(z.string(), z.string()).optional(),
 });
 
@@ -176,7 +178,12 @@ export async function saveClientEventData(
         locationName: parsed.data.locationName?.trim() || null,
         locationAddress: parsed.data.locationAddress?.trim() || null,
         intakeNotes: parsed.data.intakeNotes?.trim() || null,
-        settings: { ...currentSettings, intake: parsed.data.customFields ?? {} } as any,
+        settings: {
+          ...currentSettings,
+          intake: parsed.data.customFields ?? {},
+          ...(parsed.data.bio !== undefined ? { bio: parsed.data.bio.trim() } : {}),
+          ...(parsed.data.funFacts !== undefined ? { funFacts: parsed.data.funFacts.map(f => f.trim()).filter(Boolean) } : {}),
+        } as any,
         ...(event.status === "PAID" ? { status: "INTAKE_COMPLETE" } : {}),
       },
     });
@@ -352,8 +359,9 @@ export async function createFreeInvitation(
     const parsed = freeInviteSchema.safeParse(data);
     if (!parsed.success) return { success: false, error: parsed.error.issues[0].message };
 
+    // Invitación gratis siempre toma la plantilla más sencilla (no premium, menor sortOrder)
     const template = await prisma.template.findFirst({
-      where: { isActive: true },
+      where: { isActive: true, isPremium: false },
       select: { id: true },
       orderBy: { sortOrder: "asc" },
     });

@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { saveClientEventData, type ClientEventData, type SaveDataInput } from "@/app/actions/client-event";
-import { Loader2, Save, CheckCircle2 } from "lucide-react";
+import { Loader2, Save, CheckCircle2, PenLine, Clock } from "lucide-react";
 import { format } from "date-fns";
 
 // ─── Type-specific labels ─────────────────────────────────────────────────────
@@ -21,6 +21,26 @@ const TYPE_CONFIG: Record<string, { label: string; placeholder: string; hint: st
 function getTypeConfig(type: string) {
   return TYPE_CONFIG[type] ?? TYPE_CONFIG.DEFAULT;
 }
+
+const BIO_CONFIG: Record<string, { label: string; placeholder: string }> = {
+  WEDDING:     { label: "Historia de los novios",      placeholder: "¿Cómo se conocieron? ¿Cuándo fue la propuesta? Cuéntanos su historia…" },
+  XV:          { label: "Mensaje de la quinceañera",   placeholder: "Un mensaje especial, reflexión o lo que quieres compartir con tus invitados…" },
+  BIRTHDAY:    { label: "Mensaje del festejado",       placeholder: "Una reflexión, agradecimiento o lo que quieras que lean tus invitados…" },
+  BABY_SHOWER: { label: "Mensaje de los papás",        placeholder: "¿Cómo se sienten? ¿Algo especial que quieran compartir sobre la llegada del bebé?…" },
+  BAPTISM:     { label: "Mensaje para los invitados",  placeholder: "Palabras de bienvenida o el significado de este día para tu familia…" },
+  GRADUATION:  { label: "Mensaje del graduado",        placeholder: "Tu reflexión sobre este logro, agradecimientos, o lo que viene…" },
+  CORPORATE:   { label: "Descripción del evento",      placeholder: "De qué trata el evento, qué se celebra o los objetivos del encuentro…" },
+  DEFAULT:     { label: "Descripción",                 placeholder: "Cuéntanos más sobre tu evento y lo que quieres que sepan tus invitados…" },
+};
+
+const FUNFACTS_CONFIG: Record<string, { label: string; placeholder: string }> = {
+  WEDDING:    { label: "Dato curioso de los novios",  placeholder: "Ej: Se conocieron en un viaje a Oaxaca" },
+  XV:         { label: "Dato curioso",                placeholder: "Ej: Su color favorito es el azul marino" },
+  BIRTHDAY:   { label: "Dato curioso",                placeholder: "Ej: Le encanta la fotografía desde los 12 años" },
+  GRADUATION: { label: "Logro o dato curioso",        placeholder: "Ej: Estudió con beca completa los 5 años" },
+};
+
+const TYPES_WITH_FUNFACTS = new Set(["WEDDING", "XV", "BIRTHDAY", "GRADUATION"]);
 
 // ─── Input component ──────────────────────────────────────────────────────────
 
@@ -51,7 +71,21 @@ const inputCls =
 
 export function ClientEventForm({ event }: { event: ClientEventData }) {
   const typeConfig = getTypeConfig(event.type);
+  const bioConfig = BIO_CONFIG[event.type] ?? BIO_CONFIG.DEFAULT;
+  const funFactsConfig = FUNFACTS_CONFIG[event.type] ?? FUNFACTS_CONFIG.WEDDING;
+  const hasFunFacts = TYPES_WITH_FUNFACTS.has(event.type);
   const intakeFields = (event.settings.intake as Record<string, string> | undefined) ?? {};
+
+  const existingFunFacts = Array.isArray(event.settings.funFacts)
+    ? (event.settings.funFacts as string[])
+    : [];
+  const initialFunFacts: string[] = [
+    existingFunFacts[0] ?? "",
+    existingFunFacts[1] ?? "",
+    existingFunFacts[2] ?? "",
+    existingFunFacts[3] ?? "",
+    existingFunFacts[4] ?? "",
+  ];
 
   const [clientName, setClientName] = useState(event.clientName ?? "");
   const [clientEmail, setClientEmail] = useState(event.clientEmail ?? "");
@@ -65,14 +99,15 @@ export function ClientEventForm({ event }: { event: ClientEventData }) {
   );
   const [locationName, setLocationName] = useState(event.locationName ?? "");
   const [locationAddress, setLocationAddress] = useState(event.locationAddress ?? "");
+  const [bio, setBio] = useState((event.settings.bio as string) ?? "");
+  const [funFacts, setFunFacts] = useState<string[]>(initialFunFacts);
   const [notes, setNotes] = useState(event.intakeNotes ?? "");
-  const [saved, setSaved] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
   function handleSave() {
     setError(null);
-    setSaved(false);
     startTransition(async () => {
       const payload: SaveDataInput = {
         title: title || typeConfig.placeholder,
@@ -83,17 +118,56 @@ export function ClientEventForm({ event }: { event: ClientEventData }) {
         locationName: locationName || undefined,
         locationAddress: locationAddress || undefined,
         intakeNotes: notes || undefined,
+        bio: bio || undefined,
+        funFacts: hasFunFacts ? funFacts.filter(Boolean) : undefined,
         customFields: { names },
       };
 
       const result = await saveClientEventData(event.id, payload);
       if (result.success) {
-        setSaved(true);
-        setTimeout(() => setSaved(false), 3000);
+        setSubmitted(true);
       } else {
         setError(result.error ?? "Error al guardar");
       }
     });
+  }
+
+  // ── Panel de confirmación ──────────────────────────────────────────────────
+  if (submitted) {
+    return (
+      <div className="rounded-2xl border border-[var(--color-champagne)]/30 bg-card shadow-sm overflow-hidden">
+        <div className="p-10 flex flex-col items-center text-center gap-4">
+          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[var(--color-champagne)]/10">
+            <CheckCircle2 className="h-8 w-8 text-[var(--color-champagne)]" />
+          </div>
+
+          <div>
+            <h2
+              className="text-xl font-bold tracking-tight"
+              style={{ fontFamily: "var(--font-heading), serif" }}
+            >
+              ¡Listo! Revisaremos tu invitación pronto
+            </h2>
+            <p className="mt-1.5 text-sm text-muted-foreground max-w-sm">
+              Recibimos toda tu información. Nuestro equipo la revisará y te avisará por email cuando tu invitación esté activa.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground/60 bg-muted/50 rounded-xl px-4 py-2">
+            <Clock className="h-3.5 w-3.5 shrink-0" />
+            Tiempo estimado: 24–48 horas
+          </div>
+
+          <button
+            onClick={() => setSubmitted(false)}
+            className="mt-2 inline-flex items-center gap-2 rounded-xl border border-border bg-muted/50 px-5 py-2.5 text-sm font-semibold text-muted-foreground hover:bg-muted transition-all"
+          >
+            <PenLine className="h-4 w-4" />
+            Editar información
+          </button>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -106,12 +180,6 @@ export function ClientEventForm({ event }: { event: ClientEventData }) {
             Esta información se usará para armar tu invitación.
           </p>
         </div>
-        {saved && (
-          <span className="flex items-center gap-1.5 text-xs text-emerald-600 font-semibold">
-            <CheckCircle2 className="h-4 w-4" />
-            Guardado
-          </span>
-        )}
       </div>
 
       <div className="p-6 space-y-8">
@@ -226,21 +294,82 @@ export function ClientEventForm({ event }: { event: ClientEventData }) {
         {/* Divider */}
         <div className="border-t border-border" />
 
+        {/* Sección: Biografía */}
+        <div className="space-y-4">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">
+            Acerca de tu evento
+          </p>
+
+          <Field label={bioConfig.label} hint="Este texto aparecerá en tu invitación. Puedes escribir lo que quieras.">
+            <textarea
+              value={bio}
+              onChange={(e) => setBio(e.target.value)}
+              rows={5}
+              placeholder={bioConfig.placeholder}
+              className={`${inputCls} resize-none`}
+              maxLength={2000}
+            />
+            <p className="text-[11px] text-muted-foreground/40 text-right">{bio.length}/2000</p>
+          </Field>
+        </div>
+
+        {/* Sección: Datos curiosos (solo para tipos que aplica) */}
+        {hasFunFacts && (
+          <>
+            <div className="border-t border-border" />
+            <div className="space-y-4">
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">
+                  5 datos curiosos
+                </p>
+                <p className="text-[11px] text-muted-foreground/50 mt-1">
+                  Pequeños detalles que hacen única tu invitación. Deja vacíos los que no uses.
+                </p>
+              </div>
+
+              <div className="space-y-2.5">
+                {funFacts.map((fact, idx) => (
+                  <div key={idx} className="flex items-center gap-2">
+                    <span className="w-5 h-5 rounded-full bg-muted flex items-center justify-center text-[10px] font-bold text-muted-foreground shrink-0">
+                      {idx + 1}
+                    </span>
+                    <input
+                      type="text"
+                      value={fact}
+                      onChange={(e) => {
+                        const next = [...funFacts];
+                        next[idx] = e.target.value;
+                        setFunFacts(next);
+                      }}
+                      placeholder={funFactsConfig.placeholder}
+                      maxLength={300}
+                      className={inputCls}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </>
+        )}
+
+        {/* Divider */}
+        <div className="border-t border-border" />
+
         {/* Sección: Detalles extras */}
         <div className="space-y-4">
           <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">
-            Detalles adicionales
+            Notas para el equipo
           </p>
 
           <Field
-            label="Notas especiales"
-            hint="Código de vestimenta, mesa de regalos, indicaciones de acceso, o cualquier cosa que quieras incluir."
+            label="¿Algo más que debamos saber?"
+            hint="Código de vestimenta, mesa de regalos, indicaciones de acceso, o cualquier detalle especial."
           >
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              rows={4}
-              placeholder="Cuéntanos cualquier detalle especial que quieras que aparezca en tu invitación…"
+              rows={3}
+              placeholder="Cuéntanos cualquier detalle que quieras que aparezca en tu invitación…"
               className={`${inputCls} resize-none`}
             />
           </Field>

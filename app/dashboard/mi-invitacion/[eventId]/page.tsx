@@ -6,6 +6,9 @@ import { es } from "date-fns/locale";
 import {
   ArrowLeft, Eye, CheckCircle2, Clock, Users,
   Image as ImageIcon, Lock, Sparkles, Star, TrendingUp,
+  CreditCard, ClipboardList, Palette, PenLine,
+  Heart, Crown, Cake, Baby, Droplets, GraduationCap, Building2, PartyPopper,
+  type LucideIcon,
 } from "lucide-react";
 import { getClientEventData } from "@/app/actions/client-event";
 import { getTierFeatures } from "@/lib/event-sections-map";
@@ -18,18 +21,18 @@ export const dynamic = "force-dynamic";
 
 // ─── Status config ────────────────────────────────────────────────────────────
 
-const STEPS = [
-  { key: "PAID",              label: "Pago confirmado",     icon: "💳" },
-  { key: "INTAKE_COMPLETE",   label: "Datos enviados",      icon: "📋" },
-  { key: "BUILDING",          label: "Construyendo",        icon: "🎨" },
-  { key: "REVIEW",            label: "En revisión",         icon: "👁️" },
-  { key: "CHANGES_REQUESTED", label: "Ajustes",             icon: "✏️" },
-  { key: "ACTIVE",            label: "¡Activa!",            icon: "🎉" },
+const STEPS: { key: string; label: string; Icon: LucideIcon }[] = [
+  { key: "PAID",              label: "Pago confirmado", Icon: CreditCard },
+  { key: "INTAKE_COMPLETE",   label: "Datos enviados",  Icon: ClipboardList },
+  { key: "BUILDING",          label: "Construyendo",    Icon: Palette },
+  { key: "REVIEW",            label: "En revisión",     Icon: Eye },
+  { key: "CHANGES_REQUESTED", label: "Ajustes",         Icon: PenLine },
+  { key: "ACTIVE",            label: "Activa",          Icon: CheckCircle2 },
 ];
 
-const FREE_STEPS = [
-  { key: "DRAFT",   label: "Datos enviados",   icon: "📋" },
-  { key: "ACTIVE",  label: "¡Activa!",         icon: "🎉" },
+const FREE_STEPS: { key: string; label: string; Icon: LucideIcon }[] = [
+  { key: "DRAFT",  label: "Datos enviados", Icon: ClipboardList },
+  { key: "ACTIVE", label: "Activa",         Icon: CheckCircle2 },
 ];
 
 const STATUS_ORDER = ["PAID","DRAFT","INTAKE_COMPLETE","BUILDING","REVIEW","CHANGES_REQUESTED","ACTIVE","COMPLETED"];
@@ -41,13 +44,20 @@ const STATUS_MESSAGES: Record<string, { title: string; desc: string; color: stri
   BUILDING:          { title: "Estamos armando tu invitación…",             desc: "Tiempo estimado: 24–48 horas. Te notificaremos por email.",                  color: "purple" },
   REVIEW:            { title: "Tu invitación está siendo revisada",         desc: "Pronto podrás verla. Si tienes cambios, escríbenos por WhatsApp.",           color: "orange" },
   CHANGES_REQUESTED: { title: "Aplicando tus cambios",                     desc: "Estamos haciendo los ajustes que pediste. Te avisamos en cuanto estén.",     color: "orange" },
-  ACTIVE:            { title: "🎉 ¡Tu invitación está activa!",             desc: "Ya puedes compartirla con tus invitados y ver las confirmaciones aquí.",     color: "green" },
+  ACTIVE:            { title: "¡Tu invitación está activa!",                desc: "Ya puedes compartirla con tus invitados y ver las confirmaciones aquí.",     color: "green" },
   COMPLETED:         { title: "Evento completado",                          desc: "Tu evento ha terminado. El historial y los datos siguen disponibles.",        color: "gray" },
 };
 
-const TYPE_EMOJI: Record<string, string> = {
-  WEDDING:"💍",XV:"👑",BIRTHDAY:"🎂",BABY_SHOWER:"🍼",
-  BAPTISM:"🕊️",GRADUATION:"🎓",CORPORATE:"🏢",CASUAL:"🎈",OTHER:"🎊",
+const TYPE_ICON: Record<string, LucideIcon> = {
+  WEDDING:     Heart,
+  XV:          Crown,
+  BIRTHDAY:    Cake,
+  BABY_SHOWER: Baby,
+  BAPTISM:     Droplets,
+  GRADUATION:  GraduationCap,
+  CORPORATE:   Building2,
+  CASUAL:      PartyPopper,
+  OTHER:       Star,
 };
 
 const TIER_LABEL: Record<string, string> = {
@@ -80,10 +90,11 @@ function ProgressTracker({ status, isFree }: { status: string; isFree: boolean }
           {steps.map((step, idx) => {
             const done = idx < currentIdx;
             const active = idx === currentIdx;
+            const StepIcon = step.Icon;
             return (
               <div key={step.key} className="flex flex-col items-center text-center gap-2">
                 <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center text-base border-2 transition-all ${
+                  className={`w-8 h-8 rounded-full flex items-center justify-center border-2 transition-all ${
                     done
                       ? "bg-[var(--color-champagne)]/20 border-[var(--color-champagne)]"
                       : active
@@ -94,7 +105,7 @@ function ProgressTracker({ status, isFree }: { status: string; isFree: boolean }
                   {done ? (
                     <CheckCircle2 className="h-4 w-4 text-[var(--color-champagne)]" />
                   ) : (
-                    <span className={active ? "" : "opacity-30"}>{step.icon}</span>
+                    <StepIcon className={`h-4 w-4 ${active ? "text-[var(--color-cream)]" : "text-muted-foreground opacity-30"}`} />
                   )}
                 </div>
                 <span
@@ -206,7 +217,7 @@ function ViewStats({
 function PreviewCTA({ slug }: { slug: string }) {
   return (
     <div className="rounded-2xl border border-[var(--color-champagne)]/40 bg-[var(--color-midnight)] p-8 text-center">
-      <div className="text-4xl mb-3">🎉</div>
+      <Sparkles className="h-10 w-10 text-[var(--color-champagne)] mx-auto mb-3" />
       <h2 className="text-xl font-bold text-[var(--color-cream)] mb-2" style={{ fontFamily: "var(--font-fraunces), serif" }}>
         Tu invitación está lista para compartir
       </h2>
@@ -273,9 +284,13 @@ export default async function ClientEventPage({ params }: Props) {
   const features = getTierFeatures(event.tier);
   const isActive = event.status === "ACTIVE" || event.status === "COMPLETED";
   const isEditable = !["ACTIVE", "COMPLETED", "ARCHIVED"].includes(event.status);
-  const canManagePhotos = features.gallery && !["DRAFT", "PAID"].includes(event.status);
+  // Portada: disponible siempre que sea editable (incluso DRAFT / FREE)
+  // Galería: solo en tiers con galería y pasado el estado PAID
+  const canManageCover = isEditable;
+  const canManageGallery = features.gallery && !["DRAFT", "PAID"].includes(event.status);
   const canManageGuests = !["DRAFT", "PAID"].includes(event.status);
   const tierLabel = TIER_LABEL[event.tier] ?? event.tier;
+  const EventTypeIcon = TYPE_ICON[event.type] ?? Star;
 
   return (
     <div className="space-y-6">
@@ -291,7 +306,7 @@ export default async function ClientEventPage({ params }: Props) {
       {/* Header */}
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="flex items-center gap-3">
-          <span className="text-3xl">{TYPE_EMOJI[event.type] ?? "🎊"}</span>
+          <EventTypeIcon className="h-8 w-8 text-muted-foreground shrink-0" />
           <div>
             <h1 className="text-2xl font-bold tracking-tight" style={{ fontFamily: "var(--font-fraunces), serif" }}>
               {event.title}
@@ -350,13 +365,14 @@ export default async function ClientEventPage({ params }: Props) {
         <LockedNotice event={event} />
       )}
 
-      {/* Photos (paid only, past PAID status) */}
-      {canManagePhotos && (
+      {/* Fotos: portada siempre disponible cuando editable; galería solo si el tier la incluye */}
+      {(canManageCover || canManageGallery) && (
         <ClientImageSection
           eventId={event.id}
           initialCover={event.coverImage}
           initialGallery={event.gallery}
           isEditable={isEditable}
+          showGallery={canManageGallery}
         />
       )}
 

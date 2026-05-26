@@ -9,6 +9,16 @@ import {
   Zap,
   ShoppingBag,
   Sparkles,
+  Heart,
+  Crown,
+  Cake,
+  Baby,
+  Droplets,
+  GraduationCap,
+  Building2,
+  FileText,
+  CheckCircle2,
+  type LucideIcon,
 } from "lucide-react";
 import { QuickStatusButton } from "./QuickStatusButton";
 
@@ -18,14 +28,14 @@ export const metadata = {
 
 /* ─── Helpers ─────────────────────────────────────────────────────────────── */
 
-const TYPE_EMOJI: Record<string, string> = {
-  WEDDING: "💍",
-  XV: "👑",
-  BIRTHDAY: "🎂",
-  BABY_SHOWER: "🍼",
-  BAPTISM: "🕊️",
-  GRADUATION: "🎓",
-  CORPORATE: "🏢",
+const TYPE_ICON: Record<string, LucideIcon> = {
+  WEDDING: Heart,
+  XV: Crown,
+  BIRTHDAY: Cake,
+  BABY_SHOWER: Baby,
+  BAPTISM: Droplets,
+  GRADUATION: GraduationCap,
+  CORPORATE: Building2,
 };
 
 const STATUS_LABEL: Record<string, string> = {
@@ -181,8 +191,10 @@ export default async function OperationsQueuePage() {
 
       {events.length === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-2xl border border-border bg-card p-16 text-center">
-          <ListChecks className="mb-4 h-12 w-12 text-muted-foreground/40" />
-          <p className="text-lg font-semibold">Todo al día 🎉</p>
+          <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-50 dark:bg-emerald-950/30">
+            <CheckCircle2 className="h-8 w-8 text-emerald-500 dark:text-emerald-400" />
+          </div>
+          <p className="text-lg font-semibold">Todo al día</p>
           <p className="mt-1 text-sm text-muted-foreground">
             No hay invitaciones pendientes de acción.
           </p>
@@ -194,7 +206,7 @@ export default async function OperationsQueuePage() {
             const isFree = ev.tier === "FREE";
             const clientDisplayName = ev.clientName ?? ev.user.name ?? "—";
             const clientDisplayEmail = ev.clientEmail ?? ev.user.email ?? "—";
-            const typeEmoji = TYPE_EMOJI[ev.type] ?? "📋";
+            const EventTypeIcon = TYPE_ICON[ev.type] ?? FileText;
             const actions = getQuickActions(ev.status);
             const badgeCls = STATUS_BADGE[ev.status] ?? "badge-status-neutral";
 
@@ -219,8 +231,10 @@ export default async function OperationsQueuePage() {
                   {/* Left: identity */}
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="text-xl">{typeEmoji}</span>
-                      <h2 className="truncate text-base font-bold text-foreground">
+                      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-border/60 bg-muted/70">
+                        <EventTypeIcon className="h-3.5 w-3.5 text-muted-foreground" />
+                      </div>
+                      <h2 className="truncate text-base font-semibold text-foreground">
                         {ev.title}
                       </h2>
                       <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ${badgeCls}`}>
