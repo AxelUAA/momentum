@@ -76,16 +76,13 @@ export function ClientEventForm({ event }: { event: ClientEventData }) {
   const hasFunFacts = TYPES_WITH_FUNFACTS.has(event.type);
   const intakeFields = (event.settings.intake as Record<string, string> | undefined) ?? {};
 
+  const isFree = event.tier === "FREE";
+  const funFactSlots = isFree ? 1 : 5;
+
   const existingFunFacts = Array.isArray(event.settings.funFacts)
     ? (event.settings.funFacts as string[])
     : [];
-  const initialFunFacts: string[] = [
-    existingFunFacts[0] ?? "",
-    existingFunFacts[1] ?? "",
-    existingFunFacts[2] ?? "",
-    existingFunFacts[3] ?? "",
-    existingFunFacts[4] ?? "",
-  ];
+  const initialFunFacts: string[] = Array.from({ length: funFactSlots }, (_, i) => existingFunFacts[i] ?? "");
 
   const [clientName, setClientName] = useState(event.clientName ?? "");
   const [clientEmail, setClientEmail] = useState(event.clientEmail ?? "");
@@ -320,11 +317,13 @@ export function ClientEventForm({ event }: { event: ClientEventData }) {
             <div className="space-y-4">
               <div>
                 <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">
-                  5 datos curiosos
+                  {isFree ? "Dato curioso" : "5 datos curiosos"}
                 </p>
-                <p className="text-[11px] text-muted-foreground/50 mt-1">
-                  Pequeños detalles que hacen única tu invitación. Deja vacíos los que no uses.
-                </p>
+                {!isFree && (
+                  <p className="text-[11px] text-muted-foreground/50 mt-1">
+                    Pequeños detalles que hacen única tu invitación. Deja vacíos los que no uses.
+                  </p>
+                )}
               </div>
 
               <div className="space-y-2.5">
@@ -352,28 +351,29 @@ export function ClientEventForm({ event }: { event: ClientEventData }) {
           </>
         )}
 
-        {/* Divider */}
-        <div className="border-t border-border" />
-
-        {/* Sección: Detalles extras */}
-        <div className="space-y-4">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">
-            Notas para el equipo
-          </p>
-
-          <Field
-            label="¿Algo más que debamos saber?"
-            hint="Código de vestimenta, mesa de regalos, indicaciones de acceso, o cualquier detalle especial."
-          >
-            <textarea
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              rows={3}
-              placeholder="Cuéntanos cualquier detalle que quieras que aparezca en tu invitación…"
-              className={`${inputCls} resize-none`}
-            />
-          </Field>
-        </div>
+        {/* Sección: Notas — solo para clientes de pago */}
+        {!isFree && (
+          <>
+            <div className="border-t border-border" />
+            <div className="space-y-4">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">
+                Notas para el equipo
+              </p>
+              <Field
+                label="¿Algo más que debamos saber?"
+                hint="Código de vestimenta, mesa de regalos, indicaciones de acceso, o cualquier detalle especial."
+              >
+                <textarea
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  rows={3}
+                  placeholder="Cuéntanos cualquier detalle que quieras que aparezca en tu invitación…"
+                  className={`${inputCls} resize-none`}
+                />
+              </Field>
+            </div>
+          </>
+        )}
 
         {/* Error */}
         {error && (

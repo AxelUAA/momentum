@@ -335,6 +335,8 @@ const freeInviteSchema = z.object({
   title: z.string().min(2, "Escribe al menos el nombre del evento").max(150),
   eventDate: z.string().optional(),
   locationName: z.string().max(200).optional(),
+  bio: z.string().max(500).optional(),
+  funFact: z.string().max(300).optional(),
 });
 
 export type FreeInviteInput = z.infer<typeof freeInviteSchema>;
@@ -394,7 +396,10 @@ export async function createFreeInvitation(
         paymentStatus: "UNPAID",
         eventDate,
         locationName: parsed.data.locationName?.trim() || null,
-        settings: {},
+        settings: {
+          ...(parsed.data.bio ? { bio: parsed.data.bio.trim() } : {}),
+          ...(parsed.data.funFact ? { funFacts: [parsed.data.funFact.trim()] } : {}),
+        },
       },
     });
 
