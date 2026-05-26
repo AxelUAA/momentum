@@ -69,7 +69,7 @@ const inputCls =
 
 // ─── Main form ────────────────────────────────────────────────────────────────
 
-export function ClientEventForm({ event }: { event: ClientEventData }) {
+export function ClientEventForm({ event, initiallySubmitted = false }: { event: ClientEventData; initiallySubmitted?: boolean }) {
   const typeConfig = getTypeConfig(event.type);
   const bioConfig = BIO_CONFIG[event.type] ?? BIO_CONFIG.DEFAULT;
   const funFactsConfig = FUNFACTS_CONFIG[event.type] ?? FUNFACTS_CONFIG.WEDDING;
@@ -99,7 +99,7 @@ export function ClientEventForm({ event }: { event: ClientEventData }) {
   const [bio, setBio] = useState((event.settings.bio as string) ?? "");
   const [funFacts, setFunFacts] = useState<string[]>(initialFunFacts);
   const [notes, setNotes] = useState(event.intakeNotes ?? "");
-  const [submitted, setSubmitted] = useState(false);
+  const [submitted, setSubmitted] = useState(initiallySubmitted);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 

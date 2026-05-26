@@ -360,7 +360,7 @@ export default async function ClientEventPage({ params }: Props) {
 
       {/* Data form */}
       {isEditable ? (
-        <ClientEventForm event={event} />
+        <ClientEventForm event={event} initiallySubmitted={isFree} />
       ) : (
         <LockedNotice event={event} />
       )}
