@@ -26,7 +26,7 @@ export default async function Home() {
     <div className="flex min-h-screen flex-col items-center justify-between">
       <Navbar session={session} />
       <main className="w-full flex-1 flex flex-col">
-        <Hero isLoggedIn={!!session} />
+        <Hero />
         <ValueProps />
         <Problem />
         <HowItWorks />

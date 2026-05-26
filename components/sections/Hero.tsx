@@ -9,9 +9,9 @@ import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { motion } from "motion/react";
 import Link from "next/link";
-import { ArrowRight, LayoutDashboard } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
-export function Hero({ isLoggedIn = false }: { isLoggedIn?: boolean }) {
+export function Hero() {
   return (
     <section className="relative flex min-h-[90vh] w-full flex-col items-center justify-center overflow-hidden bg-background pt-20">
       {/* Effects Layers */}
@@ -51,28 +51,18 @@ export function Hero({ isLoggedIn = false }: { isLoggedIn?: boolean }) {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 1 }}
             >
-              {isLoggedIn ? (
-                <Link
-                  href="/dashboard"
-                  className={cn(buttonVariants({ size: "lg" }), "shimmer h-12 rounded-full border-none px-8 text-base text-[var(--color-midnight)]")}
-                >
-                  <LayoutDashboard className="mr-2 h-4 w-4" />
-                  Ir a mi dashboard
-                </Link>
-              ) : (
-                <Link
-                  href="/dashboard/nueva-gratis"
-                  className={cn(buttonVariants({ size: "lg" }), "shimmer h-12 rounded-full border-none px-8 text-base text-[var(--color-midnight)]")}
-                >
-                  Crear mi invitación gratis
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Link>
-              )}
+              <Link
+                href="/dashboard/nueva-gratis"
+                className={cn(buttonVariants({ size: "lg" }), "shimmer h-12 rounded-full border-none px-8 text-base text-[var(--color-midnight)]")}
+              >
+                Crear mi invitación gratis
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
               <Link
                 href="/demo"
                 className={cn(buttonVariants({ variant: "outline", size: "lg" }), "group h-12 rounded-full border-[var(--color-champagne)]/40 px-8 text-base text-[var(--color-champagne)] backdrop-blur-sm transition-all hover:border-[var(--color-champagne)] hover:bg-[var(--color-champagne)]/10")}
               >
-                ✨ Ver demo en vivo
+                Ver demo en vivo
                 <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
               </Link>
             </motion.div>

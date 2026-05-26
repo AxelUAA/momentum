@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
-import { Menu, X, ArrowRight } from "lucide-react";
+import { Menu, ArrowRight, LayoutDashboard } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Logo } from "@/components/ui/Logo";
 import { signOut } from "next-auth/react";
@@ -66,21 +66,33 @@ export function Navbar({ session }: { session?: any }) {
           <ThemeToggle />
           {session ? (
             <div className="flex items-center gap-4">
-              {session.user?.role === "ADMIN" && (
+              {session.user?.role === "ADMIN" ? (
                 <Link
-                  href="/dashboard"
+                  href="/dashboard/admin"
                   className={cn(
                     buttonVariants({ variant: "ghost" }),
                     "text-[var(--color-midnight)] dark:text-[var(--color-cream)]"
                   )}
                 >
-                  Dashboard
+                  <LayoutDashboard className="mr-2 h-4 w-4" />
+                  Admin
+                </Link>
+              ) : (
+                <Link
+                  href="/dashboard"
+                  className={cn(
+                    buttonVariants(),
+                    "shimmer border-none text-[var(--color-midnight)]"
+                  )}
+                >
+                  <LayoutDashboard className="mr-2 h-4 w-4" />
+                  Mi invitación
                 </Link>
               )}
               <button
                 onClick={() => signOut()}
                 className={cn(
-                  buttonVariants({ variant: "outline" }),
+                  buttonVariants({ variant: "ghost" }),
                   "text-muted-foreground"
                 )}
               >
@@ -163,18 +175,17 @@ export function Navbar({ session }: { session?: any }) {
                   <div className="flex flex-col gap-3">
                     {session ? (
                       <div className="flex flex-col gap-3">
-                        {session.user?.role === "ADMIN" && (
-                          <Link
-                            href="/dashboard"
-                            className={cn(
-                              buttonVariants({ variant: "default", size: "lg" }),
-                              "w-full rounded-xl text-[var(--color-midnight)]"
-                            )}
-                            onClick={() => setOpen(false)}
-                          >
-                            Dashboard
-                          </Link>
-                        )}
+                        <Link
+                          href={session.user?.role === "ADMIN" ? "/dashboard/admin" : "/dashboard"}
+                          className={cn(
+                            buttonVariants({ size: "lg" }),
+                            "w-full rounded-xl shimmer border-none text-[var(--color-midnight)]"
+                          )}
+                          onClick={() => setOpen(false)}
+                        >
+                          <LayoutDashboard className="mr-2 h-4 w-4" />
+                          {session.user?.role === "ADMIN" ? "Panel Admin" : "Mi invitación"}
+                        </Link>
                         <button
                           onClick={() => {
                             setOpen(false);
