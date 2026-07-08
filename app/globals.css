@@ -3,14 +3,13 @@
 @import "shadcn/tailwind.css";
 
 /* ───────────────────────────────────────────────────────────
-   Dark mode variant: class-based (toggle support)
+   Dark mode variant: class-based (la tienda es dark-first)
    ─────────────────────────────────────────────────────────── */
 @custom-variant dark (&:is(.dark *));
 
 /* ───────────────────────────────────────────────────────────
-   Tailwind v4 @theme — Design Tokens
-   Registers CSS variables as Tailwind utilities so you can
-   write bg-champagne, text-midnight, font-heading, etc.
+   Tailwind v4 @theme — Design Tokens (Momentum Vape)
+   Dark premium + acento dorado. Anton (display) / Epilogue (body).
    ─────────────────────────────────────────────────────────── */
 @theme inline {
   /* — shadcn semantic colors (bridge to CSS vars) — */
@@ -32,25 +31,15 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
-
-  /* — Momentum brand colors (always available) — */
-  --color-midnight: #0F1B2D;
-  --color-champagne: #D4AF7A;
-  --color-dusty-rose: #C9A8A0;
-  --color-cream: #FAF7F2;
   --color-surface: var(--surface);
-  --color-success: #5B8C7B;
-  --color-error: #9B3A4E;
-  /* Alias histórico: --color-brand se usa en 24 archivos pero nunca se definió.
-     Lo apuntamos a champagne (el accent gold de la marca) para que no quede
-     transparente. */
-  --color-brand: var(--color-champagne);
+
+  /* — Brand — */
+  --color-gold: #F5B942;
+  --color-gold-deep: #CA8A04;
 
   /* — Typography — */
-  --font-sans: var(--font-dm-sans);
-  --font-heading: var(--font-playfair);
-  --font-display: var(--font-cormorant);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-epilogue);
+  --font-heading: var(--font-anton);
 
   /* — Radii — */
   --radius-sm: calc(var(--radius) * 0.6);
@@ -60,267 +49,103 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
-
-  /* — shadcn sidebar (keep defaults) — */
-  --color-sidebar-ring: var(--sidebar-ring);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar: var(--sidebar);
-  --color-chart-5: var(--chart-5);
-  --color-chart-4: var(--chart-4);
-  --color-chart-3: var(--chart-3);
-  --color-chart-2: var(--chart-2);
-  --color-chart-1: var(--chart-1);
 }
 
 /* ───────────────────────────────────────────────────────────
-   Light Mode — Momentum Palette
+   Paleta — dark-first (sin modo claro)
    ─────────────────────────────────────────────────────────── */
-:root {
-  /* Font aliases — allow existing var(--font-fraunces) usage to resolve to Playfair Display */
-  --font-fraunces: var(--font-playfair);
-  --font-inter: var(--font-dm-sans);
-
-  /* Core */
-  --background: #FAF7F2;
-  --foreground: #0F1B2D;
-  --surface: #FFFFFF;
-
-  /* Cards & Popovers */
-  --card: #FFFFFF;
-  --card-foreground: #0F1B2D;
-  --popover: #FFFFFF;
-  --popover-foreground: #0F1B2D;
-
-  /* Primary — Midnight Blue (main CTAs) */
-  --primary: #0F1B2D;
-  --primary-foreground: #FAF7F2;
-
-  /* Secondary — Dusty Rose */
-  --secondary: #F5EFEC;
-  --secondary-foreground: #0F1B2D;
-
-  /* Muted — subtle backgrounds */
-  --muted: #F0EBE3;
-  --muted-foreground: #5A6373;
-
-  /* Accent — Champagne Gold (highlights, focus, CTAs especiales) */
-  --accent: #D4AF7A;
-  --accent-foreground: #0F1B2D;
-
-  /* Destructive — Error red */
-  --destructive: #9B3A4E;
-
-  /* Borders & Inputs */
-  --border: #E8E2D5;
-  --input: #E8E2D5;
-  --ring: #D4AF7A;
-
-  /* Radius */
-  --radius: 0.75rem;
-
-  /* Charts */
-  --chart-1: #D4AF7A;
-  --chart-2: #C9A8A0;
-  --chart-3: #5B8C7B;
-  --chart-4: #0F1B2D;
-  --chart-5: #5A6373;
-
-  /* Sidebar */
-  --sidebar: #FAF7F2;
-  --sidebar-foreground: #0F1B2D;
-  --sidebar-primary: #0F1B2D;
-  --sidebar-primary-foreground: #FAF7F2;
-  --sidebar-accent: #F0EBE3;
-  --sidebar-accent-foreground: #0F1B2D;
-  --sidebar-border: #E8E2D5;
-  --sidebar-ring: #D4AF7A;
-}
-
-/* ───────────────────────────────────────────────────────────
-   Dark Mode — Momentum Palette
-   ─────────────────────────────────────────────────────────── */
+:root,
 .dark {
+  --radius: 1rem;
+
   /* Core */
-  --background: #0A1220;
-  --foreground: #FAF7F2;
-  --surface: #162236;
+  --background: #0C0A09;
+  --foreground: #FAFAF9;
+  --surface: #161311;
 
   /* Cards & Popovers */
-  --card: #162236;
-  --card-foreground: #FAF7F2;
-  --popover: #162236;
-  --popover-foreground: #FAF7F2;
+  --card: #161311;
+  --card-foreground: #FAFAF9;
+  --popover: #1C1917;
+  --popover-foreground: #FAFAF9;
 
-  /* Primary — flipped for dark: light text on dark bg */
-  --primary: #FAF7F2;
-  --primary-foreground: #0F1B2D;
+  /* Primary — casi blanco (botones neutros) */
+  --primary: #FAFAF9;
+  --primary-foreground: #0C0A09;
 
-  /* Secondary — Dusty Rose muted */
-  --secondary: #1E2E42;
-  --secondary-foreground: #FAF7F2;
+  /* Secondary — panel elevado */
+  --secondary: #1C1917;
+  --secondary-foreground: #FAFAF9;
 
   /* Muted */
-  --muted: #1E2E42;
-  --muted-foreground: #8A9AB5;
+  --muted: #24201D;
+  --muted-foreground: #A8A29E;
 
-  /* Accent — Champagne Gold stays vibrant */
-  --accent: #D4AF7A;
-  --accent-foreground: #0F1B2D;
+  /* Accent — Gold (CTAs) */
+  --accent: #F5B942;
+  --accent-foreground: #1A1205;
 
   /* Destructive */
-  --destructive: #C4506A;
+  --destructive: #EF4444;
 
   /* Borders & Inputs */
-  --border: #243349;
-  --input: #243349;
-  --ring: #D4AF7A;
-
-  /* Charts */
-  --chart-1: #D4AF7A;
-  --chart-2: #C9A8A0;
-  --chart-3: #5B8C7B;
-  --chart-4: #FAF7F2;
-  --chart-5: #8A9AB5;
-
-  /* Sidebar */
-  --sidebar: #0F1B2D;
-  --sidebar-foreground: #FAF7F2;
-  --sidebar-primary: #D4AF7A;
-  --sidebar-primary-foreground: #0F1B2D;
-  --sidebar-accent: #1E2E42;
-  --sidebar-accent-foreground: #FAF7F2;
-  --sidebar-border: #243349;
-  --sidebar-ring: #D4AF7A;
+  --border: #2A2522;
+  --input: #2A2522;
+  --ring: #F5B942;
 }
 
 /* ───────────────────────────────────────────────────────────
-   Base Styles
+   Base
    ─────────────────────────────────────────────────────────── */
-@layer base {
-  * {
-    @apply border-border outline-ring/50;
-  }
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), system-ui, sans-serif;
+  line-height: 1.6;
+}
 
-  body {
-    @apply bg-background text-foreground;
-  }
+.font-heading {
+  font-family: var(--font-heading), Impact, sans-serif;
+  letter-spacing: 0.01em;
+}
 
-  html {
-    @apply font-sans;
-    scroll-behavior: smooth;
-  }
+::selection {
+  background-color: var(--accent);
+  color: var(--accent-foreground);
+}
 
-  /* Reduce motion for accessibility */
-  @media (prefers-reduced-motion: reduce) {
-    *,
-    *::before,
-    *::after {
-      animation-duration: 0.01ms !important;
-      animation-iteration-count: 1 !important;
-      transition-duration: 0.01ms !important;
-      scroll-behavior: auto !important;
-    }
-  }
+/* Scrollbar sutil */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #3a332e transparent;
+}
 
-  /* Selection color */
-  ::selection {
-    background-color: #D4AF7A;
-    color: #0F1B2D;
+/* ───────────────────────────────────────────────────────────
+   Marquee de marcas
+   ─────────────────────────────────────────────────────────── */
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+.animate-marquee {
+  animation: marquee 30s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-marquee {
+    animation: none;
   }
 }
 
 /* ───────────────────────────────────────────────────────────
-   Utility Classes
+   Glow dorado para hero / cards destacadas
    ─────────────────────────────────────────────────────────── */
-@layer utilities {
-  .badge-status-success {
-    @apply bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300;
-  }
+.glow-gold {
+  box-shadow: 0 0 80px -20px rgba(245, 185, 66, 0.35);
+}
 
-  .badge-status-info {
-    @apply bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300;
-  }
-
-  .badge-status-warning {
-    @apply bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300;
-  }
-
-  .badge-status-danger {
-    @apply bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300;
-  }
-
-  .badge-status-neutral {
-    @apply bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300;
-  }
-
-  /* Champagne gold shimmer effect for CTAs */
-  .shimmer {
-    background: linear-gradient(
-      110deg,
-      #D4AF7A 0%,
-      #E8D5A8 45%,
-      #D4AF7A 55%,
-      #C49A60 100%
-    );
-    background-size: 200% 100%;
-    animation: shimmer 3s ease-in-out infinite;
-  }
-
-  @keyframes shimmer {
-    0% { background-position: 200% 0; }
-    100% { background-position: -200% 0; }
-  }
-
-  /* Text gradient for "celebrado" word */
-  .text-gradient-champagne {
-    background: linear-gradient(135deg, #D4AF7A, #E8D5A8, #C49A60);
-    background-size: 200% 200%;
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    animation: gradient-shift 4s ease-in-out infinite;
-  }
-
-  @keyframes gradient-shift {
-    0%, 100% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-  }
-
-  /* Glow effect for premium elements */
-  .glow-champagne {
-    box-shadow: 0 0 20px rgba(212, 175, 122, 0.15),
-                0 0 40px rgba(212, 175, 122, 0.05);
-  }
-
-  .glow-champagne-strong {
-    box-shadow: 0 0 20px rgba(212, 175, 122, 0.3),
-                0 0 60px rgba(212, 175, 122, 0.1);
-  }
-
-  /* Animated border glow (for pricing cards) */
-  .border-glow {
-    position: relative;
-  }
-
-  .border-glow::before {
-    content: "";
-    position: absolute;
-    inset: -1px;
-    border-radius: inherit;
-    background: linear-gradient(135deg, #D4AF7A, #C9A8A0, #D4AF7A);
-    background-size: 300% 300%;
-    animation: border-rotate 4s linear infinite;
-    z-index: -1;
-  }
-
-  @keyframes border-rotate {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
-  }
+.text-outline {
+  -webkit-text-stroke: 1px rgba(250, 250, 249, 0.25);
+  color: transparent;
 }

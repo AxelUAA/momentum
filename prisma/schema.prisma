@@ -30,6 +30,8 @@ model User {
   payments      Payment[]
   sessions      Session[]
   subscription  Subscription?
+  favorites     Favorite[]
+  shopOrders    ShopOrder[]
 
   @@map("users")
 }
@@ -352,4 +354,145 @@ enum SubscriptionStatus {
 enum SubscriptionPlan {
   ORGANIZADOR_PLUS
   ORGANIZADOR_PRO
+}
+
+// ─────────────────────────────────────────────────────────────
+// E-commerce (vitrina de vapeadores — pedidos vía WhatsApp)
+// ─────────────────────────────────────────────────────────────
+
+model Brand {
+  id        String    @id @default(cuid())
+  name      String
+  slug      String    @unique
+  logoUrl   String?   @map("logo_url")
+  sortOrder Int       @default(0) @map("sort_order")
+  isActive  Boolean   @default(true) @map("is_active")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  products  Product[]
+
+  @@index([isActive])
+  @@map("brands")
+}
+
+model Category {
+  id          String    @id @default(cuid())
+  name        String
+  slug        String    @unique
+  description String?
+  imageUrl    String?   @map("image_url")
+  sortOrder   Int       @default(0) @map("sort_order")
+  isActive    Boolean   @default(true) @map("is_active")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  products    Product[]
+
+  @@index([isActive])
+  @@map("categories")
+}
+
+model Product {
+  id             String           @id @default(cuid())
+  name           String
+  slug           String           @unique
+  description    String?
+  brandId        String?          @map("brand_id")
+  categoryId     String?          @map("category_id")
+  priceCents     Int              @map("price_cents")
+  compareAtCents Int?             @map("compare_at_cents")
+  images         Json             @default("[]")
+  puffs          Int?
+  nicotineMg     Float?           @map("nicotine_mg")
+  volumeMl       Float?           @map("volume_ml")
+  batteryMah     Int?             @map("battery_mah")
+  featured       Boolean          @default(false)
+  isActive       Boolean          @default(true) @map("is_active")
+  sortOrder      Int              @default(0) @map("sort_order")
+  createdAt      DateTime         @default(now()) @map("created_at")
+  updatedAt      DateTime         @updatedAt @map("updated_at")
+  brand          Brand?           @relation(fields: [brandId], references: [id])
+  category       Category?        @relation(fields: [categoryId], references: [id])
+  variants       ProductVariant[]
+  favorites      Favorite[]
+  orderItems     ShopOrderItem[]
+
+  @@index([isActive, featured])
+  @@index([brandId])
+  @@index([categoryId])
+  @@map("products")
+}
+
+model ProductVariant {
+  id         String          @id @default(cuid())
+  productId  String          @map("product_id")
+  name       String // sabor / color (ej. "Blue Razz Ice")
+  sku        String?         @unique
+  priceCents Int?            @map("price_cents") // override opcional del precio base
+  stock      Int             @default(0)
+  isActive   Boolean         @default(true) @map("is_active")
+  sortOrder  Int             @default(0) @map("sort_order")
+  createdAt  DateTime        @default(now()) @map("created_at")
+  updatedAt  DateTime        @updatedAt @map("updated_at")
+  product    Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
+  orderItems ShopOrderItem[]
+
+  @@index([productId])
+  @@map("product_variants")
+}
+
+model Favorite {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  productId String   @map("product_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+  @@map("favorites")
+}
+
+model ShopOrder {
+  id             String          @id @default(cuid())
+  code           String          @unique // ej. "MV-4F8K2"
+  userId         String?         @map("user_id")
+  customerName   String          @map("customer_name")
+  customerPhone  String?         @map("customer_phone")
+  status         ShopOrderStatus @default(NEW)
+  totalCents     Int             @map("total_cents")
+  notes          String?
+  whatsappSentAt DateTime?       @map("whatsapp_sent_at")
+  createdAt      DateTime        @default(now()) @map("created_at")
+  updatedAt      DateTime        @updatedAt @map("updated_at")
+  user           User?           @relation(fields: [userId], references: [id])
+  items          ShopOrderItem[]
+
+  @@index([userId])
+  @@index([status])
+  @@map("shop_orders")
+}
+
+model ShopOrderItem {
+  id             String          @id @default(cuid())
+  orderId        String          @map("order_id")
+  productId      String?         @map("product_id")
+  variantId      String?         @map("variant_id")
+  productName    String          @map("product_name") // snapshot al momento del pedido
+  variantName    String?         @map("variant_name")
+  quantity       Int
+  unitPriceCents Int             @map("unit_price_cents")
+  order          ShopOrder       @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product        Product?        @relation(fields: [productId], references: [id])
+  variant        ProductVariant? @relation(fields: [variantId], references: [id])
+
+  @@index([orderId])
+  @@map("shop_order_items")
+}
+
+enum ShopOrderStatus {
+  NEW
+  CONTACTED
+  CONFIRMED
+  DELIVERED
+  CANCELLED
 }

@@ -1,59 +1,55 @@
 import type { Metadata } from "next";
-import { DM_Sans, Playfair_Display, Cormorant_Garamond } from "next/font/google";
-import { ThemeProvider } from "@/components/ThemeProvider";
+import { Anton, Epilogue } from "next/font/google";
 import { Toaster } from "sonner";
+import { auth } from "@/auth";
+import { CartProvider } from "@/components/store/cart-context";
+import { Navbar } from "@/components/store/Navbar";
+import { Footer } from "@/components/store/Footer";
+import { CartSheet } from "@/components/store/CartSheet";
+import { AgeGate } from "@/components/store/AgeGate";
+import { BRAND } from "@/lib/brand";
 import "./globals.css";
 
 /* ─── Fonts ─────────────────────────────────────────────── */
 
-const dmSans = DM_Sans({
-  variable: "--font-dm-sans",
+const anton = Anton({
+  variable: "--font-anton",
   subsets: ["latin"],
+  weight: "400",
   display: "swap",
 });
 
-const playfair = Playfair_Display({
-  variable: "--font-playfair",
+const epilogue = Epilogue({
+  variable: "--font-epilogue",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
-  display: "swap",
-});
-
-const cormorant = Cormorant_Garamond({
-  variable: "--font-cormorant",
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
+  weight: ["400", "500", "600", "700"],
   display: "swap",
 });
 
 /* ─── Metadata ──────────────────────────────────────────── */
 
 export const metadata: Metadata = {
-  title: "Momentum — Invitaciones digitales premium",
+  title: `${BRAND.name} — ${BRAND.tagline}`,
   description:
-    "Crea, envía y gestiona invitaciones digitales premium para bodas, XV años, bautizos y eventos en menos de 5 minutos.",
+    "Catálogo premium de vapes desechables y pods recargables. ELFBAR, Lost Mary, Geek Bar y más. Pide por WhatsApp. Solo mayores de 18 años.",
   keywords: [
-    "invitaciones digitales",
-    "invitaciones de boda",
-    "invitaciones XV años",
-    "invitaciones online México",
-    "RSVP digital",
-    "Momentum",
+    "vapes",
+    "vapeadores",
+    "desechables",
+    "pods",
+    "ELFBAR",
+    "Lost Mary",
+    "Geek Bar",
+    BRAND.name,
   ],
   openGraph: {
-    title: "Momentum — Invitaciones digitales premium",
+    title: `${BRAND.name} — ${BRAND.tagline}`,
     description:
-      "Crea, envía y gestiona invitaciones digitales premium para bodas, XV años, bautizos y eventos en menos de 5 minutos.",
-    url: "https://momentum.mx",
-    siteName: "Momentum",
+      "Catálogo premium de vapes desechables y pods recargables. Pide por WhatsApp.",
+    url: BRAND.domain,
+    siteName: BRAND.name,
     locale: "es_MX",
     type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Momentum — Invitaciones digitales premium",
-    description:
-      "Invitaciones digitales premium para bodas, XV años y eventos.",
   },
   robots: {
     index: true,
@@ -63,28 +59,29 @@ export const metadata: Metadata = {
 
 /* ─── Layout ────────────────────────────────────────────── */
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const session = await auth();
+
   return (
     <html
       lang="es"
-      className={`${dmSans.variable} ${playfair.variable} ${cormorant.variable} h-full antialiased`}
+      className={`${anton.variable} ${epilogue.variable} dark h-full antialiased`}
       suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col">
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-          >
-            {children}
-            <Toaster richColors position="top-right" />
-          </ThemeProvider>
-        </body>
-      </html>
+      <body className="flex min-h-full flex-col">
+        <CartProvider>
+          <Navbar isLoggedIn={!!session} />
+          <main className="flex-1">{children}</main>
+          <Footer />
+          <CartSheet />
+          <AgeGate />
+          <Toaster richColors position="top-right" theme="dark" />
+        </CartProvider>
+      </body>
+    </html>
   );
 }

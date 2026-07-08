@@ -1,9 +1,9 @@
 import { prisma } from "../lib/prisma";
 
 async function main() {
-  console.log("Iniciando seed de datos...");
+  console.log("Iniciando seed de la tienda...");
 
-  // Asignar rol ADMIN a axelinm11@gmail.com
+  // Mantener rol ADMIN del dueño
   await prisma.user.upsert({
     where: { email: "axelinm11@gmail.com" },
     update: { role: "ADMIN" },
@@ -14,274 +14,239 @@ async function main() {
     },
   });
 
-  // Buscar el primer User existente
-  const user = await prisma.user.findFirst();
-
-  if (!user) {
-    throw new Error("No se encontró ningún usuario en la base de datos. Por favor haz login con Google primero para crear un usuario.");
+  // ─── Marcas ───
+  const brandsData = [
+    { slug: "elfbar", name: "ELFBAR", sortOrder: 1 },
+    { slug: "lost-mary", name: "Lost Mary", sortOrder: 2 },
+    { slug: "geek-bar", name: "Geek Bar", sortOrder: 3 },
+    { slug: "waka", name: "WAKA", sortOrder: 4 },
+    { slug: "vaporesso", name: "Vaporesso", sortOrder: 5 },
+  ];
+  const brands: Record<string, string> = {};
+  for (const b of brandsData) {
+    const brand = await prisma.brand.upsert({
+      where: { slug: b.slug },
+      update: { name: b.name, sortOrder: b.sortOrder },
+      create: b,
+    });
+    brands[b.slug] = brand.id;
   }
 
-  console.log(`Usuario encontrado: ${user.name} (${user.email})`);
-
-  // Crear o actualizar los 4 Templates
-  const templatesData = [
+  // ─── Categorías ───
+  const categoriesData = [
     {
-      slug: "aurora",
-      name: "Aurora",
-      type: "WEDDING",
-      description: "Elegancia atemporal para bodas modernas",
-      isActive: true,
-      isPremium: false,
+      slug: "desechables",
+      name: "Desechables",
+      description: "Listos para usar, sin recargas ni mantenimiento.",
       sortOrder: 1,
-      config: {}
     },
     {
-      slug: "confetti",
-      name: "Confetti",
-      type: "BIRTHDAY",
-      description: "Colorido y alegre. Ideal para cumpleaños de cualquier edad.",
-      isActive: true,
-      isPremium: false,
+      slug: "pods-recargables",
+      name: "Pods recargables",
+      description: "Sistemas de pod con batería recargable y cartuchos.",
       sortOrder: 2,
-      config: {}
     },
-    {
-      slug: "bloom",
-      name: "Bloom",
-      type: "XV",
-      description: "Romántico y juvenil. Diseñado especialmente para quinceañeras.",
-      isActive: true,
-      isPremium: true,
-      sortOrder: 3,
-      config: {}
-    },
-    {
-      slug: "nube",
-      name: "Nube",
-      type: "BABY_SHOWER",
-      description: "Suave y tierno. El favorito para celebrar la llegada de un bebé.",
-      isActive: true,
-      isPremium: true,
-      sortOrder: 4,
-      config: {}
-    }
   ];
-
-  let template;
-  for (const t of templatesData) {
-    template = await prisma.template.upsert({
-      where: { slug: t.slug },
-      update: {
-        name: t.name,
-        type: t.type as any,
-        description: t.description,
-        isActive: t.isActive,
-        isPremium: t.isPremium,
-        sortOrder: t.sortOrder,
-        config: t.config
-      },
-      create: {
-        slug: t.slug,
-        name: t.name,
-        type: t.type as any,
-        description: t.description,
-        isActive: t.isActive,
-        isPremium: t.isPremium,
-        sortOrder: t.sortOrder,
-        config: t.config
-      }
+  const categories: Record<string, string> = {};
+  for (const c of categoriesData) {
+    const cat = await prisma.category.upsert({
+      where: { slug: c.slug },
+      update: { name: c.name, description: c.description, sortOrder: c.sortOrder },
+      create: c,
     });
-    console.log(`Template creado/actualizado: ${template.name}`);
+    categories[c.slug] = cat.id;
   }
 
-  const auroraTemplate = await prisma.template.findUnique({ where: { slug: "aurora" }});
-  if (!auroraTemplate) throw new Error("Aurora template not found");
-
-  // Configuración del evento (settings JSON)
-  const eventSettings = {
-    story: "Una historia que comenzó con una mirada...",
-    timeline: [
-      { year: "2018", title: "Nos conocimos", desc: "En una tarde de verano...", image: "https://images.unsplash.com/photo-1522673607200-164d1b6ce486?w=600&q=80" },
-      { year: "2020", title: "Primer viaje", desc: "A las playas de Tulum...", image: "https://images.unsplash.com/photo-1519741497674-611481863552?w=600&q=80" },
-      { year: "2024", title: "La propuesta", desc: "En París, bajo la Torre Eiffel...", image: "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=600&q=80" }
-    ],
-    dressCode: {
-      name: "Elegante Playero",
-      description: "Hemos preparado un pequeño moodboard de inspiración para ayudarte a elegir tu atuendo.",
-      images: [
-        "https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=600&q=80",
-        "https://images.unsplash.com/photo-1594736797933-d0501ba2fe65?w=600&q=80",
-        "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=600&q=80",
-        "https://images.unsplash.com/photo-1583391733956-6c78276477e2?w=600&q=80"
-      ]
+  // ─── Productos ───
+  const productsData = [
+    {
+      slug: "elfbar-bc10000",
+      name: "ELFBAR BC10000",
+      brand: "elfbar",
+      category: "desechables",
+      priceCents: 34900,
+      compareAtCents: 39900,
+      puffs: 10000,
+      nicotineMg: 50,
+      volumeMl: 18,
+      featured: true,
+      image: "/products/vape-1.svg",
+      description:
+        "El clásico que definió la categoría. Pantalla de batería y líquido, carga USB-C y sabor consistente hasta el último puff.",
+      flavors: ["Blue Razz Ice", "Watermelon Ice", "Strawberry Kiwi", "Mango Peach"],
     },
-    gallery: [
-      "https://images.unsplash.com/photo-1519741497674-611481863552?w=800&q=80",
-      "https://images.unsplash.com/photo-1537633552985-df8429e8048b?w=800&q=80",
-      "https://images.unsplash.com/photo-1525772764200-be829a350797?w=800&q=80",
-      "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=800&q=80"
-    ],
-    ceremony: { time: "17:00", name: "Parroquia de San Miguel", address: "Av. Principal 123, Centro" },
-    reception: { time: "19:30", name: "Hacienda San Juan", address: "Av. Reforma 123, CDMX" },
-    rsvpDeadline: "2026-06-01",
-    colors: { primary: "#0F1B2D", accent: "#D4AF7A", secondary: "#C9A8A0" },
-    musicUrl: null,
-    giftRegistry: {
-      digitalEnvelope: { enabled: true, suggestedAmount: 1000 },
-      liverpool: { enabled: true, eventCode: "12345678" }
+    {
+      slug: "lost-mary-mo20000-pro",
+      name: "Lost Mary MO20000 Pro",
+      brand: "lost-mary",
+      category: "desechables",
+      priceCents: 44900,
+      puffs: 20000,
+      nicotineMg: 50,
+      volumeMl: 18,
+      featured: true,
+      image: "/products/vape-2.svg",
+      description:
+        "Doble malla, modo boost y pantalla inteligente. Uno de los desechables más completos del mercado.",
+      flavors: ["Grape Jelly", "Blueberry Ice", "Miami Mint", "Cherry Bomb"],
     },
-    client: {
-      name: "María González",
-      email: "maria.gonzalez@example.com",
-      phone: "+52 555 123 4567",
+    {
+      slug: "geek-bar-pulse-x",
+      name: "Geek Bar Pulse X",
+      brand: "geek-bar",
+      category: "desechables",
+      priceCents: 47900,
+      puffs: 25000,
+      nicotineMg: 50,
+      volumeMl: 18,
+      featured: true,
+      image: "/products/vape-3.svg",
+      description:
+        "Pantalla 3D full-view, doble núcleo de malla y modos de potencia ajustables. La experiencia más premium en desechables.",
+      flavors: ["Sour Apple Ice", "Tropical Rainbow", "White Gummy", "Frozen Pina Colada"],
     },
-  };
-
-  // Crear o actualizar el Evento
-  const event = await prisma.event.upsert({
-    where: { slug: "boda-maria-juan" },
-    update: {
-      userId: user.id,
-      templateId: auroraTemplate.id,
-      type: "WEDDING",
-      tier: "COMPLETE",
-      title: "María & Juan",
-      eventDate: new Date("2026-06-14T17:00:00Z"),
-      timezone: "America/Mexico_City",
-      locationName: "Hacienda San Juan",
-      locationAddress: "Av. Reforma 123, CDMX",
-      location: "Av. Reforma 123, CDMX",
-      locationLat: 19.4326,
-      locationLng: -99.1332,
-      locationUrl: "https://maps.google.com/?q=19.4326,-99.1332",
-      privacyMode: "UNIQUE_LINK",
-      status: "ACTIVE",
-      publishedAt: new Date(),
-      activeSections: {
-        welcomeEnvelope: true,
-        hero: true,
-        story: true,
-        timeline: true,
-        ceremony: true,
-        reception: true,
-        dressCode: true,
-        gallery: true,
-        rsvp: true,
-        giftRegistry: true,
-      },
-      settings: eventSettings
+    {
+      slug: "waka-sopro-pa10000",
+      name: "WAKA soPro PA10000",
+      brand: "waka",
+      category: "desechables",
+      priceCents: 38900,
+      puffs: 10000,
+      nicotineMg: 45,
+      volumeMl: 16,
+      image: "/products/vape-4.svg",
+      description:
+        "De los creadores de RELX. Sabor limpio, diseño compacto y flujo de aire ajustable.",
+      flavors: ["Fresh Mint", "Strawberry Burst", "Grape Ice"],
     },
-    create: {
-      slug: "boda-maria-juan",
-      userId: user.id,
-      templateId: auroraTemplate.id,
-      type: "WEDDING",
-      tier: "COMPLETE",
-      title: "María & Juan",
-      eventDate: new Date("2026-06-14T17:00:00Z"),
-      timezone: "America/Mexico_City",
-      locationName: "Hacienda San Juan",
-      locationAddress: "Av. Reforma 123, CDMX",
-      location: "Av. Reforma 123, CDMX",
-      locationLat: 19.4326,
-      locationLng: -99.1332,
-      locationUrl: "https://maps.google.com/?q=19.4326,-99.1332",
-      privacyMode: "UNIQUE_LINK",
-      status: "ACTIVE",
-      publishedAt: new Date(),
-      activeSections: {
-        welcomeEnvelope: true,
-        hero: true,
-        story: true,
-        timeline: true,
-        ceremony: true,
-        reception: true,
-        dressCode: true,
-        gallery: true,
-        rsvp: true,
-        giftRegistry: true,
-      },
-      settings: eventSettings
-    }
-  });
-
-  console.log(`Evento creado/actualizado: ${event.title} (${event.slug})`);
-
-  // Crear invitados
-  const guestsData = [
-    { 
-      name: "Juanito Pérez", 
-      uniqueToken: "abc123", 
-      allowedGuests: 1, 
-      phone: "+52 555 111 2222", 
-      relationship: "FRIEND" as const, 
-      invitedBy: "GROOM" as const 
+    {
+      slug: "elfbar-ice-king-40k",
+      name: "ELFBAR ICE KING 40K",
+      brand: "elfbar",
+      category: "desechables",
+      priceCents: 54900,
+      puffs: 40000,
+      nicotineMg: 50,
+      volumeMl: 20,
+      featured: true,
+      image: "/products/vape-5.svg",
+      description:
+        "El rey de la duración: 40,000 puffs, doble pantalla y sistema de enfriamiento de sabor ICE.",
+      flavors: ["Icy Mint", "Blue Razz Blast", "Peach Berry Ice"],
     },
-    { 
-      name: "Ana López", 
-      uniqueToken: "def456", 
-      allowedGuests: 2, 
-      phone: "+52 555 333 4444", 
-      relationship: "FAMILY_BRIDE" as const, 
-      invitedBy: "BRIDE" as const 
+    {
+      slug: "lost-mary-os5000",
+      name: "Lost Mary OS5000",
+      brand: "lost-mary",
+      category: "desechables",
+      priceCents: 25900,
+      puffs: 5000,
+      nicotineMg: 50,
+      volumeMl: 13,
+      image: "/products/vape-6.svg",
+      description:
+        "Compacto, discreto y con el sabor característico de Lost Mary. Ideal para empezar.",
+      flavors: ["Blue Cotton Candy", "Kiwi Passion Guava", "Watermelon"],
     },
-    { 
-      name: "Carlos Ramírez", 
-      uniqueToken: "ghi789", 
-      allowedGuests: 0, 
-      phone: "+52 555 555 6666", 
-      relationship: "FRIEND" as const, 
-      invitedBy: "BRIDE" as const 
-    }
+    {
+      slug: "vaporesso-xros-4",
+      name: "Vaporesso XROS 4",
+      brand: "vaporesso",
+      category: "pods-recargables",
+      priceCents: 49900,
+      batteryMah: 1000,
+      volumeMl: 3,
+      featured: true,
+      image: "/products/vape-7.svg",
+      description:
+        "El pod recargable mejor valorado de su generación: batería de 1000 mAh, carga rápida y cartuchos de larga vida.",
+      flavors: ["Negro", "Plata", "Azul marino", "Rosa"],
+    },
+    {
+      slug: "vaporesso-eco-nano-2",
+      name: "Vaporesso ECO Nano 2",
+      brand: "vaporesso",
+      category: "pods-recargables",
+      priceCents: 32900,
+      batteryMah: 1000,
+      volumeMl: 6,
+      image: "/products/vape-8.svg",
+      description:
+        "Tanque de 6 ml recargable con líquido, batería para todo el día y costo por puff bajísimo.",
+      flavors: ["Negro", "Verde", "Morado"],
+    },
+    {
+      slug: "geek-bar-skyview-25k",
+      name: "Geek Bar Skyview 25K",
+      brand: "geek-bar",
+      category: "desechables",
+      priceCents: 49900,
+      puffs: 25000,
+      nicotineMg: 50,
+      volumeMl: 18,
+      image: "/products/vape-9.svg",
+      description:
+        "Pantalla panorámica, batería visible en tiempo real y golpe de sabor intenso.",
+      flavors: ["Strawberry Banana", "Blackberry Ice", "Lush Ice"],
+    },
+    {
+      slug: "elfbar-gh23000",
+      name: "ELFBAR GH23000",
+      brand: "elfbar",
+      category: "desechables",
+      priceCents: 42900,
+      puffs: 23000,
+      nicotineMg: 50,
+      volumeMl: 18,
+      image: "/products/vape-10.svg",
+      description:
+        "Nueva generación con núcleo dual y modo eco para estirar cada ml. Diseño ergonómico premium.",
+      flavors: ["Raspberry Watermelon", "Lemon Lime", "Cool Mint"],
+    },
   ];
 
-  for (const g of guestsData) {
-    const guest = await prisma.guest.upsert({
-      where: { uniqueToken: g.uniqueToken },
-      update: {
-        eventId: event.id,
-        name: g.name,
-        allowedGuests: g.allowedGuests,
-        phone: g.phone,
-        relationship: g.relationship,
-        invitedBy: g.invitedBy
-      },
+  for (const [i, p] of productsData.entries()) {
+    const product = await prisma.product.upsert({
+      where: { slug: p.slug },
+      update: {},
       create: {
-        uniqueToken: g.uniqueToken,
-        eventId: event.id,
-        name: g.name,
-        allowedGuests: g.allowedGuests,
-        phone: g.phone,
-        relationship: g.relationship,
-        invitedBy: g.invitedBy
-      }
+        slug: p.slug,
+        name: p.name,
+        description: p.description,
+        brandId: brands[p.brand],
+        categoryId: categories[p.category],
+        priceCents: p.priceCents,
+        compareAtCents: p.compareAtCents ?? null,
+        images: [p.image],
+        puffs: p.puffs ?? null,
+        nicotineMg: p.nicotineMg ?? null,
+        volumeMl: p.volumeMl ?? null,
+        batteryMah: p.batteryMah ?? null,
+        featured: p.featured ?? false,
+        sortOrder: i + 1,
+      },
     });
 
-    // Crear RSVP para Juanito
-    if (g.name === "Juanito Pérez") {
-      await prisma.rsvp.upsert({
-        where: { guestId: guest.id },
-        update: {
-          status: "CONFIRMED",
-          confirmedGuests: 1,
-          respondedAt: new Date()
-        },
-        create: {
-          guestId: guest.id,
-          status: "CONFIRMED",
-          confirmedGuests: 1,
-          respondedAt: new Date()
-        }
+    for (const [j, flavor] of p.flavors.entries()) {
+      const existing = await prisma.productVariant.findFirst({
+        where: { productId: product.id, name: flavor },
       });
+      if (!existing) {
+        await prisma.productVariant.create({
+          data: {
+            productId: product.id,
+            name: flavor,
+            stock: 25,
+            sortOrder: j + 1,
+          },
+        });
+      }
     }
   }
 
-  console.log(`Se crearon/actualizaron ${guestsData.length} invitados.`);
-  
-  console.log("\nURLs DE PRUEBA:");
-  for (const g of guestsData) {
-    console.log(`http://localhost:3000/e/${event.slug}/${g.uniqueToken}`);
-  }
+  console.log(
+    `Seed completado: ${brandsData.length} marcas, ${categoriesData.length} categorías, ${productsData.length} productos.`
+  );
 }
 
 main()

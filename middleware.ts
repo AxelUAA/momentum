@@ -5,8 +5,10 @@ import { authConfig } from "@/auth.config";
 const { auth } = NextAuth(authConfig);
 
 export default auth((req) => {
-  const isDashboardRoute = req.nextUrl.pathname.startsWith("/dashboard");
-  if (!isDashboardRoute) return NextResponse.next();
+  const { pathname } = req.nextUrl;
+  const isProtectedRoute =
+    pathname.startsWith("/cuenta") || pathname.startsWith("/admin");
+  if (!isProtectedRoute) return NextResponse.next();
 
   const session = req.auth;
   if (!session) {

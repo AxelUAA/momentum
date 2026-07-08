@@ -11,14 +11,7 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: "*",
         allow: ["/"],
-        disallow: [
-          "/api/",
-          "/dashboard/",
-          "/login",
-          "/checkout/",
-          "/403",
-          "/e/", // Las invitaciones son privadas, no deben indexarse
-        ],
+        disallow: ["/api/", "/admin/", "/cuenta/", "/login"],
       },
     ],
     sitemap: `${BASE_URL}/sitemap.xml`,
