@@ -9,6 +9,7 @@ import {
   type ProductFormInput,
   type VariantInput,
 } from "@/app/actions/admin";
+import { ProductImagesManager } from "@/components/admin/ProductImagesManager";
 
 type Option = { id: string; name: string };
 
@@ -26,7 +27,6 @@ type FormState = {
   categoryId: string;
   price: string;
   compareAt: string;
-  imageUrl: string;
   puffs: string;
   nicotineMg: string;
   volumeMl: string;
@@ -57,12 +57,14 @@ export function ProductForm({
   productId,
   initial,
   initialVariants,
+  initialImages,
   brands,
   categories,
 }: {
   productId?: string;
   initial?: Partial<FormState>;
   initialVariants?: VariantRow[];
+  initialImages?: string[];
   brands: Option[];
   categories: Option[];
 }) {
@@ -75,7 +77,6 @@ export function ProductForm({
     categoryId: "",
     price: "",
     compareAt: "",
-    imageUrl: "",
     puffs: "",
     nicotineMg: "",
     volumeMl: "",
@@ -86,6 +87,7 @@ export function ProductForm({
   const [variants, setVariants] = useState<VariantRow[]>(
     initialVariants?.length ? initialVariants : [{ name: "", stock: "25", price: "" }]
   );
+  const [images, setImages] = useState<string[]>(initialImages ?? []);
 
   function set<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((f) => ({ ...f, [key]: value }));
@@ -119,7 +121,7 @@ export function ProductForm({
       compareAtCents: toNumber(form.compareAt)
         ? Math.round(toNumber(form.compareAt)! * 100)
         : null,
-      imageUrl: form.imageUrl,
+      images,
       puffs: toNumber(form.puffs),
       nicotineMg: toNumber(form.nicotineMg),
       volumeMl: toNumber(form.volumeMl),
@@ -142,6 +144,9 @@ export function ProductForm({
 
   return (
     <form onSubmit={handleSubmit} className="max-w-3xl space-y-8">
+      {/* ─── Fotos ───────────────────────────────────── */}
+      <ProductImagesManager images={images} onChange={setImages} />
+
       {/* ─── Datos generales ─────────────────────────── */}
       <div className="grid gap-6 md:grid-cols-2">
         <Field label="Nombre *">
@@ -150,14 +155,6 @@ export function ProductForm({
             onChange={(e) => set("name", e.target.value)}
             required
             placeholder="ELFBAR BC10000"
-            className={inputClass}
-          />
-        </Field>
-        <Field label="Imagen (URL)">
-          <input
-            value={form.imageUrl}
-            onChange={(e) => set("imageUrl", e.target.value)}
-            placeholder="/products/vape-1.svg o https://..."
             className={inputClass}
           />
         </Field>

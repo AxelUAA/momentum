@@ -107,7 +107,7 @@ export type ProductFormInput = {
   categoryId: string;
   priceCents: number;
   compareAtCents: number | null;
-  imageUrl: string;
+  images: string[];
   puffs: number | null;
   nicotineMg: number | null;
   volumeMl: number | null;
@@ -133,7 +133,7 @@ export async function upsertProduct(
     categoryId: input.categoryId || null,
     priceCents: Math.round(input.priceCents),
     compareAtCents: input.compareAtCents ? Math.round(input.compareAtCents) : null,
-    images: input.imageUrl.trim() ? [input.imageUrl.trim()] : [],
+    images: input.images.map((i) => i.trim()).filter(Boolean),
     puffs: input.puffs,
     nicotineMg: input.nicotineMg,
     volumeMl: input.volumeMl,

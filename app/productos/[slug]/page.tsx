@@ -6,6 +6,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { AddToCart } from "@/components/store/AddToCart";
 import { FavoriteButton } from "@/components/store/FavoriteButton";
+import { ProductGallery } from "@/components/store/ProductGallery";
 import { ProductCard } from "@/components/store/ProductCard";
 import { formatPrice, formatPuffs } from "@/lib/format";
 import {
@@ -95,24 +96,17 @@ export default async function ProductoPage({ params }: { params: Params }) {
 
       <div className="grid gap-12 lg:grid-cols-2">
         {/* Galería */}
-        <div className="relative overflow-hidden rounded-3xl border border-border bg-card">
-          {images[0] ? (
-            <img
-              src={images[0]}
-              alt={product.name}
-              className="aspect-square w-full object-cover"
-            />
-          ) : (
-            <div className="flex aspect-square items-center justify-center text-muted-foreground">
-              Sin imagen
-            </div>
-          )}
-          {hasDiscount && (
-            <span className="absolute left-4 top-4 rounded-full bg-accent px-4 py-1.5 text-xs font-bold uppercase text-accent-foreground">
-              Oferta
-            </span>
-          )}
-        </div>
+        <ProductGallery
+          images={images}
+          name={product.name}
+          badge={
+            hasDiscount ? (
+              <span className="absolute left-4 top-4 rounded-full bg-accent px-4 py-1.5 text-xs font-bold uppercase text-accent-foreground">
+                Oferta
+              </span>
+            ) : undefined
+          }
+        />
 
         {/* Info */}
         <div>

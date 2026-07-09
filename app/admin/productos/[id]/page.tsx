@@ -36,13 +36,13 @@ export default async function EditarProductoPage({
           compareAt: product.compareAtCents
             ? (product.compareAtCents / 100).toString()
             : "",
-          imageUrl: productImages(product)[0] ?? "",
           puffs: product.puffs?.toString() ?? "",
           nicotineMg: product.nicotineMg?.toString() ?? "",
           volumeMl: product.volumeMl?.toString() ?? "",
           batteryMah: product.batteryMah?.toString() ?? "",
           featured: product.featured,
         }}
+        initialImages={productImages(product)}
         initialVariants={product.variants
           .filter((v) => v.isActive)
           .map((v) => ({
