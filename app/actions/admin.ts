@@ -22,12 +22,17 @@ function slugify(text: string): string {
     .replace(/(^-|-$)/g, "");
 }
 
+// ─── Pedidos ─────────────────────────────────────────────
+
 export async function updateOrderStatus(orderId: string, status: ShopOrderStatus) {
   await requireAdmin();
   await prisma.shopOrder.update({ where: { id: orderId }, data: { status } });
   revalidatePath("/admin/pedidos");
+  revalidatePath("/admin");
   return { ok: true };
 }
+
+// ─── Productos ───────────────────────────────────────────
 
 export async function toggleProductActive(productId: string) {
   await requireAdmin();
@@ -59,6 +64,41 @@ export async function toggleProductFeatured(productId: string) {
   return { ok: true };
 }
 
+export async function deleteProduct(
+  productId: string
+): Promise<{ ok: boolean; deactivated?: boolean; error?: string }> {
+  await requireAdmin();
+  try {
+    await prisma.product.delete({ where: { id: productId } });
+    revalidatePath("/admin/productos");
+    revalidatePath("/productos");
+    revalidatePath("/");
+    return { ok: true };
+  } catch {
+    // Tiene pedidos/favoritos asociados — desactivamos en lugar de borrar
+    try {
+      await prisma.product.update({
+        where: { id: productId },
+        data: { isActive: false, featured: false },
+      });
+      revalidatePath("/admin/productos");
+      revalidatePath("/productos");
+      revalidatePath("/");
+      return { ok: true, deactivated: true };
+    } catch {
+      return { ok: false, error: "No se pudo eliminar el producto." };
+    }
+  }
+}
+
+export type VariantInput = {
+  id?: string; // presente = variante existente
+  name: string;
+  stock: number;
+  /** Precio override en centavos; null = usa el precio base del producto */
+  priceCents: number | null;
+};
+
 export type ProductFormInput = {
   id?: string;
   name: string;
@@ -73,8 +113,7 @@ export type ProductFormInput = {
   volumeMl: number | null;
   batteryMah: number | null;
   featured: boolean;
-  /** Un sabor/variante por línea */
-  flavors: string[];
+  variants: VariantInput[];
 };
 
 export async function upsertProduct(
@@ -102,7 +141,9 @@ export async function upsertProduct(
     featured: input.featured,
   };
 
-  const flavors = input.flavors.map((f) => f.trim()).filter(Boolean);
+  const variants = input.variants
+    .map((v) => ({ ...v, name: v.name.trim() }))
+    .filter((v) => v.name.length > 0);
 
   try {
     let productId: string;
@@ -111,25 +152,43 @@ export async function upsertProduct(
       await prisma.product.update({ where: { id: input.id }, data });
       productId = input.id;
 
-      // Sincronizar variantes: desactivar las que ya no están, crear las nuevas
-      const existing = await prisma.productVariant.findMany({
-        where: { productId },
-      });
+      const existing = await prisma.productVariant.findMany({ where: { productId } });
+      const keptIds = new Set(variants.filter((v) => v.id).map((v) => v.id!));
+
+      // Desactivar variantes que ya no están en el formulario
       for (const variant of existing) {
-        const stillListed = flavors.includes(variant.name);
-        if (variant.isActive !== stillListed) {
+        if (!keptIds.has(variant.id) && variant.isActive) {
           await prisma.productVariant.update({
             where: { id: variant.id },
-            data: { isActive: stillListed },
+            data: { isActive: false },
           });
         }
       }
-      const existingNames = existing.map((v) => v.name);
-      const newFlavors = flavors.filter((f) => !existingNames.includes(f));
-      for (const [i, flavor] of newFlavors.entries()) {
-        await prisma.productVariant.create({
-          data: { productId, name: flavor, stock: 25, sortOrder: existing.length + i + 1 },
-        });
+
+      // Actualizar existentes y crear nuevas
+      for (const [i, v] of variants.entries()) {
+        if (v.id) {
+          await prisma.productVariant.update({
+            where: { id: v.id },
+            data: {
+              name: v.name,
+              stock: Math.max(0, Math.round(v.stock)),
+              priceCents: v.priceCents,
+              isActive: true,
+              sortOrder: i + 1,
+            },
+          });
+        } else {
+          await prisma.productVariant.create({
+            data: {
+              productId,
+              name: v.name,
+              stock: Math.max(0, Math.round(v.stock)),
+              priceCents: v.priceCents,
+              sortOrder: i + 1,
+            },
+          });
+        }
       }
     } else {
       const baseSlug = slugify(input.name);
@@ -141,9 +200,10 @@ export async function upsertProduct(
           ...data,
           slug,
           variants: {
-            create: flavors.map((flavor, i) => ({
-              name: flavor,
-              stock: 25,
+            create: variants.map((v, i) => ({
+              name: v.name,
+              stock: Math.max(0, Math.round(v.stock)),
+              priceCents: v.priceCents,
               sortOrder: i + 1,
             })),
           },
@@ -160,4 +220,80 @@ export async function upsertProduct(
     console.error("Error guardando producto:", e);
     return { ok: false, error: "No se pudo guardar el producto." };
   }
+}
+
+// ─── Marcas y categorías ─────────────────────────────────
+
+export async function createBrand(
+  name: string
+): Promise<{ ok: boolean; error?: string }> {
+  await requireAdmin();
+  const trimmed = name.trim();
+  if (!trimmed) return { ok: false, error: "El nombre es obligatorio." };
+  try {
+    const last = await prisma.brand.findFirst({ orderBy: { sortOrder: "desc" } });
+    await prisma.brand.create({
+      data: {
+        name: trimmed,
+        slug: slugify(trimmed),
+        sortOrder: (last?.sortOrder ?? 0) + 1,
+      },
+    });
+    revalidatePath("/admin/catalogo");
+    return { ok: true };
+  } catch {
+    return { ok: false, error: "Ya existe una marca con ese nombre." };
+  }
+}
+
+export async function toggleBrandActive(brandId: string) {
+  await requireAdmin();
+  const brand = await prisma.brand.findUniqueOrThrow({
+    where: { id: brandId },
+    select: { isActive: true },
+  });
+  await prisma.brand.update({
+    where: { id: brandId },
+    data: { isActive: !brand.isActive },
+  });
+  revalidatePath("/admin/catalogo");
+  revalidatePath("/productos");
+  return { ok: true };
+}
+
+export async function createCategory(
+  name: string
+): Promise<{ ok: boolean; error?: string }> {
+  await requireAdmin();
+  const trimmed = name.trim();
+  if (!trimmed) return { ok: false, error: "El nombre es obligatorio." };
+  try {
+    const last = await prisma.category.findFirst({ orderBy: { sortOrder: "desc" } });
+    await prisma.category.create({
+      data: {
+        name: trimmed,
+        slug: slugify(trimmed),
+        sortOrder: (last?.sortOrder ?? 0) + 1,
+      },
+    });
+    revalidatePath("/admin/catalogo");
+    return { ok: true };
+  } catch {
+    return { ok: false, error: "Ya existe una categoría con ese nombre." };
+  }
+}
+
+export async function toggleCategoryActive(categoryId: string) {
+  await requireAdmin();
+  const category = await prisma.category.findUniqueOrThrow({
+    where: { id: categoryId },
+    select: { isActive: true },
+  });
+  await prisma.category.update({
+    where: { id: categoryId },
+    data: { isActive: !category.isActive },
+  });
+  revalidatePath("/admin/catalogo");
+  revalidatePath("/productos");
+  return { ok: true };
 }

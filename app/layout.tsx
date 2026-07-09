@@ -74,7 +74,10 @@ export default async function RootLayout({
     >
       <body className="flex min-h-full flex-col">
         <CartProvider>
-          <Navbar isLoggedIn={!!session} />
+          <Navbar
+            isLoggedIn={!!session}
+            isAdmin={session?.user?.role === "ADMIN"}
+          />
           <main className="flex-1">{children}</main>
           <Footer />
           <CartSheet />

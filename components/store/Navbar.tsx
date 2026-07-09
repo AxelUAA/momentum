@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ShoppingBag, User, Menu, X } from "lucide-react";
+import { ShoppingBag, User, Menu, X, LayoutDashboard } from "lucide-react";
 import { useState } from "react";
 import { useCart } from "@/components/store/cart-context";
 import { BRAND } from "@/lib/brand";
@@ -15,7 +15,13 @@ const links = [
   { href: "/productos?categoria=pods-recargables", label: "Pods" },
 ];
 
-export function Navbar({ isLoggedIn }: { isLoggedIn: boolean }) {
+export function Navbar({
+  isLoggedIn,
+  isAdmin = false,
+}: {
+  isLoggedIn: boolean;
+  isAdmin?: boolean;
+}) {
   const { totalItems, openCart } = useCart();
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -49,6 +55,16 @@ export function Navbar({ isLoggedIn }: { isLoggedIn: boolean }) {
         </div>
 
         <div className="flex items-center gap-2">
+          {isAdmin && (
+            <Link
+              href="/admin"
+              aria-label="Panel admin"
+              title="Panel admin"
+              className="flex h-10 w-10 items-center justify-center rounded-full text-accent transition-colors duration-200 hover:bg-muted"
+            >
+              <LayoutDashboard className="h-5 w-5" />
+            </Link>
+          )}
           <Link
             href={isLoggedIn ? "/cuenta" : "/login"}
             aria-label={isLoggedIn ? "Mi cuenta" : "Iniciar sesión"}

@@ -42,11 +42,15 @@ export default async function EditarProductoPage({
           volumeMl: product.volumeMl?.toString() ?? "",
           batteryMah: product.batteryMah?.toString() ?? "",
           featured: product.featured,
-          flavors: product.variants
-            .filter((v) => v.isActive)
-            .map((v) => v.name)
-            .join("\n"),
         }}
+        initialVariants={product.variants
+          .filter((v) => v.isActive)
+          .map((v) => ({
+            id: v.id,
+            name: v.name,
+            stock: v.stock.toString(),
+            price: v.priceCents ? (v.priceCents / 100).toString() : "",
+          }))}
         brands={brands.map((b) => ({ id: b.id, name: b.name }))}
         categories={categories.map((c) => ({ id: c.id, name: c.name }))}
       />

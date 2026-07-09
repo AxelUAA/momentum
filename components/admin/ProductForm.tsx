@@ -2,10 +2,22 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import { upsertProduct, type ProductFormInput } from "@/app/actions/admin";
+import {
+  upsertProduct,
+  type ProductFormInput,
+  type VariantInput,
+} from "@/app/actions/admin";
 
 type Option = { id: string; name: string };
+
+export type VariantRow = {
+  id?: string;
+  name: string;
+  stock: string;
+  price: string; // MXN, vacío = usa precio base
+};
 
 type FormState = {
   name: string;
@@ -20,7 +32,6 @@ type FormState = {
   volumeMl: string;
   batteryMah: string;
   featured: boolean;
-  flavors: string;
 };
 
 const inputClass =
@@ -37,14 +48,21 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   );
 }
 
+function toNumber(value: string): number | null {
+  const n = parseFloat(value);
+  return Number.isFinite(n) ? n : null;
+}
+
 export function ProductForm({
   productId,
   initial,
+  initialVariants,
   brands,
   categories,
 }: {
   productId?: string;
   initial?: Partial<FormState>;
+  initialVariants?: VariantRow[];
   brands: Option[];
   categories: Option[];
 }) {
@@ -63,21 +81,34 @@ export function ProductForm({
     volumeMl: "",
     batteryMah: "",
     featured: false,
-    flavors: "",
     ...initial,
   });
+  const [variants, setVariants] = useState<VariantRow[]>(
+    initialVariants?.length ? initialVariants : [{ name: "", stock: "25", price: "" }]
+  );
 
   function set<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((f) => ({ ...f, [key]: value }));
   }
 
-  function toNumber(value: string): number | null {
-    const n = parseFloat(value);
-    return Number.isFinite(n) ? n : null;
+  function setVariant(index: number, patch: Partial<VariantRow>) {
+    setVariants((rows) =>
+      rows.map((row, i) => (i === index ? { ...row, ...patch } : row))
+    );
   }
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+
+    const variantInputs: VariantInput[] = variants
+      .filter((v) => v.name.trim())
+      .map((v) => ({
+        id: v.id,
+        name: v.name,
+        stock: toNumber(v.stock) ?? 0,
+        priceCents: toNumber(v.price) ? Math.round(toNumber(v.price)! * 100) : null,
+      }));
+
     const input: ProductFormInput = {
       id: productId,
       name: form.name,
@@ -94,7 +125,7 @@ export function ProductForm({
       volumeMl: toNumber(form.volumeMl),
       batteryMah: toNumber(form.batteryMah),
       featured: form.featured,
-      flavors: form.flavors.split("\n"),
+      variants: variantInputs,
     };
 
     startTransition(async () => {
@@ -110,7 +141,8 @@ export function ProductForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="max-w-3xl space-y-6">
+    <form onSubmit={handleSubmit} className="max-w-3xl space-y-8">
+      {/* ─── Datos generales ─────────────────────────── */}
       <div className="grid gap-6 md:grid-cols-2">
         <Field label="Nombre *">
           <input
@@ -234,15 +266,80 @@ export function ProductForm({
         />
       </Field>
 
-      <Field label="Sabores / variantes (uno por línea)">
-        <textarea
-          value={form.flavors}
-          onChange={(e) => set("flavors", e.target.value)}
-          rows={5}
-          placeholder={"Blue Razz Ice\nWatermelon Ice\nMango Peach"}
-          className="w-full rounded-2xl border border-border bg-card px-4 py-3 text-sm outline-none transition-colors duration-200 placeholder:text-muted-foreground focus:border-accent"
-        />
-      </Field>
+      {/* ─── Variantes con stock ─────────────────────── */}
+      <div>
+        <div className="mb-3 flex items-center justify-between">
+          <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+            Sabores / variantes y stock
+          </span>
+          <button
+            type="button"
+            onClick={() =>
+              setVariants((rows) => [...rows, { name: "", stock: "25", price: "" }])
+            }
+            className="inline-flex cursor-pointer items-center gap-1 rounded-full border border-border px-4 py-2 text-xs font-semibold transition-colors duration-200 hover:border-accent hover:text-accent"
+          >
+            <Plus className="h-3.5 w-3.5" /> Agregar variante
+          </button>
+        </div>
+
+        <div className="overflow-hidden rounded-2xl border border-border">
+          <div className="hidden grid-cols-[1fr_110px_130px_44px] gap-2 border-b border-border bg-card px-4 py-2.5 text-xs font-semibold uppercase tracking-widest text-muted-foreground sm:grid">
+            <span>Sabor / variante</span>
+            <span>Stock</span>
+            <span>Precio especial</span>
+            <span />
+          </div>
+          <div className="divide-y divide-border">
+            {variants.map((variant, i) => (
+              <div
+                key={variant.id ?? `new-${i}`}
+                className="grid grid-cols-1 gap-2 px-4 py-3 sm:grid-cols-[1fr_110px_130px_44px] sm:items-center"
+              >
+                <input
+                  value={variant.name}
+                  onChange={(e) => setVariant(i, { name: e.target.value })}
+                  placeholder="Blue Razz Ice"
+                  aria-label={`Nombre de la variante ${i + 1}`}
+                  className="h-10 w-full rounded-xl border border-border bg-card px-3 text-sm outline-none transition-colors duration-200 placeholder:text-muted-foreground focus:border-accent"
+                />
+                <input
+                  value={variant.stock}
+                  onChange={(e) => setVariant(i, { stock: e.target.value })}
+                  type="number"
+                  min="0"
+                  placeholder="0"
+                  aria-label={`Stock de la variante ${i + 1}`}
+                  className="h-10 w-full rounded-xl border border-border bg-card px-3 text-sm outline-none transition-colors duration-200 focus:border-accent"
+                />
+                <input
+                  value={variant.price}
+                  onChange={(e) => setVariant(i, { price: e.target.value })}
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  placeholder="Base"
+                  aria-label={`Precio especial de la variante ${i + 1}`}
+                  className="h-10 w-full rounded-xl border border-border bg-card px-3 text-sm outline-none transition-colors duration-200 placeholder:text-muted-foreground focus:border-accent"
+                />
+                <button
+                  type="button"
+                  onClick={() => setVariants((rows) => rows.filter((_, j) => j !== i))}
+                  aria-label={`Quitar variante ${i + 1}`}
+                  className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-xl text-muted-foreground transition-colors duration-200 hover:text-destructive"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+        <p className="mt-2 text-xs text-muted-foreground">
+          El stock se descuenta manualmente por ahora; una variante en 0 se
+          muestra como agotada en la tienda. "Precio especial" es opcional — si
+          se deja vacío usa el precio base.
+        </p>
+      </div>
 
       <label className="flex cursor-pointer items-center gap-3">
         <input
