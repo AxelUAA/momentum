@@ -1,225 +1,110 @@
 import Link from "next/link";
-import { ArrowRight, MessageCircle, ShieldCheck, Truck, Zap } from "lucide-react";
+import { MessageCircle, Search, ShieldCheck } from "lucide-react";
 import { ProductCard } from "@/components/store/ProductCard";
-import { getBrands, getFeaturedProducts } from "@/lib/products";
+import { getProducts } from "@/lib/products";
+import { BRAND } from "@/lib/brand";
 import { WHATSAPP_PHONE } from "@/lib/whatsapp";
 
-export const revalidate = 300;
+export const revalidate = 120;
 
 export default async function HomePage() {
-  const [featured, brands] = await Promise.all([
-    getFeaturedProducts(4),
-    getBrands(),
-  ]);
+  const products = await getProducts();
 
   return (
     <>
-      {/* ─── Hero ─────────────────────────────────────── */}
-      <section className="relative overflow-hidden px-6 pb-20 pt-40 md:pb-28 md:pt-48">
-        {/* Glow de fondo */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0"
-          style={{
-            background:
-              "radial-gradient(ellipse 60% 45% at 50% 0%, rgba(245,185,66,0.14), transparent 70%)",
-          }}
-        />
-        <div className="relative mx-auto max-w-5xl text-center">
-          <p className="mx-auto mb-6 w-fit rounded-full border border-border bg-card px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-            100% originales · Pedido por WhatsApp
+      {/* ─── Encabezado ───────────────────────────────── */}
+      <section className="border-b border-border px-6 pb-12 pt-32 md:pt-36">
+        <div className="mx-auto max-w-6xl">
+          <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+            Catálogo · Solo mayores de 18 años
           </p>
-          <h1 className="font-heading text-5xl uppercase leading-[0.95] tracking-tight sm:text-7xl md:text-8xl">
-            El siguiente nivel
-            <br />
-            <span className="text-accent">del vapeo</span>
+          <h1 className="mt-3 font-heading text-4xl uppercase tracking-tight md:text-6xl">
+            {BRAND.name}
           </h1>
-          <p className="mx-auto mt-6 max-w-xl text-lg text-muted-foreground">
-            Desechables y pods de las marcas que importan: ELFBAR, Lost Mary,
-            Geek Bar y más. Sabores reales, stock real.
+          <p className="mt-4 max-w-lg text-lg text-muted-foreground">
+            Vapes 100% originales con stock real. Mira lo disponible y pide
+            directo por WhatsApp.
           </p>
-          <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
-            <Link
-              href="/productos"
-              className="group inline-flex items-center gap-2 rounded-full bg-accent px-8 py-4 text-sm font-bold uppercase tracking-wide text-accent-foreground transition-colors duration-200 hover:bg-gold-deep"
-            >
-              Ver catálogo
-              <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
-            </Link>
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <a
               href={`https://wa.me/${WHATSAPP_PHONE}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 rounded-full border border-border px-8 py-4 text-sm font-bold uppercase tracking-wide transition-colors duration-200 hover:border-accent hover:text-accent"
+              className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-7 py-3.5 text-sm font-bold uppercase tracking-wide text-primary-foreground transition-colors duration-200 hover:bg-gold-deep"
             >
               <MessageCircle className="h-4 w-4" />
-              WhatsApp
+              Pedir por WhatsApp
             </a>
+            <Link
+              href="/productos"
+              className="inline-flex items-center justify-center gap-2 rounded-full border border-border px-7 py-3.5 text-sm font-bold uppercase tracking-wide transition-colors duration-200 hover:border-foreground"
+            >
+              <Search className="h-4 w-4" />
+              Buscar en el catálogo
+            </Link>
           </div>
         </div>
       </section>
 
-      {/* ─── Marquee de marcas ────────────────────────── */}
-      {brands.length > 0 && (
-        <section className="overflow-hidden border-y border-border bg-card py-5">
-          <div className="animate-marquee flex w-max items-center gap-16 pr-16">
-            {[...brands, ...brands, ...brands, ...brands].map((brand, i) => (
-              <span
-                key={`${brand.id}-${i}`}
-                className="font-heading text-2xl uppercase tracking-wider text-muted-foreground"
-              >
-                {brand.name}
-              </span>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* ─── Destacados ───────────────────────────────── */}
-      <section className="mx-auto max-w-7xl px-6 py-20">
-        <div className="mb-10 flex items-end justify-between">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-widest text-accent">
-              Lo más pedido
-            </p>
-            <h2 className="mt-2 font-heading text-3xl uppercase tracking-tight md:text-5xl">
-              Destacados
-            </h2>
-          </div>
-          <Link
-            href="/productos"
-            className="hidden items-center gap-1 text-sm font-semibold text-muted-foreground transition-colors duration-200 hover:text-accent sm:inline-flex"
-          >
-            Ver todo <ArrowRight className="h-4 w-4" />
-          </Link>
+      {/* ─── Productos disponibles ────────────────────── */}
+      <section className="mx-auto max-w-6xl px-6 py-14">
+        <div className="mb-8 flex items-baseline justify-between">
+          <h2 className="font-heading text-2xl uppercase tracking-tight">
+            Disponible ahora
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            {products.length} {products.length === 1 ? "producto" : "productos"}
+          </p>
         </div>
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {featured.map((product) => (
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4 lg:gap-6">
+          {products.map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}
         </div>
       </section>
 
-      {/* ─── Categorías ───────────────────────────────── */}
-      <section className="mx-auto max-w-7xl px-6 pb-20">
-        <div className="grid gap-6 md:grid-cols-2">
-          <Link
-            href="/productos?categoria=desechables"
-            className="group relative overflow-hidden rounded-3xl border border-border bg-card p-10 transition-colors duration-200 hover:border-accent/50"
-          >
-            <div
-              aria-hidden
-              className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
-              style={{
-                background:
-                  "radial-gradient(ellipse 70% 60% at 80% 20%, rgba(245,185,66,0.10), transparent 70%)",
-              }}
-            />
-            <p className="font-heading text-4xl uppercase tracking-tight md:text-5xl">
-              Desechables
-            </p>
-            <p className="mt-3 max-w-sm text-muted-foreground">
-              De 5,000 a 40,000 puffs. Ábrelo y listo — sin cargas, sin
-              recambios.
-            </p>
-            <span className="mt-6 inline-flex items-center gap-1 text-sm font-semibold text-accent">
-              Explorar{" "}
-              <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
-            </span>
-          </Link>
-          <Link
-            href="/productos?categoria=pods-recargables"
-            className="group relative overflow-hidden rounded-3xl border border-border bg-card p-10 transition-colors duration-200 hover:border-accent/50"
-          >
-            <div
-              aria-hidden
-              className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
-              style={{
-                background:
-                  "radial-gradient(ellipse 70% 60% at 80% 20%, rgba(245,185,66,0.10), transparent 70%)",
-              }}
-            />
-            <p className="font-heading text-4xl uppercase tracking-tight md:text-5xl">
-              Pods recargables
-            </p>
-            <p className="mt-3 max-w-sm text-muted-foreground">
-              Batería recargable y costo por puff mucho menor. Para el día a
-              día.
-            </p>
-            <span className="mt-6 inline-flex items-center gap-1 text-sm font-semibold text-accent">
-              Explorar{" "}
-              <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
-            </span>
-          </Link>
-        </div>
-      </section>
-
-      {/* ─── Value props ──────────────────────────────── */}
-      <section className="border-y border-border bg-card">
-        <div className="mx-auto grid max-w-7xl gap-8 px-6 py-14 md:grid-cols-3">
-          <div className="flex gap-4">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-accent/10">
-              <ShieldCheck className="h-6 w-6 text-accent" />
-            </div>
-            <div>
-              <p className="font-semibold">100% originales</p>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Producto verificado de distribuidores oficiales. Cero clones.
-              </p>
-            </div>
-          </div>
-          <div className="flex gap-4">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-accent/10">
-              <MessageCircle className="h-6 w-6 text-accent" />
-            </div>
-            <div>
-              <p className="font-semibold">Atención directa</p>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Pides por WhatsApp y te respondemos al momento, sin bots.
-              </p>
-            </div>
-          </div>
-          <div className="flex gap-4">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-accent/10">
-              <Truck className="h-6 w-6 text-accent" />
-            </div>
-            <div>
-              <p className="font-semibold">Entrega rápida</p>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Coordinamos la entrega en tu zona el mismo día cuando es
-                posible.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ─── CTA final ────────────────────────────────── */}
-      <section className="relative overflow-hidden px-6 py-24">
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0"
-          style={{
-            background:
-              "radial-gradient(ellipse 50% 60% at 50% 100%, rgba(245,185,66,0.12), transparent 70%)",
-          }}
-        />
-        <div className="relative mx-auto max-w-3xl text-center">
-          <Zap className="mx-auto h-10 w-10 text-accent" />
-          <h2 className="mt-6 font-heading text-4xl uppercase tracking-tight md:text-6xl">
-            ¿Listo para pedir?
+      {/* ─── Cómo comprar ─────────────────────────────── */}
+      <section className="border-t border-border bg-surface">
+        <div className="mx-auto max-w-6xl px-6 py-14">
+          <h2 className="font-heading text-2xl uppercase tracking-tight">
+            ¿Cómo comprar?
           </h2>
-          <p className="mx-auto mt-4 max-w-md text-lg text-muted-foreground">
-            Arma tu carrito y mándalo por WhatsApp. Confirmamos stock, entrega
-            y pago en minutos.
+          <ol className="mt-8 grid gap-8 md:grid-cols-3">
+            <li className="flex gap-4">
+              <span className="font-heading text-3xl text-muted-foreground">1</span>
+              <div>
+                <p className="font-semibold">Elige tu vape</p>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Revisa el catálogo: lo que ves disponible es stock real.
+                </p>
+              </div>
+            </li>
+            <li className="flex gap-4">
+              <span className="font-heading text-3xl text-muted-foreground">2</span>
+              <div>
+                <p className="font-semibold">Mándalo por WhatsApp</p>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Agrega al carrito y envía el pedido, o escríbenos directo.
+                </p>
+              </div>
+            </li>
+            <li className="flex gap-4">
+              <span className="font-heading text-3xl text-muted-foreground">3</span>
+              <div>
+                <p className="font-semibold">Coordinamos la entrega</p>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Acordamos pago y entrega en tu zona. También manejamos apartados
+                  y pagos a plazos.
+                </p>
+              </div>
+            </li>
+          </ol>
+
+          <p className="mt-10 flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
+            <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0" />
+            Producto con nicotina, sustancia adictiva. Venta exclusiva para
+            mayores de 18 años.
           </p>
-          <Link
-            href="/productos"
-            className="mt-8 inline-flex items-center gap-2 rounded-full bg-accent px-8 py-4 text-sm font-bold uppercase tracking-wide text-accent-foreground transition-colors duration-200 hover:bg-gold-deep"
-          >
-            Ver catálogo
-            <ArrowRight className="h-4 w-4" />
-          </Link>
         </div>
       </section>
     </>

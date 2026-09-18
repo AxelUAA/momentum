@@ -2,11 +2,19 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Package, ShoppingBag, Tags, Store } from "lucide-react";
+import {
+  Banknote,
+  LayoutDashboard,
+  Package,
+  ShoppingBag,
+  Tags,
+  Store,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const links = [
   { href: "/admin", label: "Resumen", icon: LayoutDashboard, exact: true },
+  { href: "/admin/ventas", label: "Ventas", icon: Banknote, exact: false },
   { href: "/admin/pedidos", label: "Pedidos", icon: Package, exact: false },
   { href: "/admin/productos", label: "Productos", icon: ShoppingBag, exact: false },
   { href: "/admin/catalogo", label: "Marcas y categorías", icon: Tags, exact: false },

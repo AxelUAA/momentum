@@ -37,8 +37,8 @@ const benefits = [
   },
   {
     icon: BadgePercent,
-    title: "Acceso a drops y ofertas",
-    description: "Los lanzamientos y descuentos se anuncian primero a clientes.",
+    title: "Apartados y pagos a plazos",
+    description: "Con cuenta es más fácil llevar el control de tus abonos.",
   },
 ];
 
@@ -58,35 +58,17 @@ export default async function LoginPage({
 
   return (
     <div className="relative min-h-screen overflow-hidden px-4 pb-16 pt-28 md:px-6 md:pt-32">
-      {/* Glow de fondo */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0"
-        style={{
-          background:
-            "radial-gradient(ellipse 55% 40% at 70% 0%, rgba(245,185,66,0.12), transparent 70%)",
-        }}
-      />
-
       <div className="relative mx-auto grid max-w-6xl gap-6 lg:grid-cols-[1.1fr_1fr]">
         {/* ─── Panel izquierdo: beneficios ─────────────── */}
-        <section className="relative hidden overflow-hidden rounded-3xl border border-border bg-card p-10 lg:flex lg:flex-col lg:justify-between xl:p-14">
-          <div
-            aria-hidden
-            className="pointer-events-none absolute inset-0"
-            style={{
-              background:
-                "radial-gradient(ellipse 80% 50% at 20% 100%, rgba(245,185,66,0.08), transparent 70%)",
-            }}
-          />
-          <div className="relative">
+        <section className="relative hidden overflow-hidden rounded-3xl border border-border bg-surface p-10 lg:flex lg:flex-col lg:justify-between xl:p-14">
+          <div>
             <p className="w-fit rounded-full border border-border bg-background px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
               Cuenta {BRAND.name}
             </p>
             <h1 className="mt-6 font-heading text-4xl uppercase leading-[1.05] tracking-tight xl:text-5xl">
               Tu tienda,
               <br />
-              <span className="text-accent">a tu medida</span>
+              a tu medida
             </h1>
             <p className="mt-4 max-w-md text-muted-foreground">
               Crea tu cuenta gratis y convierte cada pedido en una experiencia
@@ -96,8 +78,8 @@ export default async function LoginPage({
             <ul className="mt-10 space-y-6">
               {benefits.map((benefit) => (
                 <li key={benefit.title} className="flex gap-4">
-                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-accent/10">
-                    <benefit.icon className="h-5 w-5 text-accent" />
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-muted">
+                    <benefit.icon className="h-5 w-5" />
                   </div>
                   <div>
                     <p className="font-semibold">{benefit.title}</p>
@@ -110,7 +92,7 @@ export default async function LoginPage({
             </ul>
           </div>
 
-          <div className="relative mt-12 flex items-center gap-4">
+          <div className="mt-12 flex items-center gap-4">
             <div className="flex -space-x-3">
               {["/products/vape-1.svg", "/products/vape-2.svg", "/products/vape-3.svg"].map(
                 (src) => (
@@ -119,13 +101,13 @@ export default async function LoginPage({
                     src={src}
                     alt=""
                     aria-hidden
-                    className="h-12 w-12 rounded-full border-2 border-card object-cover"
+                    className="h-12 w-12 rounded-full border-2 border-background object-cover"
                   />
                 )
               )}
             </div>
             <p className="text-sm text-muted-foreground">
-              +40 sabores de las marcas top, con stock real.
+              Marcas top con stock real, siempre actualizado.
             </p>
           </div>
         </section>
@@ -135,7 +117,6 @@ export default async function LoginPage({
           <div className="glow-gold w-full rounded-3xl border border-border bg-card p-8 sm:p-10">
             <p className="font-heading text-2xl uppercase tracking-wide">
               {BRAND.name}
-              <span className="text-accent">.</span>
             </p>
             <h2 className="mt-6 text-2xl font-bold tracking-tight">
               Bienvenido de vuelta
@@ -164,7 +145,7 @@ export default async function LoginPage({
               <button
                 type="submit"
                 id="google-signin-button"
-                className="flex w-full cursor-pointer items-center justify-center gap-3 rounded-full bg-primary px-6 py-4 text-sm font-bold text-primary-foreground transition-colors duration-200 hover:bg-primary/90"
+                className="flex w-full cursor-pointer items-center justify-center gap-3 rounded-full bg-primary px-6 py-4 text-sm font-bold text-primary-foreground transition-colors duration-200 hover:bg-gold-deep"
               >
                 <svg className="h-5 w-5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                   <path
@@ -198,14 +179,14 @@ export default async function LoginPage({
 
             <Link
               href="/productos"
-              className="group flex w-full items-center justify-center gap-2 rounded-full border border-border px-6 py-4 text-sm font-semibold text-muted-foreground transition-colors duration-200 hover:border-accent hover:text-accent"
+              className="group flex w-full items-center justify-center gap-2 rounded-full border border-border px-6 py-4 text-sm font-semibold text-muted-foreground transition-colors duration-200 hover:border-foreground hover:text-foreground"
             >
               Seguir explorando sin cuenta
               <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
             </Link>
 
-            <div className="mt-8 flex items-start gap-3 rounded-2xl border border-border bg-background p-4">
-              <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
+            <div className="mt-8 flex items-start gap-3 rounded-2xl border border-border bg-surface p-4">
+              <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0" />
               <p className="text-xs leading-relaxed text-muted-foreground">
                 Solo usamos tu nombre y correo para gestionar tus pedidos.
                 Nunca publicamos nada ni compartimos tus datos.

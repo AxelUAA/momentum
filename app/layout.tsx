@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Anton, Epilogue } from "next/font/google";
+import { Epilogue } from "next/font/google";
 import { Toaster } from "sonner";
 import { auth } from "@/auth";
 import { CartProvider } from "@/components/store/cart-context";
@@ -12,17 +12,10 @@ import "./globals.css";
 
 /* ─── Fonts ─────────────────────────────────────────────── */
 
-const anton = Anton({
-  variable: "--font-anton",
-  subsets: ["latin"],
-  weight: "400",
-  display: "swap",
-});
-
 const epilogue = Epilogue({
   variable: "--font-epilogue",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+  weight: ["400", "500", "600", "700", "800"],
   display: "swap",
 });
 
@@ -69,7 +62,7 @@ export default async function RootLayout({
   return (
     <html
       lang="es"
-      className={`${anton.variable} ${epilogue.variable} dark h-full antialiased`}
+      className={`${epilogue.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <body className="flex min-h-full flex-col">
@@ -82,7 +75,7 @@ export default async function RootLayout({
           <Footer />
           <CartSheet />
           <AgeGate />
-          <Toaster richColors position="top-right" theme="dark" />
+          <Toaster richColors position="top-right" theme="light" />
         </CartProvider>
       </body>
     </html>
