@@ -2,9 +2,9 @@ import type { CartItem } from "@/components/store/cart-context";
 import { BRAND } from "@/lib/brand";
 import { formatPrice } from "@/lib/format";
 
-/** Número de WhatsApp de la tienda (formato internacional sin +, ej. 5215512345678). */
+/** Número de WhatsApp de la tienda (formato internacional sin +). */
 export const WHATSAPP_PHONE =
-  process.env.NEXT_PUBLIC_WHATSAPP_PHONE ?? "5210000000000";
+  process.env.NEXT_PUBLIC_WHATSAPP_PHONE ?? "5214492254219";
 
 export function buildOrderMessage(items: CartItem[], orderCode?: string): string {
   const lines = [
