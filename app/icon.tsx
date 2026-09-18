@@ -17,14 +17,19 @@ export default function Icon() {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          backgroundColor: "#0F1B2D", // Midnight Navy
+          backgroundColor: "#0A0A0A",
           borderRadius: "12%",
         }}
       >
-        <svg viewBox="0 0 140 110" width="320" height="250">
-          <path d="M 12 82 C 40 5, 100 15, 130 100" fill="none" stroke="#D4AF7A" strokeWidth="11" strokeLinecap="butt" />
-          <path d="M 32 82 C 55 35, 90 40, 110 100" fill="none" stroke="#D4AF7A" strokeWidth="11" strokeLinecap="butt" />
-          <path d="M 52 82 C 65 58, 80 62, 90 100" fill="none" stroke="#D4AF7A" strokeWidth="11" strokeLinecap="butt" />
+        <svg viewBox="0 0 120 120" width="340" height="340">
+          <path
+            d="M 18 98 L 18 26 L 60 74 L 102 26 L 102 98"
+            fill="none"
+            stroke="#FFFFFF"
+            strokeWidth="16"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
         </svg>
       </div>
     ),
