@@ -27,6 +27,7 @@ type FormState = {
   categoryId: string;
   price: string;
   compareAt: string;
+  cost: string;
   puffs: string;
   nicotineMg: string;
   volumeMl: string;
@@ -77,6 +78,7 @@ export function ProductForm({
     categoryId: "",
     price: "",
     compareAt: "",
+    cost: "",
     puffs: "",
     nicotineMg: "",
     volumeMl: "",
@@ -120,6 +122,9 @@ export function ProductForm({
       priceCents: Math.round((toNumber(form.price) ?? 0) * 100),
       compareAtCents: toNumber(form.compareAt)
         ? Math.round(toNumber(form.compareAt)! * 100)
+        : null,
+      costCents: toNumber(form.cost) != null
+        ? Math.round(toNumber(form.cost)! * 100)
         : null,
       images,
       puffs: toNumber(form.puffs),
@@ -206,6 +211,17 @@ export function ProductForm({
             min="0"
             step="0.01"
             placeholder="399"
+            className={inputClass}
+          />
+        </Field>
+        <Field label="Costo unitario (lo que te cuesta)">
+          <input
+            value={form.cost}
+            onChange={(e) => set("cost", e.target.value)}
+            type="number"
+            min="0"
+            step="0.01"
+            placeholder="Se actualiza solo al registrar compras"
             className={inputClass}
           />
         </Field>

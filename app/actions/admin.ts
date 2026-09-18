@@ -107,6 +107,7 @@ export type ProductFormInput = {
   categoryId: string;
   priceCents: number;
   compareAtCents: number | null;
+  costCents: number | null;
   images: string[];
   puffs: number | null;
   nicotineMg: number | null;
@@ -133,6 +134,7 @@ export async function upsertProduct(
     categoryId: input.categoryId || null,
     priceCents: Math.round(input.priceCents),
     compareAtCents: input.compareAtCents ? Math.round(input.compareAtCents) : null,
+    costCents: Math.max(0, Math.round(input.costCents ?? 0)),
     images: input.images.map((i) => i.trim()).filter(Boolean),
     puffs: input.puffs,
     nicotineMg: input.nicotineMg,
@@ -167,27 +169,54 @@ export async function upsertProduct(
 
       // Actualizar existentes y crear nuevas
       for (const [i, v] of variants.entries()) {
+        const newStock = Math.max(0, Math.round(v.stock));
         if (v.id) {
+          const prev = existing.find((e) => e.id === v.id);
           await prisma.productVariant.update({
             where: { id: v.id },
             data: {
               name: v.name,
-              stock: Math.max(0, Math.round(v.stock)),
+              stock: newStock,
               priceCents: v.priceCents,
               isActive: true,
               sortOrder: i + 1,
             },
           });
+          // Kardex: ajuste manual de stock desde el formulario
+          if (prev && prev.stock !== newStock) {
+            await prisma.stockMovement.create({
+              data: {
+                productId,
+                variantId: v.id,
+                productName: data.name,
+                variantName: v.name,
+                delta: newStock - prev.stock,
+                reason: "ADJUSTMENT",
+              },
+            });
+          }
         } else {
-          await prisma.productVariant.create({
+          const createdVariant = await prisma.productVariant.create({
             data: {
               productId,
               name: v.name,
-              stock: Math.max(0, Math.round(v.stock)),
+              stock: newStock,
               priceCents: v.priceCents,
               sortOrder: i + 1,
             },
           });
+          if (newStock > 0) {
+            await prisma.stockMovement.create({
+              data: {
+                productId,
+                variantId: createdVariant.id,
+                productName: data.name,
+                variantName: v.name,
+                delta: newStock,
+                reason: "ADJUSTMENT",
+              },
+            });
+          }
         }
       }
     } else {
@@ -208,8 +237,25 @@ export async function upsertProduct(
             })),
           },
         },
+        include: { variants: true },
       });
       productId = product.id;
+
+      // Kardex: alta inicial de inventario
+      for (const variant of product.variants) {
+        if (variant.stock > 0) {
+          await prisma.stockMovement.create({
+            data: {
+              productId,
+              variantId: variant.id,
+              productName: product.name,
+              variantName: variant.name,
+              delta: variant.stock,
+              reason: "ADJUSTMENT",
+            },
+          });
+        }
+      }
     }
 
     revalidatePath("/admin/productos");

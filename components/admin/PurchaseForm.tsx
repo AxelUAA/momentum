@@ -4,22 +4,22 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import { createSale, type SaleInput } from "@/app/actions/sales";
+import { createPurchase, type PurchaseInput } from "@/app/actions/purchases";
 import { formatPrice } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
-export type SaleFormProduct = {
+export type PurchaseFormProduct = {
   id: string;
   name: string;
-  priceCents: number;
-  variants: { id: string; name: string; stock: number; priceCents: number | null }[];
+  costCents: number;
+  variants: { id: string; name: string; stock: number }[];
 };
 
 type ItemRow = {
   productId: string;
   variantId: string;
   quantity: string;
-  price: string; // MXN
+  cost: string; // MXN unitario
 };
 
 const inputClass =
@@ -34,32 +34,15 @@ function today(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
-export function SaleForm({ products }: { products: SaleFormProduct[] }) {
+export function PurchaseForm({ products }: { products: PurchaseFormProduct[] }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
-
   const [items, setItems] = useState<ItemRow[]>([
-    { productId: "", variantId: "", quantity: "1", price: "" },
+    { productId: "", variantId: "", quantity: "1", cost: "" },
   ]);
-  const [customerName, setCustomerName] = useState("");
-  const [customerPhone, setCustomerPhone] = useState("");
-  const [type, setType] = useState<"CASH" | "INSTALLMENTS">("CASH");
-  const [downPayment, setDownPayment] = useState("");
-  const [cost, setCost] = useState("");
+  const [supplier, setSupplier] = useState("");
   const [notes, setNotes] = useState("");
-  const [saleDate, setSaleDate] = useState(today());
-
-  function productFor(row: ItemRow) {
-    return products.find((p) => p.id === row.productId);
-  }
-
-  function defaultPrice(productId: string, variantId: string): string {
-    const product = products.find((p) => p.id === productId);
-    if (!product) return "";
-    const variant = product.variants.find((v) => v.id === variantId);
-    const cents = variant?.priceCents ?? product.priceCents;
-    return (cents / 100).toString();
-  }
+  const [purchaseDate, setPurchaseDate] = useState(today());
 
   function setItem(index: number, patch: Partial<ItemRow>) {
     setItems((rows) => rows.map((r, i) => (i === index ? { ...r, ...patch } : r)));
@@ -67,56 +50,52 @@ export function SaleForm({ products }: { products: SaleFormProduct[] }) {
 
   function handleProductChange(index: number, productId: string) {
     const product = products.find((p) => p.id === productId);
-    const firstAvailable =
-      product?.variants.find((v) => v.stock > 0) ?? product?.variants[0];
-    const variantId = firstAvailable?.id ?? "";
     setItem(index, {
       productId,
-      variantId,
-      price: productId ? defaultPrice(productId, variantId) : "",
+      variantId: product?.variants[0]?.id ?? "",
+      cost:
+        product && product.costCents > 0
+          ? (product.costCents / 100).toString()
+          : "",
     });
   }
 
   const totalCents = items.reduce((sum, row) => {
-    const price = toNumber(row.price);
+    const cost = toNumber(row.cost);
     const qty = toNumber(row.quantity);
-    if (!price || !qty) return sum;
-    return sum + Math.round(price * 100) * Math.round(qty);
+    if (!cost || !qty) return sum;
+    return sum + Math.round(cost * 100) * Math.round(qty);
   }, 0);
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-
-    const validItems = items.filter((r) => r.productId && toNumber(r.quantity));
+    const validItems = items.filter(
+      (r) => r.productId && toNumber(r.quantity) && toNumber(r.cost) != null
+    );
     if (validItems.length === 0) {
-      toast.error("Agrega al menos un producto.");
+      toast.error("Agrega al menos un producto con cantidad y costo.");
       return;
     }
 
-    const input: SaleInput = {
-      customerName,
-      customerPhone,
-      type,
+    const input: PurchaseInput = {
+      supplier,
+      notes,
+      purchaseDate,
       items: validItems.map((r) => ({
         productId: r.productId,
         variantId: r.variantId || null,
         quantity: Math.round(toNumber(r.quantity) ?? 1),
-        unitPriceCents: Math.round((toNumber(r.price) ?? 0) * 100),
+        unitCostCents: Math.round((toNumber(r.cost) ?? 0) * 100),
       })),
-      costCents: toNumber(cost) ? Math.round(toNumber(cost)! * 100) : null,
-      downPaymentCents:
-        type === "INSTALLMENTS" && toNumber(downPayment)
-          ? Math.round(toNumber(downPayment)! * 100)
-          : null,
-      notes,
-      saleDate,
     };
 
     startTransition(async () => {
-      const result = await createSale(input);
+      const result = await createPurchase(input);
       if (result.ok) {
-        toast.success(`Venta ${result.code} registrada — stock actualizado`);
-        router.push("/admin/ventas");
+        toast.success(
+          `Compra ${result.code} registrada — stock y costos actualizados`
+        );
+        router.push("/admin/compras");
         router.refresh();
       } else {
         toast.error(result.error);
@@ -126,18 +105,17 @@ export function SaleForm({ products }: { products: SaleFormProduct[] }) {
 
   return (
     <form onSubmit={handleSubmit} className="max-w-3xl space-y-8">
-      {/* ─── Productos ───────────────────────────────── */}
       <div>
         <div className="mb-3 flex items-center justify-between">
           <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-            Productos vendidos
+            Mercancía que llegó
           </span>
           <button
             type="button"
             onClick={() =>
               setItems((rows) => [
                 ...rows,
-                { productId: "", variantId: "", quantity: "1", price: "" },
+                { productId: "", variantId: "", quantity: "1", cost: "" },
               ])
             }
             className="inline-flex cursor-pointer items-center gap-1 rounded-full border border-border px-4 py-2 text-xs font-semibold transition-colors duration-200 hover:border-foreground"
@@ -148,11 +126,11 @@ export function SaleForm({ products }: { products: SaleFormProduct[] }) {
 
         <div className="space-y-3">
           {items.map((row, i) => {
-            const product = productFor(row);
+            const product = products.find((p) => p.id === row.productId);
             return (
               <div
                 key={i}
-                className="grid grid-cols-1 gap-2 rounded-2xl border border-border bg-surface p-3 sm:grid-cols-[1.3fr_1fr_80px_110px_40px] sm:items-center"
+                className="grid grid-cols-1 gap-2 rounded-2xl border border-border bg-surface p-3 sm:grid-cols-[1.3fr_1fr_80px_120px_40px] sm:items-center"
               >
                 <select
                   value={row.productId}
@@ -170,12 +148,7 @@ export function SaleForm({ products }: { products: SaleFormProduct[] }) {
 
                 <select
                   value={row.variantId}
-                  onChange={(e) => {
-                    setItem(i, {
-                      variantId: e.target.value,
-                      price: defaultPrice(row.productId, e.target.value),
-                    });
-                  }}
+                  onChange={(e) => setItem(i, { variantId: e.target.value })}
                   disabled={!product || product.variants.length === 0}
                   aria-label={`Variante ${i + 1}`}
                   className={cn(inputClass, "cursor-pointer disabled:opacity-50")}
@@ -185,7 +158,7 @@ export function SaleForm({ products }: { products: SaleFormProduct[] }) {
                   ) : (
                     product.variants.map((v) => (
                       <option key={v.id} value={v.id}>
-                        {v.name} ({v.stock} en stock)
+                        {v.name} (hay {v.stock})
                       </option>
                     ))
                   )}
@@ -201,13 +174,13 @@ export function SaleForm({ products }: { products: SaleFormProduct[] }) {
                 />
 
                 <input
-                  value={row.price}
-                  onChange={(e) => setItem(i, { price: e.target.value })}
+                  value={row.cost}
+                  onChange={(e) => setItem(i, { cost: e.target.value })}
                   type="number"
                   min="0"
                   step="0.01"
-                  placeholder="Precio"
-                  aria-label={`Precio unitario ${i + 1}`}
+                  placeholder="Costo c/u"
+                  aria-label={`Costo unitario ${i + 1}`}
                   className={inputClass}
                 />
 
@@ -224,111 +197,30 @@ export function SaleForm({ products }: { products: SaleFormProduct[] }) {
           })}
         </div>
         <p className="mt-2 text-xs text-muted-foreground">
-          El precio se prellenó del catálogo pero puedes cambiarlo (descuentos,
-          precio especial, etc.). Al guardar, el stock de cada variante baja
-          automáticamente.
+          Al guardar: el stock de cada variante sube y el costo unitario del
+          producto se actualiza (con él se calcula tu ganancia en cada venta).
         </p>
       </div>
 
-      {/* ─── Cliente ─────────────────────────────────── */}
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="block">
           <span className="mb-2 block text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-            Cliente *
+            Proveedor
           </span>
           <input
-            value={customerName}
-            onChange={(e) => setCustomerName(e.target.value)}
-            required
-            placeholder="Nombre del cliente"
-            className={inputClass}
-          />
-        </label>
-        <label className="block">
-          <span className="mb-2 block text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-            Teléfono
-          </span>
-          <input
-            value={customerPhone}
-            onChange={(e) => setCustomerPhone(e.target.value)}
+            value={supplier}
+            onChange={(e) => setSupplier(e.target.value)}
             placeholder="Opcional"
             className={inputClass}
           />
         </label>
-      </div>
-
-      {/* ─── Tipo de pago ────────────────────────────── */}
-      <div>
-        <span className="mb-2 block text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-          Forma de pago
-        </span>
-        <div className="flex gap-2">
-          <button
-            type="button"
-            onClick={() => setType("CASH")}
-            className={cn(
-              "flex-1 cursor-pointer rounded-xl border px-4 py-3 text-sm font-semibold transition-colors duration-200",
-              type === "CASH"
-                ? "border-foreground bg-primary text-primary-foreground"
-                : "border-border hover:border-foreground"
-            )}
-          >
-            Contado
-          </button>
-          <button
-            type="button"
-            onClick={() => setType("INSTALLMENTS")}
-            className={cn(
-              "flex-1 cursor-pointer rounded-xl border px-4 py-3 text-sm font-semibold transition-colors duration-200",
-              type === "INSTALLMENTS"
-                ? "border-foreground bg-primary text-primary-foreground"
-                : "border-border hover:border-foreground"
-            )}
-          >
-            A plazos
-          </button>
-        </div>
-        {type === "INSTALLMENTS" && (
-          <label className="mt-3 block">
-            <span className="mb-2 block text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-              Enganche / primer abono (MXN)
-            </span>
-            <input
-              value={downPayment}
-              onChange={(e) => setDownPayment(e.target.value)}
-              type="number"
-              min="0"
-              step="0.01"
-              placeholder="0"
-              className={inputClass}
-            />
-          </label>
-        )}
-      </div>
-
-      {/* ─── Extras ──────────────────────────────────── */}
-      <div className="grid gap-4 sm:grid-cols-2">
         <label className="block">
           <span className="mb-2 block text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-            Costo de adquisición (MXN)
+            Fecha de la compra
           </span>
           <input
-            value={cost}
-            onChange={(e) => setCost(e.target.value)}
-            type="number"
-            min="0"
-            step="0.01"
-            placeholder="Vacío = se calcula del costo de tus productos"
-            className={inputClass}
-          />
-        </label>
-        <label className="block">
-          <span className="mb-2 block text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-            Fecha de la venta
-          </span>
-          <input
-            value={saleDate}
-            onChange={(e) => setSaleDate(e.target.value)}
+            value={purchaseDate}
+            onChange={(e) => setPurchaseDate(e.target.value)}
             type="date"
             max={today()}
             className={cn(inputClass, "cursor-pointer")}
@@ -344,16 +236,15 @@ export function SaleForm({ products }: { products: SaleFormProduct[] }) {
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
           rows={2}
-          placeholder="Ej. acordamos abonos semanales de $200"
+          placeholder="Ej. pedido al mayorista, llegó incompleto, etc."
           className="w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none transition-colors duration-200 placeholder:text-muted-foreground focus:border-foreground"
         />
       </label>
 
-      {/* ─── Total + submit ──────────────────────────── */}
       <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-border bg-surface px-5 py-4">
         <div>
           <p className="text-xs uppercase tracking-widest text-muted-foreground">
-            Total de la venta
+            Total invertido
           </p>
           <p className="font-heading text-3xl tracking-tight">
             {formatPrice(totalCents)}
@@ -362,7 +253,7 @@ export function SaleForm({ products }: { products: SaleFormProduct[] }) {
         <div className="flex gap-3">
           <button
             type="button"
-            onClick={() => router.push("/admin/ventas")}
+            onClick={() => router.push("/admin/compras")}
             className="cursor-pointer rounded-full border border-border px-6 py-3 text-sm font-semibold text-muted-foreground transition-colors duration-200 hover:bg-muted"
           >
             Cancelar
@@ -372,7 +263,7 @@ export function SaleForm({ products }: { products: SaleFormProduct[] }) {
             disabled={pending || totalCents <= 0}
             className="cursor-pointer rounded-full bg-primary px-8 py-3 text-sm font-bold uppercase tracking-wide text-primary-foreground transition-colors duration-200 hover:bg-gold-deep disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {pending ? "Guardando..." : "Registrar venta"}
+            {pending ? "Guardando..." : "Registrar compra"}
           </button>
         </div>
       </div>

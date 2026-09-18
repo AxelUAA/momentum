@@ -98,6 +98,12 @@ export async function createSale(
     (s, i) => s + i.unitPriceCents * i.quantity,
     0
   );
+
+  // Costo automático desde el catálogo (se puede sobreescribir manualmente)
+  const autoCostCents = saleItems.reduce((s, i) => {
+    const product = products.find((p) => p.id === i.productId);
+    return s + (product?.costCents ?? 0) * i.quantity;
+  }, 0);
   const isInstallments = input.type === "INSTALLMENTS";
   const downPayment = isInstallments
     ? Math.min(Math.max(0, Math.round(input.downPaymentCents ?? 0)), totalCents)
@@ -115,7 +121,10 @@ export async function createSale(
           type: input.type,
           status: isInstallments && downPayment < totalCents ? "OPEN" : "PAID",
           totalCents,
-          costCents: Math.max(0, Math.round(input.costCents ?? 0)),
+          costCents:
+            input.costCents != null
+              ? Math.max(0, Math.round(input.costCents))
+              : autoCostCents,
           notes: input.notes?.trim() || null,
           saleDate,
           items: { create: saleItems },
@@ -133,7 +142,7 @@ export async function createSale(
         },
       });
 
-      // Descontar stock de cada variante vendida (sin bajar de 0)
+      // Descontar stock de cada variante vendida (sin bajar de 0) + kardex
       for (const item of saleItems) {
         if (!item.variantId) continue;
         const variant = await tx.productVariant.findUnique({
@@ -144,6 +153,17 @@ export async function createSale(
           await tx.productVariant.update({
             where: { id: item.variantId },
             data: { stock: Math.max(0, variant.stock - item.quantity) },
+          });
+          await tx.stockMovement.create({
+            data: {
+              productId: item.productId,
+              variantId: item.variantId,
+              productName: item.productName,
+              variantName: item.variantName,
+              delta: -item.quantity,
+              reason: "SALE",
+              refCode: created.code,
+            },
           });
         }
       }
@@ -223,12 +243,23 @@ export async function cancelSale(
 
   await prisma.$transaction(async (tx) => {
     await tx.sale.update({ where: { id: saleId }, data: { status: "CANCELLED" } });
-    // Devolver el stock descontado
+    // Devolver el stock descontado + kardex
     for (const item of sale.items) {
       if (!item.variantId) continue;
       await tx.productVariant.update({
         where: { id: item.variantId },
         data: { stock: { increment: item.quantity } },
+      });
+      await tx.stockMovement.create({
+        data: {
+          productId: item.productId,
+          variantId: item.variantId,
+          productName: item.productName,
+          variantName: item.variantName,
+          delta: item.quantity,
+          reason: "SALE_CANCELLED",
+          refCode: sale.code,
+        },
       });
     }
   });

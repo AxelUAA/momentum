@@ -1,8 +1,10 @@
 import Link from "next/link";
-import { Plus } from "lucide-react";
+import { MessageCircle, Plus } from "lucide-react";
 import type { Prisma, SaleStatus } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { formatPrice } from "@/lib/format";
+import { whatsappLinkTo } from "@/lib/whatsapp";
+import { BRAND } from "@/lib/brand";
 import {
   CancelSaleButton,
   SalePaymentForm,
@@ -188,7 +190,27 @@ export default async function AdminVentasPage({
                 {sale.status !== "CANCELLED" && (
                   <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-border pt-4">
                     {sale.status === "OPEN" ? (
-                      <SalePaymentForm saleId={sale.id} />
+                      <div className="flex flex-wrap items-center gap-2">
+                        <SalePaymentForm saleId={sale.id} />
+                        {sale.customerPhone &&
+                          (() => {
+                            const reminder = whatsappLinkTo(
+                              sale.customerPhone,
+                              `Hola ${sale.customerName}, te saluda ${BRAND.name} 👋 Te recordamos el saldo de tu compra ${sale.code}: restan ${formatPrice(balance)} de ${formatPrice(sale.totalCents)}. ¿Cuándo te queda bien abonar?`
+                            );
+                            return reminder ? (
+                              <a
+                                href={reminder}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1.5 rounded-full border border-border px-4 py-2.5 text-xs font-semibold transition-colors duration-200 hover:border-foreground"
+                              >
+                                <MessageCircle className="h-3.5 w-3.5" />
+                                Recordar pago
+                              </a>
+                            ) : null;
+                          })()}
+                      </div>
                     ) : (
                       <span className="text-xs text-muted-foreground">
                         Liquidada

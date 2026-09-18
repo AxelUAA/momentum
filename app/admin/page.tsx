@@ -16,12 +16,22 @@ export default async function AdminDashboardPage() {
   monthStart.setDate(1);
   monthStart.setHours(0, 0, 0, 0);
 
-  const [monthSales, openSales, newOrders, recentSales, topItems] =
+  const [monthSales, monthExpenses, lowStock, openSales, newOrders, recentSales, topItems] =
     await Promise.all([
       prisma.sale.aggregate({
         _sum: { totalCents: true, costCents: true },
         _count: true,
         where: { status: { not: "CANCELLED" }, saleDate: { gte: monthStart } },
+      }),
+      prisma.expense.aggregate({
+        _sum: { amountCents: true },
+        where: { expenseDate: { gte: monthStart } },
+      }),
+      prisma.productVariant.findMany({
+        where: { isActive: true, stock: { lte: 5 }, product: { isActive: true } },
+        include: { product: { select: { name: true, id: true } } },
+        orderBy: { stock: "asc" },
+        take: 8,
       }),
       prisma.sale.findMany({
         where: { status: "OPEN" },
@@ -44,7 +54,10 @@ export default async function AdminDashboardPage() {
     ]);
 
   const monthTotal = monthSales._sum.totalCents ?? 0;
-  const monthProfit = monthTotal - (monthSales._sum.costCents ?? 0);
+  const monthProfit =
+    monthTotal -
+    (monthSales._sum.costCents ?? 0) -
+    (monthExpenses._sum.amountCents ?? 0);
   const receivable = openSales.reduce(
     (s, sale) =>
       s + sale.totalCents - sale.payments.reduce((p, pay) => p + pay.amountCents, 0),
@@ -61,10 +74,10 @@ export default async function AdminDashboardPage() {
     },
     {
       icon: TrendingUp,
-      label: "Ganancia del mes",
+      label: "Utilidad del mes",
       value: formatPrice(monthProfit),
-      hint: "ventas menos costo registrado",
-      href: "/admin/ventas",
+      hint: "ventas − costo − gastos",
+      href: "/admin/resultados",
     },
     {
       icon: HandCoins,
@@ -155,8 +168,41 @@ export default async function AdminDashboardPage() {
           )}
         </section>
 
-        {/* Más vendidos */}
+        {/* Más vendidos + resurtido */}
         <section>
+          {lowStock.length > 0 && (
+            <div className="mb-8">
+              <h2 className="mb-4 font-heading text-2xl uppercase tracking-tight">
+                Resurtir pronto
+              </h2>
+              <ul className="overflow-hidden rounded-3xl border border-border bg-card">
+                {lowStock.map((variant) => (
+                  <li
+                    key={variant.id}
+                    className="flex items-center justify-between gap-3 border-b border-border px-5 py-3 last:border-0"
+                  >
+                    <Link
+                      href={`/admin/productos/${variant.product.id}`}
+                      className="min-w-0 flex-1 truncate text-sm font-medium transition-colors duration-200 hover:underline"
+                    >
+                      {variant.product.name}{" "}
+                      <span className="text-muted-foreground">— {variant.name}</span>
+                    </Link>
+                    <span
+                      className={
+                        variant.stock <= 0
+                          ? "rounded-full bg-foreground px-2.5 py-0.5 text-xs font-bold text-background"
+                          : "text-sm font-semibold"
+                      }
+                    >
+                      {variant.stock <= 0 ? "Agotado" : `${variant.stock} pzas`}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
           <h2 className="mb-4 font-heading text-2xl uppercase tracking-tight">
             Más vendidos
           </h2>

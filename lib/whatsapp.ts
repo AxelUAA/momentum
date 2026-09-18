@@ -24,3 +24,19 @@ export function buildOrderMessage(items: CartItem[], orderCode?: string): string
 export function whatsappLink(message: string): string {
   return `https://wa.me/${WHATSAPP_PHONE}?text=${encodeURIComponent(message)}`;
 }
+
+/** Normaliza un teléfono capturado a formato wa.me (MX: 10 dígitos → 521...). */
+export function normalizePhone(phone: string): string | null {
+  const digits = phone.replace(/\D/g, "");
+  if (digits.length === 10) return `521${digits}`;
+  if (digits.length === 12 && digits.startsWith("52")) return `521${digits.slice(2)}`;
+  if (digits.length >= 11) return digits;
+  return null;
+}
+
+/** Link de WhatsApp hacia el número de un cliente (no el de la tienda). */
+export function whatsappLinkTo(phone: string, message: string): string | null {
+  const normalized = normalizePhone(phone);
+  if (!normalized) return null;
+  return `https://wa.me/${normalized}?text=${encodeURIComponent(message)}`;
+}

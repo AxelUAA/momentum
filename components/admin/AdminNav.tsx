@@ -4,20 +4,30 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   Banknote,
+  BarChart3,
+  BookOpen,
   LayoutDashboard,
   Package,
+  PackagePlus,
+  Receipt,
   ShoppingBag,
-  Tags,
   Store,
+  Tags,
+  Users,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const links = [
   { href: "/admin", label: "Resumen", icon: LayoutDashboard, exact: true },
   { href: "/admin/ventas", label: "Ventas", icon: Banknote, exact: false },
+  { href: "/admin/compras", label: "Compras", icon: PackagePlus, exact: false },
+  { href: "/admin/gastos", label: "Gastos", icon: Receipt, exact: false },
+  { href: "/admin/resultados", label: "Resultados", icon: BarChart3, exact: false },
+  { href: "/admin/clientes", label: "Clientes", icon: Users, exact: false },
   { href: "/admin/pedidos", label: "Pedidos", icon: Package, exact: false },
   { href: "/admin/productos", label: "Productos", icon: ShoppingBag, exact: false },
   { href: "/admin/catalogo", label: "Marcas y categorías", icon: Tags, exact: false },
+  { href: "/admin/guia", label: "Guía de uso", icon: BookOpen, exact: false },
 ];
 
 export function AdminNav() {
@@ -36,7 +46,7 @@ export function AdminNav() {
             className={cn(
               "flex shrink-0 items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold transition-colors duration-200",
               active
-                ? "bg-accent text-accent-foreground"
+                ? "bg-primary text-primary-foreground"
                 : "text-muted-foreground hover:bg-muted hover:text-foreground"
             )}
           >

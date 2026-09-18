@@ -36,6 +36,7 @@ export default async function EditarProductoPage({
           compareAt: product.compareAtCents
             ? (product.compareAtCents / 100).toString()
             : "",
+          cost: product.costCents ? (product.costCents / 100).toString() : "",
           puffs: product.puffs?.toString() ?? "",
           nicotineMg: product.nicotineMg?.toString() ?? "",
           volumeMl: product.volumeMl?.toString() ?? "",
