@@ -196,7 +196,7 @@ export default async function AdminVentasPage({
                           (() => {
                             const reminder = whatsappLinkTo(
                               sale.customerPhone,
-                              `Hola ${sale.customerName}, te saluda ${BRAND.name} 👋 Te recordamos el saldo de tu compra ${sale.code}: restan ${formatPrice(balance)} de ${formatPrice(sale.totalCents)}. ¿Cuándo te queda bien abonar?`
+                              `Hola ${sale.customerName}, te saluda Axel de ${BRAND.name} Vapes. Te recordamos que el saldo de tu cuenta pendiente es ${formatPrice(balance)} de ${formatPrice(sale.totalCents)}. Te recordamos abonar pronto.`
                             );
                             return reminder ? (
                               <a

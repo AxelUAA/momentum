@@ -92,7 +92,7 @@ export default async function AdminClientesPage() {
                   customer.phone && customer.balanceCents > 0
                     ? whatsappLinkTo(
                         customer.phone,
-                        `Hola ${customer.name}, te saluda ${BRAND.name} 👋 Te recordamos tu saldo pendiente de ${formatPrice(customer.balanceCents)} (${customer.openSaleCodes.join(", ")}). ¿Cuándo te queda bien abonar?`
+                        `Hola ${customer.name}, te saluda Axel de ${BRAND.name} Vapes. Te recordamos que el saldo de tu cuenta pendiente es ${formatPrice(customer.balanceCents)}. Te recordamos abonar pronto.`
                       )
                     : null;
                 return (
